@@ -1,9 +1,11 @@
 class_name SpaceArena
 extends Node3D
+var arena_seed := 81023
+var planet_tint := Color(0.12, 0.25, 0.48)
 
 func _ready() -> void:
  var rng := RandomNumberGenerator.new()
- rng.seed = 81023
+ rng.seed = arena_seed
  var environment_node := WorldEnvironment.new()
  var environment := Environment.new()
  environment.background_mode = Environment.BG_COLOR
@@ -45,7 +47,7 @@ func _ready() -> void:
  planet.mesh = planet_mesh
  planet.position = Vector3(-1100, -450, -1600)
  var planet_material := StandardMaterial3D.new()
- planet_material.albedo_color = Color(0.12, 0.25, 0.48)
+ planet_material.albedo_color = planet_tint
  planet_material.roughness = 0.9
  planet.material_override = planet_material
  add_child(planet)

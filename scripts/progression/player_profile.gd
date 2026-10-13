@@ -2,12 +2,14 @@ class_name PlayerProfile
 extends RefCounted
 signal changed
 
-const VERSION := 1
+const VERSION := 2
 const SLOTS = ["engine", "shield", "weapon", "utility", "crew", "variant"]
 const DEFAULT_CREW = ["crew_astra", "crew_milo", "crew_sera"]
 var save_path := "user://commander_profile.json"
 var inventory: Dictionary = {}
 var loadouts: Array[Dictionary] = []
+var ship_classes: Array[String] = ["interceptor", "skirmisher", "guardian"]
+var exploration_records: Dictionary = {}
 var commander_name := "Vanguard Commander"
 var salvage := 0
 var battles := 0
@@ -86,7 +88,7 @@ func _read(path: String) -> bool:
   save_blocked = true
   notice = "This save belongs to a newer game version. Saving is disabled to preserve it."
   return false
- if int(parsed.version) != VERSION or not parsed.get("inventory") is Dictionary or not parsed.get("loadouts") is Array:
+ if not int(parsed.version) in [1, VERSION] or not parsed.get("inventory") is Dictionary or not parsed.get("loadouts") is Array:
   return false
  _defaults()
  for id in parsed.inventory:
@@ -96,6 +98,19 @@ func _read(path: String) -> bool:
    continue
   var count := _integer(entry.get("count", 1), 1, 99999)
   inventory[id] = {"count": count, "discovered_at": _integer(entry.get("discovered_at", 0), 0, 4102444800), "source": str(entry.get("source", "Discovery")).left(80)}
+ ship_classes = ["interceptor", "skirmisher", "guardian"]
+ var saved_classes = parsed.get("ship_classes", [])
+ for index in range(3):
+  if saved_classes is Array and index < saved_classes.size():
+   var id := str(saved_classes[index])
+   if can_use_ship(id):
+    ship_classes[index] = id
+ exploration_records = {}
+ var saved_records = parsed.get("exploration_records", {})
+ if saved_records is Dictionary:
+  for key in saved_records:
+   if str(key).length() < 80 and saved_records[key] is Dictionary:
+    exploration_records[str(key)] = {"discovered_at": _integer(saved_records[key].get("discovered_at", 0), 0, 4102444800), "name": str(saved_records[key].get("name", "Unknown")).left(80)}
  var used_crew: Array[String] = []
  for index in range(3):
   var saved_loadout: Dictionary = parsed.loadouts[index] if index < parsed.loadouts.size() and parsed.loadouts[index] is Dictionary else {}
@@ -127,7 +142,7 @@ func _integer(value: Variant, lower: int, upper: int) -> int:
  return clampi(int(value), lower, upper)
 
 func to_dict() -> Dictionary:
- return {"version": VERSION, "commander_name": commander_name, "inventory": inventory.duplicate(true), "loadouts": loadouts.duplicate(true), "salvage": salvage, "battles": battles, "wins": wins, "total_kills": total_kills, "total_damage": total_damage}
+ return {"version": VERSION, "commander_name": commander_name, "inventory": inventory.duplicate(true), "loadouts": loadouts.duplicate(true), "ship_classes": ship_classes.duplicate(), "exploration_records": exploration_records.duplicate(true), "salvage": salvage, "battles": battles, "wins": wins, "total_kills": total_kills, "total_damage": total_damage}
 
 func save_profile() -> bool:
  save_error = ""
@@ -163,7 +178,7 @@ func _valid_fit(index: int, slot: String, id: String) -> bool:
  var definition := CollectionCatalog.find(id)
  if definition == null or not owns(id) or definition.slot != slot:
   return false
- return definition.ship_class.is_empty() or definition.ship_class == CollectionCatalog.CLASS_STATS[index].class_name_text
+ return definition.ship_class.is_empty() or definition.ship_class == CollectionCatalog.SHIP_TYPES[ship_classes[index]].class_name_text
 
 func equip(index: int, slot: String, id: String) -> bool:
  if index < 0 or index > 2 or not slot in SLOTS or not _valid_fit(index, slot, id):
@@ -185,7 +200,7 @@ func rename_commander(value: String) -> void:
  changed.emit()
 
 func configured_stats(index: int) -> ShipStats:
- var stats := CollectionCatalog.CLASS_STATS[index].duplicate(true) as ShipStats
+ var stats := CollectionCatalog.SHIP_TYPES[ship_classes[index]].duplicate(true) as ShipStats
  for slot in SLOTS:
   var definition := CollectionCatalog.find(str(loadouts[index].get(slot, "")))
   if definition == null:
@@ -239,3 +254,28 @@ func settle_battle(battle_id: String, winner: int, kills: int, damage: float) ->
  save_profile()
  changed.emit()
  return rewards
+
+func can_use_ship(id: String) -> bool:
+ return id in ["interceptor", "skirmisher", "guardian"] or (CollectionCatalog.SHIP_TYPES.has(id) and owns("ship_" + id))
+
+func set_ship_class(index: int, id: String) -> bool:
+ if index < 0 or index > 2 or not can_use_ship(id):
+  return false
+ ship_classes[index] = id
+ for slot in SLOTS:
+  if not _valid_fit(index, slot, str(loadouts[index][slot])):
+   loadouts[index][slot] = "variant_standard" if slot == "variant" else ""
+ save_profile()
+ changed.emit()
+ return true
+
+func record_discovery(id: String, label: String, reward_id: String = "") -> bool:
+ if exploration_records.has(id):
+  return false
+ exploration_records[id] = {"name": label, "discovered_at": int(Time.get_unix_time_from_system())}
+ salvage += 25
+ if not reward_id.is_empty():
+  acquire(reward_id, "Galactic exploration")
+ save_profile()
+ changed.emit()
+ return true

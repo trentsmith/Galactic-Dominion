@@ -19,6 +19,7 @@ var inventory_list: ItemList
 var detail_column: VBoxContainer
 var filter: OptionButton
 var tabs: TabContainer
+var records_list: ItemList
 var fleet_title: Label
 
 func _ready() -> void:
@@ -50,6 +51,7 @@ func _ready() -> void:
  root.add_child(tabs)
  _build_fleet_tab()
  _build_collection_tab()
+ _build_records_tab()
  message_label = _label("Changes save automatically. Component schematics can be fitted to every ship; each crew member serves aboard one ship.", 13, MUTED)
  message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  root.add_child(message_label)
@@ -72,9 +74,18 @@ func _build_fleet_tab() -> void:
  split.add_child(left)
  var buttons := HBoxContainer.new()
  left.add_child(buttons)
+ var hull_chooser := OptionButton.new()
+ for id in CollectionCatalog.SHIP_TYPES:
+  var item_index := hull_chooser.item_count
+  hull_chooser.add_item(CollectionCatalog.SHIP_TYPES[id].class_name_text)
+  hull_chooser.set_item_metadata(item_index, id)
+  hull_chooser.set_item_disabled(item_index, not profile.can_use_ship(id))
+ hull_chooser.name = "HullChooser"
+ hull_chooser.item_selected.connect(func(index): profile.set_ship_class(selected_ship, str(hull_chooser.get_item_metadata(index))))
+ left.add_child(hull_chooser)
  for index in range(3):
   var button := Button.new()
-  button.text = "F%d  %s" % [index + 1, CollectionCatalog.CLASS_STATS[index].class_name_text]
+  button.text = "F%d  %s" % [index + 1, profile.configured_stats(index).class_name_text]
   button.toggle_mode = true
   button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   button.pressed.connect(func():
@@ -152,6 +163,11 @@ func _refresh() -> void:
  balance_label.text = "%d SALVAGE  /  %d OF %d DISCOVERED" % [profile.salvage, profile.owned_count(), CollectionCatalog.DEFINITIONS.size()]
  _refresh_fitting()
  _refresh_collection()
+ records_list.clear()
+ for id in profile.exploration_records:
+  var record: Dictionary = profile.exploration_records[id]
+  var discovered := Time.get_datetime_string_from_unix_time(int(record.discovered_at)).replace("T", " ")
+  records_list.add_item(str(record.name) + "  /  " + discovered + " UTC")
  if not profile.save_error.is_empty():
   message_label.text = profile.save_error
   message_label.modulate = Color(1, 0.65, 0.3)
@@ -162,7 +178,14 @@ func _clear(parent: Node) -> void:
   child.queue_free()
 
 func _refresh_fitting() -> void:
+ var hull_chooser: OptionButton = find_child("HullChooser", true, false)
+ for index in range(hull_chooser.item_count):
+  var id := str(hull_chooser.get_item_metadata(index))
+  hull_chooser.set_item_disabled(index, not profile.can_use_ship(id))
+  if id == profile.ship_classes[selected_ship]:
+   hull_chooser.select(index)
  for index in range(3):
+  fleet_buttons[index].text = "F%d %s" % [index + 1, profile.configured_stats(index).class_name_text]
   fleet_buttons[index].set_pressed_no_signal(index == selected_ship)
  _clear(fitting_rows)
  var stats := profile.configured_stats(selected_ship)
@@ -265,8 +288,8 @@ func _refresh_detail() -> void:
   detail_column.add_child(_label("DISCOVERED  /  " + discovered + "
 SOURCE  /  " + str(discovery.source) + "
 RECOVERED  /  " + str(discovery.count) + " times", 13, MUTED))
-  if definition.kind != "variant" or definition.ship_class.is_empty() or definition.ship_class == CollectionCatalog.CLASS_STATS[selected_ship].class_name_text:
-   _button(detail_column, "FIT TO F%d %s" % [selected_ship + 1, CollectionCatalog.CLASS_STATS[selected_ship].class_name_text.to_upper()], func():
+  if definition.kind != "ship" and (definition.kind != "variant" or definition.ship_class.is_empty() or definition.ship_class == profile.configured_stats(selected_ship).class_name_text):
+   _button(detail_column, "FIT TO F%d %s" % [selected_ship + 1, profile.configured_stats(selected_ship).class_name_text.to_upper()], func():
     if profile.equip(selected_ship, definition.slot, definition.id):
      tabs.current_tab = 0
      message_label.text = "Fitted " + definition.display_name + "." if profile.save_error.is_empty() else profile.save_error
@@ -283,6 +306,10 @@ RECOVERED  /  " + str(discovery.count) + " times", 13, MUTED))
    button.disabled = profile.salvage < definition.research_cost
   else:
    detail_column.add_child(_label("Discovery through free battle salvage only.", 14, MUTED))
+ if definition.kind == "ship" and profile.owns(definition.id):
+  _button(detail_column, "USE THIS HULL ON F%d" % (selected_ship + 1), func():
+   profile.set_ship_class(selected_ship, definition.id.trim_prefix("ship_"))
+   tabs.current_tab = 0)
  var stats := _label("COMMAND RECORD  /  %s
 %d battles · %d victories · %d kills · %d total damage" % [profile.commander_name, profile.battles, profile.wins, profile.total_kills, int(profile.total_damage)], 13, MUTED)
  stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -322,3 +349,15 @@ func _unhandled_input(event: InputEvent) -> void:
  if event.is_action_pressed("pause"):
   back_requested.emit()
   get_viewport().set_input_as_handled()
+
+func _build_records_tab() -> void:
+ var column := VBoxContainer.new()
+ column.name = "Galactic Records"
+ column.add_theme_constant_override("separation", 14)
+ tabs.add_child(column)
+ column.add_child(_label("EXPLORATION LOG  /  SECTORS, SIGNALS & PATROLS", 22, CYAN))
+ var info := _label("Vesper Reach · Kharon Belt · Auralith Drift · Ember Frontier\nDiscoveries are recorded once. Revisited signals do not pay duplicate salvage.", 15, MUTED)
+ column.add_child(info)
+ records_list = ItemList.new()
+ records_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ column.add_child(records_list)

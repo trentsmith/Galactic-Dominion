@@ -26,9 +26,18 @@ const DEFINITIONS = [
  preload("res://resources/collectibles/variant_standard.tres"),
  preload("res://resources/collectibles/variant_aurora.tres"),
  preload("res://resources/collectibles/variant_celestial.tres"),
- preload("res://resources/collectibles/variant_void.tres")
+ preload("res://resources/collectibles/variant_void.tres"),
+ preload("res://resources/collectibles/ship_bomber.tres"),
+ preload("res://resources/collectibles/ship_support.tres"),
+ preload("res://resources/collectibles/crew_threx.tres"),
+ preload("res://resources/collectibles/crew_iola.tres"),
+ preload("res://resources/collectibles/weapon_lance.tres"),
+ preload("res://resources/collectibles/shield_crystal.tres"),
+ preload("res://resources/collectibles/variant_bomber.tres"),
+ preload("res://resources/collectibles/variant_support.tres")
 ]
 const CLASS_STATS = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+const SHIP_TYPES = {"interceptor": CLASS_STATS[0], "skirmisher": CLASS_STATS[1], "guardian": CLASS_STATS[2], "bomber": preload("res://resources/ships/bomber.tres"), "support": preload("res://resources/ships/support.tres")}
 const MODIFIABLE_STATS = ["hull", "shield", "speed", "acceleration", "turn_speed", "laser_damage", "laser_cooldown", "missile_damage", "missile_cooldown", "shield_regen", "boost_capacity", "boost_regen", "ability_recharge"]
 
 static func find(id: String) -> CollectibleDefinition:

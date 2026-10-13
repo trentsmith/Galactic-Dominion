@@ -58,7 +58,7 @@ func _ready() -> void:
  _build_visual()
 
 func _build_visual() -> void:
- var color := stats.color if team == 0 else Color(0.95, 0.25, 0.20)
+ var color := stats.color if team == 0 or stats.variant_style != "standard" else Color(0.95, 0.25, 0.20)
  var body := BoxMesh.new()
  body.size = Vector3(2.0, 1.2, 6.0)
  _mesh(body, Vector3.ZERO, color)
@@ -162,6 +162,10 @@ func _physics_process(delta: float) -> void:
  weapons.overcharge = ability_remaining > 0.0 and stats.ability == "overcharge"
  if not player_controlled:
   brain.tick(delta)
+ if ability_remaining > 0.0 and stats.ability == "repair":
+  for ally in get_tree().get_nodes_in_group("ships"):
+   if ally.alive and ally.team == team and global_position.distance_to(ally.global_position) < 90.0:
+    ally.health.hull = minf(ally.health.max_hull, ally.health.hull + 3.0 * delta)
  movement.tick(delta)
  engine_mesh.scale = Vector3(1, 1, 1.0 + velocity.length() / stats.speed)
  muzzle_flash = maxf(0.0, muzzle_flash - delta)
@@ -180,10 +184,13 @@ func _hit(shield_hit: bool) -> void:
  if hit_effect_remaining > 0.0:
   return
  hit_effect_remaining = 0.12
+ if player_controlled:
+  SpaceAudio.play("shield")
  SpaceEffects.burst(get_parent(), global_position, Color(0.15, 0.7, 1.0) if shield_hit else Color(1, 0.45, 0.12), 4.0 if shield_hit else 1.8)
 
 func _destroy(attacker: CombatShip) -> void:
  alive = false
+ SpaceAudio.play("destroy")
  if is_instance_valid(attacker):
   attacker.kills += 1
  SpaceEffects.burst(get_parent(), global_position, Color(1, 0.4, 0.1), 12.0)

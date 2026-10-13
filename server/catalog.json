@@ -1,0 +1,445 @@
+[
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "Human",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "crew_astra",
+    "display_name": "Astra Vale",
+    "kind": "crew",
+    "rarity": "common",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "Human",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "crew_astra_solar",
+    "display_name": "Astra \u00b7 Solar Eclipse",
+    "kind": "crew",
+    "rarity": "mythic",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 100,
+    "species": "Human",
+    "ship_class": "",
+    "modifiers": {
+      "boost_capacity": 1.1
+    },
+    "id": "crew_iola",
+    "display_name": "Iola Drift",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 220,
+    "species": "Kharon",
+    "ship_class": "",
+    "modifiers": {
+      "hull": 1.08
+    },
+    "id": "crew_kael",
+    "display_name": "Kael Stonewake",
+    "kind": "crew",
+    "rarity": "rare",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 100,
+    "species": "Human",
+    "ship_class": "",
+    "modifiers": {
+      "turn_speed": 1.08
+    },
+    "id": "crew_lyra",
+    "display_name": "Lyra Voss",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "Human",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "crew_milo",
+    "display_name": "Milo Kest",
+    "kind": "crew",
+    "rarity": "common",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 100,
+    "species": "Vesperi",
+    "ship_class": "",
+    "modifiers": {
+      "shield_regen": 1.1
+    },
+    "id": "crew_nyx",
+    "display_name": "Nyx of Vesper",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "Vesperi",
+    "ship_class": "",
+    "modifiers": {
+      "shield_regen": 1.1
+    },
+    "id": "crew_nyx_prism",
+    "display_name": "Nyx \u00b7 Prismborn",
+    "kind": "crew",
+    "rarity": "exotic",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 220,
+    "species": "Auralith",
+    "ship_class": "",
+    "modifiers": {
+      "boost_regen": 1.12
+    },
+    "id": "crew_orith",
+    "display_name": "Orith Tideglass",
+    "kind": "crew",
+    "rarity": "rare",
+    "slot": "crew"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "Human",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "crew_sera",
+    "display_name": "Sera Quill",
+    "kind": "crew",
+    "rarity": "common",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 220,
+    "species": "Drakari",
+    "ship_class": "",
+    "modifiers": {
+      "missile_damage": 1.08
+    },
+    "id": "crew_threx",
+    "display_name": "Threx Emberwing",
+    "kind": "crew",
+    "rarity": "rare",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 80,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "speed": 1.15,
+      "acceleration": 1.12,
+      "hull": 0.94
+    },
+    "id": "engine_sprint",
+    "display_name": "Sprint Drive",
+    "kind": "component",
+    "rarity": "uncommon",
+    "slot": "engine"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "engine_standard",
+    "display_name": "Vector Drive",
+    "kind": "component",
+    "rarity": "common",
+    "slot": "engine"
+  },
+  {
+    "starter": false,
+    "research_cost": 180,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "turn_speed": 1.22,
+      "acceleration": 1.2,
+      "speed": 0.96
+    },
+    "id": "engine_vector",
+    "display_name": "Vectorial Drive",
+    "kind": "component",
+    "rarity": "rare",
+    "slot": "engine"
+  },
+  {
+    "starter": false,
+    "research_cost": 80,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "shield": 1.25,
+      "speed": 0.94
+    },
+    "id": "shield_bulwark",
+    "display_name": "Bulwark Array",
+    "kind": "component",
+    "rarity": "uncommon",
+    "slot": "shield"
+  },
+  {
+    "starter": false,
+    "research_cost": 190,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "shield": 1.4,
+      "shield_regen": 0.75
+    },
+    "id": "shield_crystal",
+    "display_name": "Crystal Barrier",
+    "kind": "component",
+    "rarity": "rare",
+    "slot": "shield"
+  },
+  {
+    "starter": false,
+    "research_cost": 180,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "shield_regen": 1.5,
+      "shield": 0.9
+    },
+    "id": "shield_recovery",
+    "display_name": "Renewal Array",
+    "kind": "component",
+    "rarity": "rare",
+    "slot": "shield"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "shield_standard",
+    "display_name": "Barrier Matrix",
+    "kind": "component",
+    "rarity": "common",
+    "slot": "shield"
+  },
+  {
+    "starter": false,
+    "research_cost": 300,
+    "species": "",
+    "ship_class": "Bomber",
+    "modifiers": {},
+    "id": "ship_bomber",
+    "display_name": "Siegebreaker Bomber",
+    "kind": "ship",
+    "rarity": "rare",
+    "slot": "ship"
+  },
+  {
+    "starter": false,
+    "research_cost": 300,
+    "species": "",
+    "ship_class": "Support",
+    "modifiers": {},
+    "id": "ship_support",
+    "display_name": "Wayfarer Support",
+    "kind": "ship",
+    "rarity": "rare",
+    "slot": "ship"
+  },
+  {
+    "starter": false,
+    "research_cost": 180,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "ability_recharge": 0.8,
+      "boost_capacity": 0.9
+    },
+    "id": "utility_relay",
+    "display_name": "Ability Relay",
+    "kind": "component",
+    "rarity": "rare",
+    "slot": "utility"
+  },
+  {
+    "starter": false,
+    "research_cost": 80,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "boost_capacity": 1.35,
+      "boost_regen": 1.1
+    },
+    "id": "utility_reserve",
+    "display_name": "Deep Reserve",
+    "kind": "component",
+    "rarity": "uncommon",
+    "slot": "utility"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "utility_standard",
+    "display_name": "Flight Computer",
+    "kind": "component",
+    "rarity": "common",
+    "slot": "utility"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Skirmisher",
+    "modifiers": {},
+    "id": "variant_aurora",
+    "display_name": "Aurora Skirmisher",
+    "kind": "variant",
+    "rarity": "exotic",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Bomber",
+    "modifiers": {},
+    "id": "variant_bomber",
+    "display_name": "Ember Bomber",
+    "kind": "variant",
+    "rarity": "exotic",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Guardian",
+    "modifiers": {},
+    "id": "variant_celestial",
+    "display_name": "Celestial Guardian",
+    "kind": "variant",
+    "rarity": "exotic",
+    "slot": "variant"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "variant_standard",
+    "display_name": "Vanguard Livery",
+    "kind": "variant",
+    "rarity": "common",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Support",
+    "modifiers": {},
+    "id": "variant_support",
+    "display_name": "Starlight Support",
+    "kind": "variant",
+    "rarity": "mythic",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Interceptor",
+    "modifiers": {},
+    "id": "variant_void",
+    "display_name": "Voidglass Interceptor",
+    "kind": "variant",
+    "rarity": "mythic",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 80,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "laser_damage": 1.22,
+      "laser_cooldown": 1.12
+    },
+    "id": "weapon_focus",
+    "display_name": "Focused Pulse",
+    "kind": "component",
+    "rarity": "uncommon",
+    "slot": "weapon"
+  },
+  {
+    "starter": false,
+    "research_cost": 190,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "laser_damage": 1.4,
+      "laser_cooldown": 1.35
+    },
+    "id": "weapon_lance",
+    "display_name": "Lance Pulse",
+    "kind": "component",
+    "rarity": "rare",
+    "slot": "weapon"
+  },
+  {
+    "starter": true,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "weapon_standard",
+    "display_name": "Pulse Laser",
+    "kind": "component",
+    "rarity": "common",
+    "slot": "weapon"
+  },
+  {
+    "starter": false,
+    "research_cost": 180,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {
+      "laser_cooldown": 0.78,
+      "laser_damage": 0.9,
+      "missile_cooldown": 0.9
+    },
+    "id": "weapon_swarm",
+    "display_name": "Rapid Pulse",
+    "kind": "component",
+    "rarity": "rare",
+    "slot": "weapon"
+  }
+]

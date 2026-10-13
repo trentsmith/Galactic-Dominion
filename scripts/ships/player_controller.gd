@@ -34,6 +34,11 @@ func _physics_process(delta: float) -> void:
  else:
   ship.movement.thrust = Vector3.ZERO
   ship.movement.boost_requested = false
+ update_camera(delta)
+
+func update_camera(delta: float) -> void:
+ if not is_instance_valid(ship):
+  return
  var desired := ship.global_position + ship.global_basis * Vector3(0, 5.5, 18.0) + ship.velocity * 0.025
  camera.global_position = camera.global_position.lerp(desired, 1.0 - exp(-8.0 * delta))
  var desired_basis := ship.global_basis

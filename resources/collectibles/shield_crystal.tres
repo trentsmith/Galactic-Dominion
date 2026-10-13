@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "shield_crystal"
+display_name = "Crystal Barrier"
+description = "Alien shield lattice: higher capacity, slower regeneration."
+kind = "component"
+rarity = "rare"
+slot = "shield"
+species = ""
+ship_class = ""
+modifiers = {"shield": 1.4, "shield_regen": 0.75}
+color = Color(0.9, 0.6, 0.3, 1)
+visual_style = "bulwark"
+research_cost = 190

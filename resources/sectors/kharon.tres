@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SectorDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/exploration/sector_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "kharon"
+display_name = "Kharon Belt"
+description = "A mineral-rich sector defended by a hostile patrol."
+color = Color(0.8, 0.5, 0.2, 1)
+rewards = PackedStringArray("crew_kael", "shield_crystal", "ship_bomber")
+encounter_reward = "weapon_lance"
+enemy_count = 2

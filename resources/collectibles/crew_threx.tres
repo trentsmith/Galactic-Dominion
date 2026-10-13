@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_threx"
+display_name = "Threx Emberwing"
+description = "Drakari weapons scholar with volcanic armor plates."
+kind = "crew"
+rarity = "rare"
+slot = "crew"
+species = "Drakari"
+ship_class = ""
+modifiers = {"missile_damage": 1.08}
+color = Color(0.9, 0.6, 0.3, 1)
+visual_style = "kharon"
+research_cost = 220

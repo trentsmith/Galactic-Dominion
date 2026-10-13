@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_iola"
+display_name = "Iola Drift"
+description = "Human deep-space explorer with efficient boost management."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Human"
+ship_class = ""
+modifiers = {"boost_capacity": 1.1}
+color = Color(0.9, 0.6, 0.3, 1)
+visual_style = "human"
+research_cost = 100

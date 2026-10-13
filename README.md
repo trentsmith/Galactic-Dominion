@@ -1,6 +1,6 @@
-# Galactic Dominion — Phase 2: Hangar & Discovery
+# Galactic Dominion — Phase 3: Galaxy & Network
 
-A single-player Godot 4.x 3D Fleet Royale game prototype with a persistent fleet hangar, collectible crew, interchangeable components and rare appearances. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins, paid assets, or network access required.
+A single-player Godot 4.x 3D Fleet Royale game prototype with exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins, paid assets, or network access required.
 
 ## Open and play
 
@@ -13,17 +13,32 @@ A single-player Godot 4.x 3D Fleet Royale game prototype with a persistent fleet
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
 
-## New in this build: Hangar & Discovery
+## Galaxy & Network expansion
+
+**Galactic Exploration** takes your configured fleet into four sectors: Vesper Reach, Kharon Belt, Auralith Drift and Ember Frontier. Each sector has a different asteroid layout and planet tint, three scan signals and a hostile patrol. The HUD marks signals and enemies. Approach a signal within 35 metres and **hold G for two seconds** to scan it. Press **M** to open the sector chart and warp, or return to the hangar. The chart does not pause combat; Esc does pause local exploration.
+
+Sector entry, scans and defeated patrols produce one-time discovery records and salvage. Scans reveal specific crew, equipment or hulls, so exploration gives a predictable route to new content. Revisited records do not pay again. Warp redeploys your fleet in the chosen sector. The **Galactic Records** hangar tab lists discoveries and their UTC timestamps.
+
+The new **Bomber** class has heavy missiles and a temporary barrage ability that reduces missile reload time. The **Support** class repairs nearby allied hulls for five seconds. Unlock either in exploration or research its schematic, then select its hull in Fleet Hangar. Rare hull appearances remain cosmetic. Combat now has original synthesized placeholder laser, missile, shield, destruction and menu sounds, with master volume in Settings.
+
+**Online / Lobby / Marketplace** connects to the included self-hosted server. It supports account registration/login, quick-joining the server's open lobby, choosing teams, readiness and 3v3 real-time combat. Up to six human pilots can join; AI fills empty positions and takes over disconnected pilots' ships. The server owns movement, health, shots, target locking, switching and match results. Clients send bounded control input and interpolate server snapshots.
+
+Online Fleet configures server-owned hulls and fittings. Public Profiles shows online fleet, collection/discovery records and lifetime combat totals. Marketplace supports item listings, purchases, offers, acceptance, rejection and cancellation, with escrow and atomic settlement. Local save data cannot be uploaded as tradable online items: **local and online progression are separate**.
+
+For Windows startup, LAN/VPS setup, accounts and trading, see **[server/README.md](server/README.md)**. The full game folder includes **Start-Server-Windows.bat**. You need Python 3.10+ in addition to Godot to host; regular single-player play only requires Godot. No public server was deployed for this build.
+
+## Hangar & Discovery
 
 From the main menu open **FLEET HANGAR / COLLECTION**. Use the fleet buttons or F1–F3 to inspect your three ships, then select fittings from the dropdowns. The rotating 3D preview shows fitted hardware and ship variants. Your base Interceptor, Skirmisher and Guardian remain available permanently.
 
 Each ship has six slots: engine, shield, weapon, utility, crew and variant. The hangar displays the resulting hull, shields, regeneration, speed, turning, boost capacity, laser/missile output and ability recharge. Loadouts affect your next deployed battle. Component schematics can be fitted to multiple ships; a named crew member can serve aboard only one ship. To transfer a crew member, first set their current ship's crew to **Unassigned**.
 
-There are **25 catalog entries**:
+There are **33 catalog entries**:
 
-- 12 component schematics: four standard and eight alternative fittings, with bonuses and trade-offs.
-- 9 crew collectibles: five human astronaut appearances and four alien appearances from three species (Vesperi, Kharon and Auralith).
-- 4 ship liveries: the standard fleet livery and three class-specific rare variants.
+- 14 component schematics: four standard and ten alternative fittings, with bonuses and trade-offs.
+- 11 crew collectibles: six human astronaut appearances and five alien appearances from four species (Vesperi, Kharon, Auralith and Drakari).
+- 6 ship liveries: the standard fleet livery and five class-specific rare variants.
+- 2 unlockable hulls: Bomber and Support, in addition to the three permanent starter classes.
 
 A new commander starts with four standard component schematics, three astronauts and the standard fleet livery: **8 discovered entries**. Open **Collection & Commander** to filter items, inspect portraits and bonuses, edit your commander name, review lifetime combat totals, or research undiscovered standard equipment and crew with salvage.
 
@@ -41,7 +56,7 @@ Loadouts, inventory, discovery timestamps, commander name, salvage and battle st
 
 Paste `%APPDATA%\Godot\app_userdata\Galactic Dominion` into File Explorer's address bar to find the folder. Settings remain in `settings.cfg`. There is no cloud synchronization or trading server.
 
-Updates use the same Godot application name, so extracting a new build to another folder retains your local profile. The save uses a versioned format, a temporary file for replacement, and a `.bak` copy of the previous save. Unreadable primary saves are preserved as `.corrupt-*` files before recovery; newer unsupported save versions are preserved with saving disabled. The menu and hangar display save failures rather than silently claiming success. This is a local prototype; saves are editable and not suitable as authoritative multiplayer inventory.
+Updates use the same Godot application name, so extracting a new build to another folder retains your local profile. The version-2 local save migrates version-1 profiles from the previous build without discarding their inventory. The save uses a versioned format, a temporary file for replacement, and a `.bak` copy of the previous save. Unreadable primary saves are preserved as `.corrupt-*` files before recovery; newer unsupported save versions are preserved with saving disabled. The menu and hangar display save failures rather than silently claiming success. This is a local prototype; saves are editable and not suitable as authoritative multiplayer inventory.
 
 ## Test the new features
 
@@ -69,7 +84,9 @@ Updates use the same Godot application name, so extracting a new build to anothe
 | R | Ship class ability |
 | F1 / F2 / F3 | Control Interceptor / Skirmisher / Guardian |
 | 1 / 2 / 3 / 4 / 5 | Fleet: Follow / Attack selected target / Defend / Regroup / Retreat |
-| Esc | Pause, settings, or main menu |
+| G | Hold to scan a nearby exploration signal |
+| M | Exploration sector chart |
+| Esc | Pause/settings; online combat continues while the menu is open |
 
 Keep a selected enemy within the forward cone and within 600 metres for 1.2 seconds to lock missiles. Shields regenerate after four seconds without damage. Destruction of the controlled ship switches to a surviving friendly ship.
 
@@ -102,16 +119,24 @@ The spherical zone starts at 600 metres, begins shrinking after 30 seconds, and 
 - `scripts/world`: deterministic arena, safe zone and transient combat effects.
 - `scripts/ui`: HUD, projected health/target markers, results, fleet hangar, 3D preview and primitive crew portraits.
 - `scripts/progression`: collectible definitions, catalog, fitting validation, stat composition, reward settlement and local profile persistence.
-- `resources/collectibles`: 25 reusable `.tres` collectible definitions.
+- `scripts/exploration`: Resource-defined sectors, scans, patrol encounters, chart navigation and discovery records.
+- `scripts/online`: HTTP account client, ENet lobby, authoritative simulation, bounded inputs and snapshot presentation.
+- `server`: Python/SQLite account, profile, escrow/offer/market and combat reward service, plus a cross-platform launcher.
+- `resources/collectibles`: 33 reusable `.tres` collectible definitions.
 - `resources/ships`: Interceptor, Skirmisher and Guardian `.tres` definitions.
 
-Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation, but multiplayer authority, replication and reconciliation are not implemented.
+Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation. The online server simulates all ships; clients present snapshots. Prediction and lag compensation are future work.
 
 ## Automated checks actually run
 
 - Godot headless editor import and main-menu startup.
 - `tests/smoke_test.gd`: **38 checks passed**, including spawning, switching, abilities, commands, damage, regeneration, laser/missile impacts, momentum, boost, zone escalation, destruction, victory/defeat, timeout and menu cleanup.
 - `tests/progression_test.gd`: **48 checks passed**, including catalog integrity, research costs, fitting ownership, wrong-slot/class rejection, crew transfers, Resource isolation, duplicate rewards, save/reload, backup recovery, malformed-save repair, future-version preservation, real hangar callbacks, rare appearance geometry and match reward integration.
+- `tests/exploration_test.gd`: **16 checks passed**, including sector spawning, scans, repeat-reward rejection, patrol rewards, warp, hull unlocks, Bomber/Support abilities, discovery persistence, save migration and online UI creation.
+- `tests/online_presentation_test.gd`: **11 checks passed** for replicated health, boost, locking, cooldowns, destruction, zone/timer, projectile cleanup, control transfer and correct team-two victory/defeat messages.
+- `tests/test_service.py`: **14 Python tests passed** for authentication, single-use tickets, fitting/research rules, listing/offer escrow, simultaneous purchase rejection, public profile privacy and idempotent authoritative rewards.
+- `tests/test_network_integration.py`: real dedicated-server runs with **two and six Godot clients**, testing authentication, ready lobbies, server-owned movement, switching/ownership, result delivery, protected reward endpoints and persisted rewards. HTTP checks also cover actual service routes for registration, profiles, fittings, offers and trade settlement.
+- `tests/test_launcher.py`: a fresh project copy imported and started both self-hosted services, generated its private key, responded to readiness checks and shut down cleanly.
 - `tests/ai_battle_test.gd`: an autonomous six-ship battle completed with a Vanguard victory at **235 simulated seconds**, dealing **3644.3 total damage**.
 
 Run from the project directory:
@@ -120,11 +145,15 @@ Run from the project directory:
 godot --headless --editor --import --path . --quit
 godot --headless --path . --script res://tests/smoke_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/progression_test.gd --fixed-fps 60
+godot --headless --path . --script res://tests/exploration_test.gd --fixed-fps 60
+godot --headless --path . --script res://tests/online_presentation_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/ai_battle_test.gd --fixed-fps 60
+python -m unittest discover -s tests -p test_service.py -v
+python tests/test_network_integration.py
 ```
 
 If your sandbox does not allow Godot to write its user directories, set `XDG_DATA_HOME`, `XDG_CACHE_HOME`, and `XDG_CONFIG_HOME` to writable directories for those commands.
 
 ## Current limits
 
-This is a prototype with placeholder meshes, simple AI and no audio. A graphical, interactive playtest was not completed in the development environment; camera feel, visual readability, balance and obstacle behavior require manual testing. Collision avoidance is heuristic rather than path planning. Collection and customization now work locally. Galactic exploration, trading, public online profiles and multiplayer remain future milestones. The new hangar and portraits were checked through headless UI integration tests; a rendered interactive playtest of this expansion has not been completed.
+This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The new modes were validated headlessly; rendered interactive playtests of this expansion and real Internet/VPS deployment have not been completed. The online server handles one arena per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.

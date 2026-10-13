@@ -13,6 +13,9 @@ var finished := false
 var winner := -1
 var end_reason := ""
 var hud: BattleHUD
+var network_role := "offline"
+var preconfigured_stats: Array[ShipStats] = []
+var max_duration := 480.0
 var profile: PlayerProfile
 var rewards: Array[Dictionary] = []
 var reward_summary := ""
@@ -41,6 +44,8 @@ func _ready() -> void:
    if team_index == 0 and profile != null:
     var crew := CollectionCatalog.find(str(profile.loadouts[slot].crew))
     ship.crew_name = crew.display_name if crew != null else "Unassigned"
+   if preconfigured_stats.size() == 6:
+    ship.stats = preconfigured_stats[team_index * 3 + slot]
    ship.team = team_index
    ship.fleet_slot = slot
    ship.callsign = ("Vanguard" if team_index == 0 else "Ravager") + " %d" % (slot + 1)
@@ -59,12 +64,37 @@ func _ready() -> void:
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)
- Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+ if network_role != "offline":
+  pilot.set_physics_process(false)
+  pilot.set_process_unhandled_input(false)
+  fleet.set_process_unhandled_input(false)
+  for ship in ships:
+   ship.player_controlled = false
+  if network_role == "client":
+   set_physics_process(false)
+   for ship in ships:
+    ship.set_physics_process(false)
+    ship.collision_layer = 0
+    ship.collision_mask = 0
+ if network_role == "server":
+  hud.visible = false
+ else:
+  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _physics_process(delta: float) -> void:
  if finished:
   return
  elapsed += delta
+ update_auras()
+ zone.tick(delta, ships)
+ if elapsed >= max_duration:
+  var scores := [0.0, 0.0]
+  for ship in ships:
+   if ship.alive:
+    scores[ship.team] += ship.health.hull / ship.health.max_hull + ship.health.shield / ship.health.max_shield
+  finish(0 if scores[0] > scores[1] else (1 if scores[1] > scores[0] else -1), "Time limit · surviving hull and shields decide")
+
+func update_auras() -> void:
  # Reset and aggregate Guardian auras once per simulation tick.
  for ship in ships:
   ship.health.protection = 1.0
@@ -73,13 +103,6 @@ func _physics_process(delta: float) -> void:
    for friend in ships:
     if friend.alive and friend.team == guardian.team and friend.global_position.distance_to(guardian.global_position) < 90.0:
      friend.health.protection = 0.45
- zone.tick(delta, ships)
- if elapsed >= 480.0:
-  var scores := [0.0, 0.0]
-  for ship in ships:
-   if ship.alive:
-    scores[ship.team] += ship.health.hull / ship.health.max_hull + ship.health.shield / ship.health.max_shield
-  finish(0 if scores[0] > scores[1] else (1 if scores[1] > scores[0] else -1), "Time limit · surviving hull and shields decide")
 
 func _on_eliminated(_ship: CombatShip, _attacker: CombatShip) -> void:
  if finished:
@@ -120,4 +143,8 @@ func finish(team: int, reason: String) -> void:
   rewards = profile.settle_battle(battle_id, winner, kills, damage)
   reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, rewards.size()]
  ended.emit(team, reason)
- hud.show_results()
+ if network_role != "server":
+  hud.show_results()
+
+func local_team() -> int:
+ return pilot.ship.team if is_instance_valid(pilot.ship) else 0

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "ship_support"
+display_name = "Wayfarer Support"
+description = "Support hull. R repairs nearby allied hulls for five seconds."
+kind = "ship"
+rarity = "rare"
+slot = "ship"
+species = ""
+ship_class = "Support"
+modifiers = {}
+color = Color(0.9, 0.6, 0.3, 1)
+visual_style = "support"
+research_cost = 300

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SectorDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/exploration/sector_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "auralith"
+display_name = "Auralith Drift"
+description = "Ancient ion currents reveal relics and a new support hull."
+color = Color(0.2, 0.9, 0.8, 1)
+rewards = PackedStringArray("crew_orith", "ship_support", "crew_iola")
+encounter_reward = "engine_vector"
+enemy_count = 2

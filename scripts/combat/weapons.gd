@@ -33,7 +33,7 @@ func fire(missile: bool = false) -> bool:
  if overcharge:
   spec.damage *= 1.65
  if missile:
-  missile_remaining = spec.cooldown
+  missile_remaining = spec.cooldown * (0.3 if ship.stats.ability == "barrage" and ship.ability_remaining > 0.0 else 1.0)
  else:
   laser_remaining = spec.cooldown * (0.65 if overcharge else 1.0)
  var projectile := SpaceProjectile.new()
@@ -52,6 +52,8 @@ func fire(missile: bool = false) -> bool:
    projectile.direction = aim
  ship.get_parent().add_child(projectile)
  projectile.global_position = ship.global_position - ship.global_basis.z * 5.0
+ if ship.player_controlled:
+  SpaceAudio.play("missile" if missile else "laser")
  ship.shots += 1
  ship.muzzle_flash = 0.07
  return true

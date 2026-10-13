@@ -1,10 +1,13 @@
 extends Node
 
+var online_api: OnlineAPI
+var network: OnlineSession
 var menu: CanvasLayer
 var battle: BattleMatch
 var sensitivity := 0.0025
 var inverted := false
 var fullscreen := false
+var volume := 0.6
 var settings: ConfigFile = ConfigFile.new()
 var profile: PlayerProfile
 # Tests can redirect progression away from the real player's profile.
@@ -12,31 +15,54 @@ var profile_path := "user://commander_profile.json"
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ online_api = OnlineAPI.new()
+ online_api.name = "OnlineAPI"
+ add_child(online_api)
+ network = OnlineSession.new()
+ network.name = "Network"
+ add_child(network)
+ var arguments := OS.get_cmdline_user_args()
+ if "--server" in arguments:
+  var port := 7777
+  if "--port" in arguments:
+   port = int(arguments[arguments.find("--port") + 1])
+  if "--match-seconds" in arguments:
+   network.max_seconds = clampf(float(arguments[arguments.find("--match-seconds") + 1]), 1, 480)
+  var error := network.start_server(port)
+  if error != OK:
+   get_tree().quit(1)
+  return
+ var audio := SpaceAudio.new()
+ audio.name = "Audio"
+ add_child(audio)
  profile = PlayerProfile.new(profile_path)
  profile.load_profile()
  settings.load("user://settings.cfg")
  sensitivity = settings.get_value("controls", "sensitivity", 0.0025)
  inverted = settings.get_value("controls", "invert_y", false)
  fullscreen = settings.get_value("display", "fullscreen", false)
+ volume = settings.get_value("audio", "volume", 0.6)
+ AudioServer.set_bus_volume_db(0, linear_to_db(volume))
  _apply_display()
  show_menu()
 
 func _unhandled_input(event: InputEvent) -> void:
  if event.is_action_pressed("pause") and is_instance_valid(battle) and not battle.finished:
-  if get_tree().paused:
+  if get_tree().paused or (battle.network_role != "offline" and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE):
    resume()
   else:
-   get_tree().paused = true
+   get_tree().paused = battle.network_role == "offline"
    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
    show_menu(true)
   get_viewport().set_input_as_handled()
 
 func start_battle() -> void:
+ network.disconnect_session()
  get_tree().paused = false
  if is_instance_valid(menu):
   menu.queue_free()
  if is_instance_valid(battle):
-  remove_child(battle)
+  battle.get_parent().remove_child(battle)
   battle.queue_free()
  battle = BattleMatch.new()
  battle.profile = profile
@@ -51,9 +77,10 @@ func resume() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func return_to_menu() -> void:
+ network.disconnect_session()
  get_tree().paused = false
  if is_instance_valid(battle):
-  remove_child(battle)
+  battle.get_parent().remove_child(battle)
   battle.queue_free()
  battle = null
  show_menu()
@@ -76,7 +103,7 @@ func show_menu(paused: bool = false) -> void:
  center.add_child(row)
  var column := VBoxContainer.new()
  column.custom_minimum_size = Vector2(400, 0)
- column.add_theme_constant_override("separation", 16)
+ column.add_theme_constant_override("separation", 10)
  row.add_child(column)
  var eyebrow := Label.new()
  eyebrow.text = "G D   /   FLIGHT PROGRAM 01"
@@ -94,6 +121,8 @@ Three ships. One command. Hold the stars."
  column.add_child(subtitle)
  _button(column, "RESUME FLIGHT" if paused else "PLAY  /  DEPLOY FLEET", resume if paused else start_battle)
  if not paused:
+  _button(column, "GALACTIC EXPLORATION", func(): start_exploration(0))
+  _button(column, "ONLINE / LOBBY / MARKETPLACE", show_online)
   _button(column, "FLEET HANGAR / COLLECTION", show_hangar)
   var progress := Label.new()
   progress.text = "%s · %d / %d discoveries · %d salvage" % [profile.commander_name, profile.owned_count(), CollectionCatalog.DEFINITIONS.size(), profile.salvage]
@@ -138,6 +167,7 @@ func _button(parent: Control, text: String, callback: Callable) -> void:
  var button := Button.new()
  button.text = text
  button.custom_minimum_size = Vector2(320, 44)
+ button.pressed.connect(func(): SpaceAudio.play("click"))
  button.pressed.connect(callback)
  parent.add_child(button)
 
@@ -190,9 +220,23 @@ func show_settings(paused: bool) -> void:
   _apply_display()
   _save_settings())
  column.add_child(full)
+ var volume_label := Label.new()
+ volume_label.text = "MASTER VOLUME"
+ column.add_child(volume_label)
+ var volume_slider := HSlider.new()
+ volume_slider.min_value = 0
+ volume_slider.max_value = 1
+ volume_slider.step = 0.05
+ volume_slider.value = volume
+ volume_slider.value_changed.connect(func(v):
+  volume = v
+  AudioServer.set_bus_volume_db(0, linear_to_db(maxf(0.0001, volume)))
+  _save_settings())
+ column.add_child(volume_slider)
  _button(column, "BACK", func(): show_menu(paused))
 
 func _save_settings() -> void:
+ settings.set_value("audio", "volume", volume)
  settings.set_value("controls", "sensitivity", sensitivity)
  settings.set_value("controls", "invert_y", inverted)
  settings.set_value("display", "fullscreen", fullscreen)
@@ -216,3 +260,32 @@ func show_hangar() -> void:
  hangar.back_requested.connect(show_menu)
  hangar.deploy_requested.connect(start_battle)
  menu.add_child(hangar)
+
+func start_exploration(index: int) -> void:
+ get_tree().paused = false
+ if is_instance_valid(menu):
+  menu.queue_free()
+ if is_instance_valid(battle):
+  battle.get_parent().remove_child(battle)
+  battle.queue_free()
+ var exploration := ExplorationMatch.new()
+ exploration.profile = profile
+ exploration.sector_index = clampi(index, 0, ExplorationMatch.SECTORS.size() - 1)
+ exploration.warp_requested.connect(start_exploration)
+ battle = exploration
+ add_child(battle)
+ battle.pilot.sensitivity = sensitivity
+ battle.pilot.inverted = inverted
+
+func show_online() -> void:
+ if is_instance_valid(menu):
+  remove_child(menu)
+  menu.queue_free()
+ menu = CanvasLayer.new()
+ menu.layer = 10
+ add_child(menu)
+ var hub := OnlineHub.new()
+ hub.api = online_api
+ hub.session = network
+ hub.back_requested.connect(show_menu)
+ menu.add_child(hub)

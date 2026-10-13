@@ -35,9 +35,14 @@ func show_results() -> void:
  column.add_theme_constant_override("separation", 14)
  panel.add_child(column)
  var title := Label.new()
- title.text = "VICTORY  /  VANGUARD" if battle.winner == 0 else ("DEFEAT  /  RAVAGERS WIN" if battle.winner == 1 else "DRAW")
+ if battle.winner == -1:
+  title.text = "DRAW"
+ elif battle.winner == battle.local_team():
+  title.text = "VICTORY  /  TEAM %d" % (battle.winner + 1) if battle.network_role == "client" else "VICTORY  /  VANGUARD"
+ else:
+  title.text = "DEFEAT  /  TEAM %d WINS" % (battle.winner + 1) if battle.network_role == "client" else "DEFEAT  /  RAVAGERS WIN"
  title.add_theme_font_size_override("font_size", 32)
- title.add_theme_color_override("font_color", Color(0.3, 0.85, 1) if battle.winner == 0 else Color(1, 0.5, 0.3))
+ title.add_theme_color_override("font_color", Color(0.3, 0.85, 1) if battle.winner == battle.local_team() else Color(1, 0.5, 0.3))
  column.add_child(title)
  var detail := Label.new()
  detail.text = "%s

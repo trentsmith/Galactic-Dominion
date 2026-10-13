@@ -36,11 +36,12 @@ func _draw() -> void:
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
  text(Vector2(42, 72), "FLEET ROYALE  /  VANGUARD", MUTED, 13)
- text(Vector2(42, 93), "ALLIES  %d / 3     HOSTILES  %d / 3" % [battle.living(0), battle.living(1)], Color.WHITE, 15)
+ text(Vector2(42, 93), "ALLIES  %d / 3     HOSTILES  %d / 3" % [battle.living(battle.local_team()), battle.living(1 - battle.local_team())], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
+ var exploring := battle is ExplorationMatch
  var remaining := maxi(0, 480 - int(battle.elapsed))
- text(Vector2(width / 2 - 104, 48), "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
- text(Vector2(width / 2 - 98, 70), "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
+ text(Vector2(width / 2 - 104, 48), "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
+ text(Vector2(width / 2 - 98, 70), "FREE FLIGHT / G SCAN / M MAP" if exploring else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
  panel(Rect2(Vector2(24, height - 200), Vector2(320, 176)))
  text(Vector2(42, height - 174), "%s  /  %s" % [ship.callsign.to_upper(), ship.stats.class_name_text.to_upper()], CYAN, 16)
  bar(Vector2(42, height - 145), "HULL INTEGRITY", ship.health.hull, ship.health.max_hull, Color(0.6, 0.9, 0.65))
@@ -70,6 +71,16 @@ func _draw() -> void:
  draw_line(reticle + Vector2(10, 0), reticle + Vector2(24, 0), CYAN)
  draw_line(reticle - Vector2(0, 24), reticle - Vector2(0, 10), CYAN)
  draw_circle(reticle, 2, CYAN)
+ if exploring:
+  var exploration := battle as ExplorationMatch
+  for index in range(exploration.beacons.size()):
+   if exploration.profile.exploration_records.has(exploration._beacon_id(index)):
+    continue
+   var position := exploration.beacons[index].global_position
+   if not battle.camera.is_position_behind(position):
+    var screen := battle.camera.unproject_position(position)
+    draw_circle(screen, 12, Color(0.75, 0.4, 1), false, 2)
+    text(screen + Vector2(15, 0), "SIGNAL %dm" % int(ship.global_position.distance_to(position)), CYAN, 13)
  var target := ship.targeting.target
  for candidate in battle.ships:
   if candidate.alive and candidate != ship:
@@ -89,7 +100,7 @@ func _draw() -> void:
 
 func _draw_ship_marker(ship: CombatShip, selected: bool) -> void:
  var camera := battle.camera
- var color := RED if ship.team == 1 else CYAN
+ var color := RED if ship.team != battle.local_team() else CYAN
  var screen := camera.unproject_position(ship.global_position)
  var behind := camera.is_position_behind(ship.global_position)
  if behind or screen.x < 15 or screen.x > size.x - 15 or screen.y < 15 or screen.y > size.y - 15:
@@ -105,7 +116,7 @@ func _draw_ship_marker(ship: CombatShip, selected: bool) -> void:
   return
  var radius := 20.0 if selected else 8.0
  draw_rect(Rect2(screen - Vector2.ONE * radius, Vector2.ONE * radius * 2), color, false, 1.5)
- if ship.team == 1:
+ if ship.team != battle.local_team():
   draw_rect(Rect2(screen + Vector2(-25, -radius - 14), Vector2(50, 4)), Color(0.1, 0.1, 0.15))
   draw_rect(Rect2(screen + Vector2(-25, -radius - 14), Vector2(50 * ship.health.hull / ship.health.max_hull, 4)), RED)
   draw_rect(Rect2(screen + Vector2(-25, -radius - 20), Vector2(50 * ship.health.shield / ship.health.max_shield, 3)), CYAN)

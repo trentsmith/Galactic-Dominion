@@ -1,2 +1,9 @@
 .godot/
 *.tmp
+
+__pycache__/
+server-data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.key

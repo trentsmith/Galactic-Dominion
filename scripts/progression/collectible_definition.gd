@@ -4,7 +4,7 @@ extends Resource
 @export var id: String = ""
 @export var display_name: String = ""
 @export_multiline var description: String = ""
-@export_enum("component", "crew", "variant") var kind: String = "component"
+@export_enum("component", "crew", "variant", "ship") var kind: String = "component"
 @export_enum("common", "uncommon", "rare", "exotic", "mythic") var rarity: String = "common"
 @export var slot: String = ""
 @export var species: String = ""

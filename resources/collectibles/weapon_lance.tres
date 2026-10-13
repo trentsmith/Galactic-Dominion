@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "weapon_lance"
+display_name = "Lance Pulse"
+description = "Heavy laser pulse. Damage increases at the expense of rate of fire."
+kind = "component"
+rarity = "rare"
+slot = "weapon"
+species = ""
+ship_class = ""
+modifiers = {"laser_damage": 1.4, "laser_cooldown": 1.35}
+color = Color(0.9, 0.6, 0.3, 1)
+visual_style = "focus"
+research_cost = 190
