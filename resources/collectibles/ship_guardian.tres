@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "ship_guardian"
+display_name = "Guardian Victory Hull"
+description = "Shield tank. R protects nearby teammates with a defensive aura. Permanent victory reward; each copy can be traded online."
+kind = "ship"
+rarity = "rare"
+slot = "ship"
+ship_class = "Guardian"

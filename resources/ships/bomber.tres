@@ -3,14 +3,14 @@
 [resource]
 script = ExtResource("1")
 class_name_text = "Bomber"
-hull = 165.0
-shield = 130.0
+hull = 90.0
+shield = 65.0
 speed = 48.0
 acceleration = 60.0
 turn_speed = 1.7
-laser_damage = 14.0
+laser_damage = 23.0
 laser_cooldown = 0.38
-missile_damage = 95.0
+missile_damage = 145.0
 missile_cooldown = 5
 ability = "barrage"
 color = Color(0.4, 0.85, 0.6, 1)

@@ -3,12 +3,13 @@
 [resource]
 script = ExtResource("1")
 class_name_text = "Interceptor"
-hull = 95.0
-shield = 85.0
+hull = 50.0
+shield = 40.0
 speed = 90.0
 acceleration = 110.0
 turn_speed = 2.7
-laser_damage = 12.0
+laser_damage = 20.0
 laser_cooldown = 0.17
 ability = "speed"
 color = Color(0.25, 0.85, 1, 1)
+missile_damage = 85.0

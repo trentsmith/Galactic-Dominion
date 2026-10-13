@@ -3,12 +3,13 @@
 [resource]
 script = ExtResource("1")
 class_name_text = "Skirmisher"
-hull = 140.0
-shield = 120.0
+hull = 75.0
+shield = 60.0
 speed = 65.0
 acceleration = 75.0
 turn_speed = 2.0
-laser_damage = 18.0
+laser_damage = 29.0
 laser_cooldown = 0.25
 ability = "overcharge"
 color = Color(0.4, 0.6, 1, 1)
+missile_damage = 85.0

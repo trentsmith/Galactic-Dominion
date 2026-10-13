@@ -82,14 +82,14 @@ func _peer_connected(id: int) -> void:
 
 func _connected() -> void:
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.3.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.4.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.3.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.4.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -513,7 +513,12 @@ func _server_finished(winner: int, reason: String) -> void:
   statistics.append({"kills": ship.kills, "damage": ship.damage_dealt, "shots": ship.shots, "hits": ship.hits})
  for id in members:
   if _connected_peer(id):
-   receive_result.rpc_id(id, winner, message, statistics)
+   var personal_message := message
+   var prizes: Dictionary = reply.get("data", {}).get("victory_ships", {})
+   var prize := CollectionCatalog.find(str(prizes.get(members[id].profile.user_id, "")))
+   if prize != null:
+    personal_message += "\nPERMANENT VICTORY SHIP: " + prize.display_name + " — available in Online Fleet / Marketplace"
+   receive_result.rpc_id(id, winner, personal_message, statistics)
 
 @rpc("authority", "call_remote", "reliable")
 func receive_result(winner: int, reason: String, statistics: Array) -> void:

@@ -141,7 +141,7 @@ func finish(team: int, reason: String) -> void:
    kills += ally.kills
    damage += ally.damage_dealt
   rewards = profile.settle_battle(battle_id, winner, kills, damage)
-  reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, rewards.size()]
+  reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, 2 if winner == 0 else 1]
  ended.emit(team, reason)
  if network_role != "server":
   hud.show_results()

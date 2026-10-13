@@ -2,6 +2,9 @@ class_name CollectionCatalog
 extends RefCounted
 
 const DEFINITIONS = [
+ preload("res://resources/collectibles/ship_interceptor.tres"),
+ preload("res://resources/collectibles/ship_skirmisher.tres"),
+ preload("res://resources/collectibles/ship_guardian.tres"),
  preload("res://resources/collectibles/engine_standard.tres"),
  preload("res://resources/collectibles/shield_standard.tres"),
  preload("res://resources/collectibles/weapon_standard.tres"),
@@ -54,19 +57,25 @@ static func for_slot(slot: String, ship_class: String = "") -> Array[Collectible
  return output
 
 static func roll(rng: RandomNumberGenerator) -> CollectibleDefinition:
- # Free battle salvage: per roll, not per item. Mythic appearances have no power bonus.
- var chance := rng.randf()
- var rarity := "common"
- if chance < 0.001:
-  rarity = "mythic"
- elif chance < 0.01:
-  rarity = "exotic"
- elif chance < 0.06:
-  rarity = "rare"
- elif chance < 0.30:
-  rarity = "uncommon"
+ var rarity := rarity_for_ticket(rng.randi_range(0, 16383))
  var pool: Array[CollectibleDefinition] = []
  for entry in DEFINITIONS:
   if entry.rarity == rarity:
    pool.append(entry)
  return pool[rng.randi_range(0, pool.size() - 1)]
+
+# Disjoint tickets: Mythic 1/16384, Legendary 4/16384 = 1/4096.
+static func rarity_for_ticket(ticket: int) -> String:
+ if ticket == 0:
+  return "mythic"
+ if ticket < 5:
+  return "legendary"
+ if ticket < 824:
+  return "rare"
+ if ticket < 4756:
+  return "uncommon"
+ return "common"
+
+static func victory_ship(rng: RandomNumberGenerator) -> String:
+ var classes := SHIP_TYPES.keys()
+ return "ship_" + str(classes[rng.randi_range(0, classes.size() - 1)])

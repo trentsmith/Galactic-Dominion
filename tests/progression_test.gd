@@ -41,7 +41,7 @@ func run() -> void:
   for key in entry.modifiers:
    if not key in CollectionCatalog.MODIFIABLE_STATS or float(entry.modifiers[key]) <= 0:
     catalog_valid = false
- check(catalog_valid and ids.size() == 33, "Catalog has 33 unique, valid Resource definitions")
+ check(catalog_valid and ids.size() == 36, "Catalog has 36 unique, valid Resource definitions")
  var path := new_path("roundtrip")
  var profile := PlayerProfile.new(path)
  profile.load_profile()
@@ -53,7 +53,7 @@ func run() -> void:
  check(not profile.research("engine_sprint") and profile.salvage == 20, "Research cannot charge for an already-owned schematic")
  check(profile.equip(0, "engine", "engine_sprint"), "Discovered component fits compatible slot")
  var stats := profile.configured_stats(0)
- check(is_equal_approx(stats.speed, 103.5) and is_equal_approx(stats.hull, 89.3), "Engine trade-offs modify generated ship stats")
+ check(is_equal_approx(stats.speed, 103.5) and is_equal_approx(stats.hull, 47.0), "Engine trade-offs modify generated ship stats")
  check(stats.engine_style == "sprint", "Component visual metadata follows the selected fitting")
  check(is_equal_approx(CollectionCatalog.CLASS_STATS[0].speed, 90), "Loadout does not mutate shared class Resource")
  check(not profile.equip(0, "shield", "engine_sprint"), "Wrong-slot component is rejected")
@@ -62,7 +62,7 @@ func run() -> void:
  check(profile.equip(1, "crew", "") and profile.equip(0, "crew", "crew_milo"), "Crew transfers after unassignment")
  profile.acquire("crew_nyx")
  check(profile.equip(1, "crew", "crew_nyx"), "Discovered alien can pilot a ship")
- check(is_equal_approx(profile.configured_stats(1).shield_regen, 13.2), "Alien crew bonus reaches ship statistics")
+ check(is_equal_approx(profile.configured_stats(1).shield_regen, 6.6), "Alien crew bonus reaches ship statistics")
  profile.acquire("variant_void")
  check(not profile.equip(1, "variant", "variant_void"), "Variant cannot fit the wrong ship class")
  check(profile.equip(0, "variant", "variant_void"), "Rare ship appearance fits its class")
@@ -80,15 +80,20 @@ func run() -> void:
  check(int(restored.inventory.crew_nyx.discovered_at) > 0, "Discovery records contain timestamps")
  before = restored.salvage
  var rolls := restored.settle_battle("match-a", 0, 3, 400)
- check(rolls.size() == 2 and restored.battles == 1 and restored.wins == 1 and restored.salvage >= before + 60, "Victory pays salvage and two discovery rolls")
+ check(rolls.size() == 3 and restored.battles == 1 and restored.wins == 1 and restored.salvage >= before + 60, "Victory pays salvage and a permanent ship and two discovery rolls")
  check(restored.settle_battle("match-a", 0, 3, 400).is_empty() and restored.battles == 1, "Same match cannot pay rewards twice")
  check(restored.settle_battle("match-b", 1, 0, 10).size() == 1 and restored.battles == 2, "Defeat still grants a discovery roll")
  var rng := RandomNumberGenerator.new()
  rng.seed = 88371
- var counts := {"common": 0, "uncommon": 0, "rare": 0, "exotic": 0, "mythic": 0}
+ var counts := {"common": 0, "uncommon": 0, "rare": 0, "legendary": 0, "mythic": 0}
  for index in range(100000):
   counts[CollectionCatalog.roll(rng).rarity] += 1
- check(counts.mythic > 50 and counts.mythic < 160 and counts.exotic > 700 and counts.exotic < 1100, "Seeded rarity sampler exercises 0.1% mythic and 0.9% exotic drops")
+ check(counts.mythic > 0 and counts.mythic < 20 and counts.legendary > 5 and counts.legendary < 60, "Seeded sampler exercises shiny-style Legendary and Mythic odds")
+ check(CollectionCatalog.rarity_for_ticket(0) == "mythic" and CollectionCatalog.rarity_for_ticket(1) == "legendary" and CollectionCatalog.rarity_for_ticket(4) == "legendary" and CollectionCatalog.rarity_for_ticket(5) == "rare", "Exact rarity boundaries keep Mythic and Legendary tiers disjoint")
+ check(str(rolls[0].id).begins_with("ship_") and restored.owns(rolls[0].id), "Victory guarantees permanent hull ownership")
+ var prize_reload := PlayerProfile.new(path)
+ prize_reload.load_profile()
+ check(prize_reload.owns(rolls[0].id), "Victory hull survives restart")
  print("RARITY SAMPLE: ", counts)
  # Save twice to create a known-good backup, corrupt primary, then recover it.
  restored.save_profile()
@@ -138,7 +143,7 @@ func run() -> void:
  main.show_hangar()
  await frames()
  var hangar: HangarScreen = main.menu.get_child(0)
- check(hangar.inventory_list.item_count == 33 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
+ check(hangar.inventory_list.item_count == 36 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
  check(get_nodes_in_group("ships").is_empty(), "Preview ships do not enter the combat target group")
  for index in range(3):
   hangar.selected_ship = index
@@ -175,7 +180,7 @@ func run() -> void:
  check(ship_meshes > 6, "Rare ship variant adds visible geometry")
  var previous_battles: int = main.profile.battles
  battle.finish(0, "Progression integration check")
- check(main.profile.battles == previous_battles + 1 and battle.rewards.size() == 2, "Match completion connects to persistent rewards")
+ check(main.profile.battles == previous_battles + 1 and battle.rewards.size() == 3, "Match completion connects to persistent rewards")
  battle.finish(0, "Duplicate finish")
  check(main.profile.battles == previous_battles + 1, "Repeated finish cannot duplicate persistent reward")
  # Emulate the results screen's Review Discoveries button.

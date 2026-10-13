@@ -315,10 +315,10 @@ RECOVERED  /  " + str(discovery.count) + " times", 13, MUTED))
  stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  detail_column.add_child(stats)
  var odds := _label("FREE BATTLE DISCOVERIES
-Victory: 2 rolls +60 salvage. Defeat/draw: 1 roll +30.
+Victory: permanent ship +2 rolls +60 salvage. Defeat/draw: 1 roll +30.
 Duplicate discoveries yield +15 salvage.
-Per roll: Common 70% · Uncommon 24% · Rare 5%
-Exotic appearance 0.9% · Mythic appearance 0.1%
+Per roll: Common ~71% · Uncommon ~24% · Rare ~5%
+Legendary appearance 1/4,096 · Mythic appearance 1/16,384
 Each tier selects uniformly among its entries.
 Rare appearances do not improve combat power.", 12, MUTED)
  odds.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

@@ -4,8 +4,9 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'server'))
-from service import Store, ServiceError, ITEMS
+from service import Store, ServiceError, ITEMS, rarity_for_ticket
 
 class AccountMarketTests(unittest.TestCase):
     def setUp(self):
@@ -101,6 +102,32 @@ class AccountMarketTests(unittest.TestCase):
         self.assertTrue(self.store.finish_match('match-a',0,{})['already_settled'])
         self.assertEqual(self.store.me(self.a)['battles'],1)
         self.store.equip(self.a,0,'engine','engine_sprint')
+    def test_victory_ship_is_permanent_and_tradable(self):
+        with patch('service.secrets.choice', side_effect=lambda pool: pool[0]), patch('service.secrets.randbelow', return_value=5000):
+            for mid in ['prize-one', 'prize-two']:
+                self.store.start_match(mid,[{'user_id':self.a,'team':0},{'user_id':self.b,'team':1}])
+                self.store.finish_match(mid,0,{})
+        self.assertEqual(self.store.me(self.a)['inventory']['ship_interceptor']['count'],2)
+        self.assertFalse(any(k.startswith('ship_') for k in self.store.me(self.b)['inventory']))
+        before=self.store.me(self.a)
+        self.store.finish_match('prize-two',0,{})
+        self.assertEqual(self.store.me(self.a),before)
+        reopened=Store(self.store.path,'test-only-key')
+        self.assertEqual(reopened.me(self.a)['inventory']['ship_interceptor']['count'],2)
+        for _ in range(2):
+            lid=self.store.list_item(self.a,'ship_interceptor',10)['listing_id']
+            self.store.buy(self.b,lid)
+        self.assertNotIn('ship_interceptor',self.store.me(self.a)['inventory'])
+        self.assertEqual(self.store.me(self.b)['inventory']['ship_interceptor']['count'],2)
+        self.store.equip(self.b,0,None,None,hull='interceptor')
+    def test_exact_rarity_distribution_matches_client(self):
+        counts={tier:0 for tier in ['mythic','legendary','rare','uncommon','common']}
+        for ticket in range(16384): counts[rarity_for_ticket(ticket)]+=1
+        self.assertEqual(counts,dict(mythic=1,legendary=4,rare=819,uncommon=3932,common=11628))
+        source=(Path(__file__).resolve().parents[1]/'scripts/progression/collection_catalog.gd').read_text()
+        for boundary in ['ticket == 0','ticket < 5','ticket < 824','ticket < 4756']:
+            self.assertIn(boundary,source)
+        self.assertTrue(all(x['research_cost']==0 for x in ITEMS.values() if x['rarity'] in ['legendary','mythic']))
     def test_public_profile_excludes_secrets(self):
         p=self.store.public('Pilot_A')
         self.assertNotIn('password_hash',p); self.assertNotIn('token',p); self.assertNotIn('user_id',p)

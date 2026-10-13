@@ -102,7 +102,7 @@
     "id": "crew_nyx_prism",
     "display_name": "Nyx \u00b7 Prismborn",
     "kind": "crew",
-    "rarity": "exotic",
+    "rarity": "legendary",
     "slot": "crew"
   },
   {
@@ -260,6 +260,42 @@
   },
   {
     "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Guardian",
+    "modifiers": {},
+    "id": "ship_guardian",
+    "display_name": "Guardian Victory Hull",
+    "kind": "ship",
+    "rarity": "rare",
+    "slot": "ship"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Interceptor",
+    "modifiers": {},
+    "id": "ship_interceptor",
+    "display_name": "Interceptor Victory Hull",
+    "kind": "ship",
+    "rarity": "rare",
+    "slot": "ship"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "Skirmisher",
+    "modifiers": {},
+    "id": "ship_skirmisher",
+    "display_name": "Skirmisher Victory Hull",
+    "kind": "ship",
+    "rarity": "rare",
+    "slot": "ship"
+  },
+  {
+    "starter": false,
     "research_cost": 300,
     "species": "",
     "ship_class": "Support",
@@ -321,7 +357,7 @@
     "id": "variant_aurora",
     "display_name": "Aurora Skirmisher",
     "kind": "variant",
-    "rarity": "exotic",
+    "rarity": "legendary",
     "slot": "variant"
   },
   {
@@ -333,7 +369,7 @@
     "id": "variant_bomber",
     "display_name": "Ember Bomber",
     "kind": "variant",
-    "rarity": "exotic",
+    "rarity": "legendary",
     "slot": "variant"
   },
   {
@@ -345,7 +381,7 @@
     "id": "variant_celestial",
     "display_name": "Celestial Guardian",
     "kind": "variant",
-    "rarity": "exotic",
+    "rarity": "legendary",
     "slot": "variant"
   },
   {

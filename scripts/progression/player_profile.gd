@@ -249,6 +249,8 @@ func settle_battle(battle_id: String, winner: int, kills: int, damage: float) ->
  total_kills += maxi(0, kills)
  total_damage += maxf(0.0, damage)
  var rewards: Array[Dictionary] = []
+ if winner == 0:
+  rewards.append(acquire(CollectionCatalog.victory_ship(_rng), "Victory ship — permanent ownership"))
  for index in range(2 if winner == 0 else 1):
   rewards.append(acquire(CollectionCatalog.roll(_rng).id))
  save_profile()

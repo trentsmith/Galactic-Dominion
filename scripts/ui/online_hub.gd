@@ -134,7 +134,7 @@ One arena per server instance. All connected pilots must be ready.", 16)
  market_tab.name = "Marketplace"
  market_tab.add_theme_constant_override("separation", 10)
  tabs.add_child(market_tab)
- market_tab.add_child(label("Trades use online salvage. Listed items and offer funds are held in escrow.", 14))
+ market_tab.add_child(label("Every online win grants a permanent random hull. Trade copies here using salvage; items and offer funds are held in escrow.", 14))
  button(market_tab, "REFRESH LISTINGS & OFFERS", _refresh_market)
  market = ItemList.new()
  market.size_flags_vertical = Control.SIZE_EXPAND_FILL

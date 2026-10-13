@@ -3,14 +3,14 @@
 [resource]
 script = ExtResource("1")
 class_name_text = "Support"
-hull = 180.0
-shield = 180.0
+hull = 95.0
+shield = 90.0
 speed = 54.0
 acceleration = 60.0
 turn_speed = 1.7
-laser_damage = 13.0
+laser_damage = 21.0
 laser_cooldown = 0.28
-missile_damage = 45.0
+missile_damage = 70.0
 missile_cooldown = 3.5
 ability = "repair"
 color = Color(0.4, 0.85, 0.6, 1)

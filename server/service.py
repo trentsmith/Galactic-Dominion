@@ -20,6 +20,9 @@ DEFAULT_CLASSES = ['interceptor', 'skirmisher', 'guardian']
 CLASS_NAMES = dict(zip(DEFAULT_CLASSES + ['bomber', 'support'], ['Interceptor', 'Skirmisher', 'Guardian', 'Bomber', 'Support']))
 SLOTS = ['engine', 'shield', 'weapon', 'utility', 'crew', 'variant']
 
+def rarity_for_ticket(ticket):
+    return "mythic" if ticket == 0 else "legendary" if ticket < 5 else "rare" if ticket < 824 else "uncommon" if ticket < 4756 else "common"
+
 class ServiceError(Exception):
     def __init__(self, message, status=400):
         self.message, self.status = message, status
@@ -162,7 +165,7 @@ class Store:
         entry = p['inventory'].get(item)
         if not entry: raise ServiceError('Item not owned')
         if entry['count'] == 1:
-            if any(item in fit.values() for fit in p['loadouts']) or any('ship_' + hull == item for hull in p['ship_classes']): raise ServiceError('Unequip this item before listing')
+            if any(item in fit.values() for fit in p['loadouts']) or any(hull not in DEFAULT_CLASSES and 'ship_' + hull == item for hull in p['ship_classes']): raise ServiceError('Unequip this item before listing')
             del p['inventory'][item]
         else: entry['count'] -= 1
     def listings(self, uid):
@@ -257,6 +260,7 @@ class Store:
         return {'started': mid, 'profiles': profiles}
     def finish_match(self, mid, winner, metrics):
         if winner not in [-1,0,1] or not isinstance(metrics, dict): raise ServiceError('Invalid results')
+        prizes = {}
         with self.transaction() as db:
             match = db.execute('SELECT * FROM matches WHERE id=?', (mid,)).fetchone()
             if not match: raise ServiceError('Unknown match', 404)
@@ -267,15 +271,17 @@ class Store:
                 record = metrics.get(uid, {})
                 p['total_kills'] += max(0, min(1000, int(record.get('kills', 0))))
                 p['total_damage'] += max(0, min(1000000, float(record.get('damage', 0))))
+                if won:
+                    prizes[uid] = "ship_" + secrets.choice(list(CLASS_NAMES))
+                    self._grant(p, prizes[uid], "Victory ship — permanent ownership")
                 for _ in range(2 if won else 1):
-                    roll = secrets.randbelow(100000)
-                    tier = 'mythic' if roll < 100 else 'exotic' if roll < 1000 else 'rare' if roll < 6000 else 'uncommon' if roll < 30000 else 'common'
+                    tier = rarity_for_ticket(secrets.randbelow(16384))
                     item = secrets.choice([x for x in CATALOG if x['rarity'] == tier])['id']
                     duplicate = item in p['inventory']; self._grant(p, item, 'Authoritative online battle')
                     if duplicate: p['salvage'] += 15
                 self._save(db, uid, p); db.execute('UPDATE users SET locked_until=0 WHERE id=?', (uid,))
             db.execute("UPDATE matches SET status='settled' WHERE id=?", (mid,))
-        return {'settled': mid}
+        return {'settled': mid, 'victory_ships': prizes}
 
 class Handler(BaseHTTPRequestHandler):
     server_version = 'GalacticDominion/0.3'

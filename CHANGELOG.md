@@ -1,5 +1,13 @@
 # Changes
 
+## 0.4.0 — Fast Combat & Victory Ships
+
+- Reduced hull/shields and regeneration; increased laser/missile damage across all five distinct ship roles.
+- Added permanent random hull rewards for every local or online victory; duplicate hull copies remain owned and online copies can be traded.
+- Added Interceptor, Skirmisher and Guardian reward hull Resources, bringing the catalog to 36 entries.
+- Renamed Exotic appearances to Legendary; Legendary odds are 1/4,096 and Mythic odds are 1/16,384 per discovery roll. Existing owned items retain their IDs.
+- Verified save persistence, exact rarity boundaries, duplicate reward prevention and permanent hull marketplace transfers.
+
 ## 0.3.0 — Galaxy & Network
 
 - Added four Resource-defined exploration sectors, scan signals, patrol encounters, one-time discovery rewards, sector travel and a Galactic Records screen.
