@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_lyra"
+display_name = "Lyra Voss"
+description = "Human astronaut. Precision pilot with improved turning response."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Human"
+ship_class = ""
+modifiers = {"turn_speed": 1.08}
+color = Color(0.35, 0.8, 0.95, 1)
+visual_style = "human"
+starter = false
+research_cost = 100

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_nyx"
+display_name = "Nyx of Vesper"
+description = "Alien Vesperi navigator. Bioluminescent antennae sense shield fluctuations."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Vesperi"
+ship_class = ""
+modifiers = {"shield_regen": 1.1}
+color = Color(0.5, 0.35, 0.9, 1)
+visual_style = "vesperi"
+starter = false
+research_cost = 100

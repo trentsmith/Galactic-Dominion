@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_astra_solar"
+display_name = "Astra · Solar Eclipse"
+description = "Extremely rare astronaut variant. Gold visor, dark suit, and luminous halo. Cosmetic appearance only."
+kind = "crew"
+rarity = "mythic"
+slot = "crew"
+species = "Human"
+ship_class = ""
+modifiers = {}
+color = Color(1, 0.8, 0.35, 1)
+visual_style = "human_solar"
+starter = false
+research_cost = 0

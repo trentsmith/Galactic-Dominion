@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "shield_recovery"
+display_name = "Renewal Array"
+description = "Restores shields faster after damage, with lower maximum capacity."
+kind = "component"
+rarity = "rare"
+slot = "shield"
+species = ""
+ship_class = ""
+modifiers = {"shield_regen": 1.5, "shield": 0.9}
+color = Color(0.4, 1, 0.65, 1)
+visual_style = "renewal"
+starter = false
+research_cost = 180

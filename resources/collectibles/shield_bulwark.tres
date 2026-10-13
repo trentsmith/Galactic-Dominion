@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "shield_bulwark"
+display_name = "Bulwark Array"
+description = "Additional shield capacitors add mass."
+kind = "component"
+rarity = "uncommon"
+slot = "shield"
+species = ""
+ship_class = ""
+modifiers = {"shield": 1.25, "speed": 0.94}
+color = Color(0.2, 0.85, 1, 1)
+visual_style = "bulwark"
+starter = false
+research_cost = 80

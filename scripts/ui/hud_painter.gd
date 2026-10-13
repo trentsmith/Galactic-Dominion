@@ -45,7 +45,7 @@ func _draw() -> void:
  text(Vector2(42, height - 174), "%s  /  %s" % [ship.callsign.to_upper(), ship.stats.class_name_text.to_upper()], CYAN, 16)
  bar(Vector2(42, height - 145), "HULL INTEGRITY", ship.health.hull, ship.health.max_hull, Color(0.6, 0.9, 0.65))
  bar(Vector2(42, height - 108), "SHIELD ENERGY", ship.health.shield, ship.health.max_shield, CYAN)
- bar(Vector2(42, height - 71), "BOOST RESERVE", ship.movement.boost_energy, 100, Color(1, 0.7, 0.25))
+ bar(Vector2(42, height - 71), "BOOST RESERVE", ship.movement.boost_energy, ship.stats.boost_capacity, Color(1, 0.7, 0.25))
  text(Vector2(42, height - 36), "%d m/s  •  %s" % [int(ship.velocity.length()), "BOOST" if ship.movement.boost_requested else "CRUISE"], MUTED, 13)
  panel(Rect2(Vector2(width - 320, height - 200), Vector2(296, 176)))
  text(Vector2(width - 300, height - 171), "ARMAMENT", CYAN, 16)
@@ -60,6 +60,7 @@ func _draw() -> void:
   var y := 72.0 + ally.fleet_slot * 25.0
   var color := CYAN if ally == ship else MUTED
   text(Vector2(width - 300, y), "F%d  %s  %s" % [ally.fleet_slot + 1, ally.stats.class_name_text, "%d%%" % int(ally.health.hull / ally.health.max_hull * 100) if ally.alive else "LOST"], color, 14)
+ text(Vector2(42, 128), "PILOT  /  " + ship.crew_name.to_upper(), MUTED, 13)
  text(Vector2(width / 2 - 234, height - 30), "1 Follow   2 Attack   3 Defend   4 Regroup   5 Retreat", MUTED, 14)
  # Reticle remains centered on the ship's weapon axis (camera is offset upward).
  var weapon_point := ship.global_position - ship.global_basis.z * 500.0

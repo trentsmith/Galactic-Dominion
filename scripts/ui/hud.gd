@@ -50,6 +50,27 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
   stats.text += "%s (%s)   %d    %d    %d%%
 " % [ship.callsign, ship.stats.class_name_text, ship.kills, int(ship.damage_dealt), int(100.0 * ship.hits / maxf(1, ship.shots))]
  column.add_child(stats)
+ if battle.profile != null:
+  var loot := Label.new()
+  loot.text = "DISCOVERY SALVAGE  /  " + battle.reward_summary + "\n"
+  for reward in battle.rewards:
+   var definition := CollectionCatalog.find(str(reward.id))
+   loot.text += "%s · %s · %s\n" % [definition.rarity.to_upper(), definition.display_name, "NEW DISCOVERY" if reward.new else "Duplicate +15 salvage"]
+  loot.add_theme_color_override("font_color", Color(0.7, 0.85, 1))
+  column.add_child(loot)
+  if not battle.profile.save_error.is_empty():
+   var warning := Label.new()
+   warning.text = battle.profile.save_error
+   warning.add_theme_color_override("font_color", Color(1, 0.6, 0.25))
+   column.add_child(warning)
+  var hangar := Button.new()
+  hangar.text = "REVIEW DISCOVERIES / HANGAR"
+  hangar.custom_minimum_size.y = 42
+  hangar.pressed.connect(func():
+   var host := battle.get_parent()
+   host.return_to_menu()
+   host.show_hangar())
+  column.add_child(hangar)
  var replay := Button.new()
  replay.text = "DEPLOY AGAIN"
  replay.custom_minimum_size.y = 42

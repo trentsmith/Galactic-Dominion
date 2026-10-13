@@ -5,6 +5,7 @@ func _initialize() -> void:
 
 func run() -> void:
  var main: Node = load("res://scenes/main.tscn").instantiate()
+ main.profile_path = "user://test-ai_battle_test-" + str(Time.get_ticks_usec()) + ".json"
  root.add_child(main)
  await process_frame
  main.start_battle()

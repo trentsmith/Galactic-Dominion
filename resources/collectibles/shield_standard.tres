@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "shield_standard"
+display_name = "Barrier Matrix"
+description = "Fleet-standard shield generator."
+kind = "component"
+rarity = "common"
+slot = "shield"
+species = ""
+ship_class = ""
+modifiers = {}
+color = Color(0.25, 0.7, 1, 1)
+visual_style = "standard"
+starter = true
+research_cost = 0

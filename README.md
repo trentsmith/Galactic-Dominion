@@ -1,6 +1,6 @@
-# Galactic Dominion — Phase 1
+# Galactic Dominion — Phase 2: Hangar & Discovery
 
-A single-player Godot 4.x 3D Fleet Royale prototype using only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins, paid assets, or network access required.
+A single-player Godot 4.x 3D Fleet Royale game prototype with a persistent fleet hangar, collectible crew, interchangeable components and rare appearances. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins, paid assets, or network access required.
 
 ## Open and play
 
@@ -11,6 +11,47 @@ A single-player Godot 4.x 3D Fleet Royale prototype using only primitive meshes 
 5. Click **PLAY / DEPLOY FLEET**. The mouse is captured for steering; **Esc** pauses and releases it.
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
+
+
+## New in this build: Hangar & Discovery
+
+From the main menu open **FLEET HANGAR / COLLECTION**. Use the fleet buttons or F1–F3 to inspect your three ships, then select fittings from the dropdowns. The rotating 3D preview shows fitted hardware and ship variants. Your base Interceptor, Skirmisher and Guardian remain available permanently.
+
+Each ship has six slots: engine, shield, weapon, utility, crew and variant. The hangar displays the resulting hull, shields, regeneration, speed, turning, boost capacity, laser/missile output and ability recharge. Loadouts affect your next deployed battle. Component schematics can be fitted to multiple ships; a named crew member can serve aboard only one ship. To transfer a crew member, first set their current ship's crew to **Unassigned**.
+
+There are **25 catalog entries**:
+
+- 12 component schematics: four standard and eight alternative fittings, with bonuses and trade-offs.
+- 9 crew collectibles: five human astronaut appearances and four alien appearances from three species (Vesperi, Kharon and Auralith).
+- 4 ship liveries: the standard fleet livery and three class-specific rare variants.
+
+A new commander starts with four standard component schematics, three astronauts and the standard fleet livery: **8 discovered entries**. Open **Collection & Commander** to filter items, inspect portraits and bonuses, edit your commander name, review lifetime combat totals, or research undiscovered standard equipment and crew with salvage.
+
+Complete a battle to gain free discovery rolls and salvage. Victory gives **2 rolls and 60 salvage**; defeat or draw gives **1 roll and 30 salvage**. A duplicate adds **15 salvage** and increases that entry's recovery count. Abandoning a match grants no reward. Research provides a predictable route to non-cosmetic equipment and standard crew; appearance variants can only be discovered in battle salvage.
+
+Per-roll rarity chances: **Common 70%, Uncommon 24%, Rare 5%, Exotic 0.9%, Mythic 0.1%**. The selected tier picks uniformly among its entries. Exotic and Mythic items are appearance variants; variant crew have the same combat bonus as their standard counterpart. Rare ship variants add distinctive hull colors, fins, trim, rings or energy ribbons without a power bonus.
+
+## Local saving and updates
+
+Loadouts, inventory, discovery timestamps, commander name, salvage and battle statistics save automatically to `user://commander_profile.json`. On Windows this is normally:
+
+```text
+%APPDATA%\Godot\app_userdata\Galactic Dominion\commander_profile.json
+```
+
+Paste `%APPDATA%\Godot\app_userdata\Galactic Dominion` into File Explorer's address bar to find the folder. Settings remain in `settings.cfg`. There is no cloud synchronization or trading server.
+
+Updates use the same Godot application name, so extracting a new build to another folder retains your local profile. The save uses a versioned format, a temporary file for replacement, and a `.bak` copy of the previous save. Unreadable primary saves are preserved as `.corrupt-*` files before recovery; newer unsupported save versions are preserved with saving disabled. The menu and hangar display save failures rather than silently claiming success. This is a local prototype; saves are editable and not suitable as authoritative multiplayer inventory.
+
+## Test the new features
+
+1. Open Fleet Hangar and inspect each ship and all six slots.
+2. Open Collection & Commander; inspect the alien portraits and rare ship variants, including undiscovered entries.
+3. Finish a battle and check the reward list. Click **Review Discoveries / Hangar**.
+4. Spend salvage researching a component. Fit it, check the changed statistics and preview geometry, then deploy.
+5. Assign an unlocked alien to a ship. Unassign an existing crew member to transfer them between ships.
+6. Rename the commander. Quit and restart Godot; check that name, inventory, salvage and loadouts remain.
+7. If a rare ship appearance drops, fit it to its compatible class and inspect its appearance in the hangar and battle.
 
 ## Controls
 
@@ -59,7 +100,9 @@ The spherical zone starts at 600 metres, begins shrinking after 30 seconds, and 
 - `scripts/fleet`: control ownership, switching and command propagation.
 - `scripts/match`: spawning, ability aura aggregation, timer, team elimination and results.
 - `scripts/world`: deterministic arena, safe zone and transient combat effects.
-- `scripts/ui`: HUD, projected health/target markers and results.
+- `scripts/ui`: HUD, projected health/target markers, results, fleet hangar, 3D preview and primitive crew portraits.
+- `scripts/progression`: collectible definitions, catalog, fitting validation, stat composition, reward settlement and local profile persistence.
+- `resources/collectibles`: 25 reusable `.tres` collectible definitions.
 - `resources/ships`: Interceptor, Skirmisher and Guardian `.tres` definitions.
 
 Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation, but multiplayer authority, replication and reconciliation are not implemented.
@@ -68,6 +111,7 @@ Add a ship class by creating another `ShipStats` Resource; the movement and weap
 
 - Godot headless editor import and main-menu startup.
 - `tests/smoke_test.gd`: **38 checks passed**, including spawning, switching, abilities, commands, damage, regeneration, laser/missile impacts, momentum, boost, zone escalation, destruction, victory/defeat, timeout and menu cleanup.
+- `tests/progression_test.gd`: **48 checks passed**, including catalog integrity, research costs, fitting ownership, wrong-slot/class rejection, crew transfers, Resource isolation, duplicate rewards, save/reload, backup recovery, malformed-save repair, future-version preservation, real hangar callbacks, rare appearance geometry and match reward integration.
 - `tests/ai_battle_test.gd`: an autonomous six-ship battle completed with a Vanguard victory at **235 simulated seconds**, dealing **3644.3 total damage**.
 
 Run from the project directory:
@@ -75,6 +119,7 @@ Run from the project directory:
 ```sh
 godot --headless --editor --import --path . --quit
 godot --headless --path . --script res://tests/smoke_test.gd --fixed-fps 60
+godot --headless --path . --script res://tests/progression_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/ai_battle_test.gd --fixed-fps 60
 ```
 
@@ -82,4 +127,4 @@ If your sandbox does not allow Godot to write its user directories, set `XDG_DAT
 
 ## Current limits
 
-This is a prototype with placeholder meshes, simple AI and no audio. A graphical, interactive playtest was not completed in the development environment; camera feel, visual readability, balance and obstacle behavior require manual testing. Collision avoidance is heuristic rather than path planning. Collection, exploration, trading, public profiles and multiplayer are intentionally outside Phase 1.
+This is a prototype with placeholder meshes, simple AI and no audio. A graphical, interactive playtest was not completed in the development environment; camera feel, visual readability, balance and obstacle behavior require manual testing. Collision avoidance is heuristic rather than path planning. Collection and customization now work locally. Galactic exploration, trading, public online profiles and multiplayer remain future milestones. The new hangar and portraits were checked through headless UI integration tests; a rendered interactive playtest of this expansion has not been completed.

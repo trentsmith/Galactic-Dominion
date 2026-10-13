@@ -8,11 +8,13 @@ var max_shield := 120.0
 var hull := 140.0
 var shield := 120.0
 var regen_delay := 0.0
+var regen_rate := 12.0
 var protection := 1.0
 var damage_received := 0.0
 var dead := false
 
 func configure(stats: ShipStats) -> void:
+ regen_rate = stats.shield_regen
  max_hull = stats.hull
  max_shield = stats.shield
  hull = max_hull
@@ -21,7 +23,7 @@ func configure(stats: ShipStats) -> void:
 func tick(delta: float) -> void:
  regen_delay = maxf(0.0, regen_delay - delta)
  if regen_delay <= 0.0 and not dead:
-  shield = minf(max_shield, shield + 12.0 * delta)
+  shield = minf(max_shield, shield + regen_rate * delta)
 
 func damage(amount: float, attacker: CombatShip) -> void:
  if dead or amount <= 0.0:

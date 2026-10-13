@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "variant_aurora"
+display_name = "Aurora Skirmisher"
+description = "Rare Skirmisher variant with violet hull, luminous ribbons, and ion-blue trim."
+kind = "variant"
+rarity = "exotic"
+slot = "variant"
+species = ""
+ship_class = "Skirmisher"
+modifiers = {}
+color = Color(0.9, 0.35, 1, 1)
+visual_style = "aurora"
+starter = false
+research_cost = 0

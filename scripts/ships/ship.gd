@@ -24,6 +24,8 @@ var kills := 0
 var shots := 0
 var hits := 0
 var outside_time := 0.0
+var crew_name := "Unassigned"
+var hit_effect_remaining := 0.0
 
 func _ready() -> void:
  add_to_group("ships")
@@ -36,6 +38,7 @@ func _ready() -> void:
  add_child(collision)
  movement = ShipMovement.new()
  movement.ship = self
+ movement.boost_energy = stats.boost_capacity
  add_child(movement)
  health = ShipHealth.new()
  health.configure(stats)
@@ -83,6 +86,54 @@ func _build_visual() -> void:
  material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
  material.cull_mode = BaseMaterial3D.CULL_DISABLED
  shield_mesh.visible = false
+ _build_component_visuals()
+ _build_variant_visual(color)
+
+func _build_component_visuals() -> void:
+ if stats.engine_style != "standard":
+  for side in [-1.0, 1.0]:
+   var pod := CylinderMesh.new()
+   pod.top_radius = 0.45
+   pod.bottom_radius = 0.6
+   pod.height = 2.5
+   _mesh(pod, Vector3(side * 2.0, 0, 2.0), Color(0.3, 0.85, 0.7)).rotation.x = PI / 2.0
+ if stats.weapon_style != "standard":
+  for side in [-1.0, 1.0]:
+   var barrel := BoxMesh.new()
+   barrel.size = Vector3(0.4, 0.4, 2.6)
+   _mesh(barrel, Vector3(side * 2.5, 0, -1.0), Color(1, 0.6, 0.25))
+ if stats.shield_style != "standard":
+  var capacitor := SphereMesh.new()
+  capacitor.radius = 0.6
+  capacitor.height = 1.2
+  _mesh(capacitor, Vector3(0, 0.8, 1.2), Color(0.2, 0.85, 1), true)
+ if stats.utility_style != "standard":
+  var antenna := BoxMesh.new()
+  antenna.size = Vector3(0.15, 1.4, 0.15)
+  _mesh(antenna, Vector3(0, 1.1, 2.0), Color(0.9, 0.65, 1))
+
+func _build_variant_visual(color: Color) -> void:
+ if stats.variant_style == "standard":
+  return
+ var accent := Color(1, 0.25, 0.9) if stats.variant_style == "voidglass" else Color(0.2, 1, 1) if stats.variant_style == "aurora" else Color(1, 0.8, 0.25)
+ for side in [-1.0, 1.0]:
+  var trim := BoxMesh.new()
+  trim.size = Vector3(0.25, 0.4, 5.5)
+  _mesh(trim, Vector3(side * 1.2, 0.3, 0), accent, true)
+  var fin := BoxMesh.new()
+  fin.size = Vector3(0.3, 1.6, 2.5)
+  var fin_mesh := _mesh(fin, Vector3(side * 3.0, 0.6, 1.0), color.lightened(0.3))
+  fin_mesh.rotation.z = side * 0.45
+ if stats.variant_style == "celestial":
+  var ring := TorusMesh.new()
+  ring.inner_radius = 3.3
+  ring.outer_radius = 3.5
+  _mesh(ring, Vector3(0, 0, 1.5), accent, true).rotation.x = PI / 2.0
+ else:
+  for side in [-1.0, 1.0]:
+   var ribbon := BoxMesh.new()
+   ribbon.size = Vector3(0.12, 0.12, 7.0)
+   _mesh(ribbon, Vector3(side * 2.5, 0.3, 3.5), accent, true)
 
 func _mesh(shape: Mesh, position: Vector3, color: Color, unshaded: bool = false) -> MeshInstance3D:
  var mesh := MeshInstance3D.new()
@@ -101,6 +152,7 @@ func _mesh(shape: Mesh, position: Vector3, color: Color, unshaded: bool = false)
 func _physics_process(delta: float) -> void:
  if not alive:
   return
+ hit_effect_remaining = maxf(0.0, hit_effect_remaining - delta)
  health.tick(delta)
  weapons.tick(delta)
  targeting.tick(delta)
@@ -120,11 +172,14 @@ func activate_ability() -> bool:
  if ability_cooldown > 0.0 or not alive:
   return false
  ability_remaining = 5.0
- ability_cooldown = 20.0
+ ability_cooldown = stats.ability_recharge
  return true
 
 func _hit(shield_hit: bool) -> void:
  brain.alert_time = 4.0
+ if hit_effect_remaining > 0.0:
+  return
+ hit_effect_remaining = 0.12
  SpaceEffects.burst(get_parent(), global_position, Color(0.15, 0.7, 1.0) if shield_hit else Color(1, 0.45, 0.12), 4.0 if shield_hit else 1.8)
 
 func _destroy(attacker: CombatShip) -> void:

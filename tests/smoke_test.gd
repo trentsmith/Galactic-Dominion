@@ -28,6 +28,7 @@ func freeze_ships() -> void:
 
 func run() -> void:
  main = load("res://scenes/main.tscn").instantiate()
+ main.profile_path = "user://test-smoke_test-" + str(Time.get_ticks_usec()) + ".json"
  root.add_child(main)
  await process_frame
  check(is_instance_valid(main.menu), "Main menu scene loads")

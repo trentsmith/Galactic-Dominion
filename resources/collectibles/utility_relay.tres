@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "utility_relay"
+display_name = "Ability Relay"
+description = "Abilities recharge faster at the expense of boost reserve."
+kind = "component"
+rarity = "rare"
+slot = "utility"
+species = ""
+ship_class = ""
+modifiers = {"ability_recharge": 0.8, "boost_capacity": 0.9}
+color = Color(0.8, 0.4, 1, 1)
+visual_style = "relay"
+starter = false
+research_cost = 180

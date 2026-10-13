@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_nyx_prism"
+display_name = "Nyx · Prismborn"
+description = "Rare visual variant of Nyx. Pearl skin and prismatic antennae. Same bonus as standard Nyx."
+kind = "crew"
+rarity = "exotic"
+slot = "crew"
+species = "Vesperi"
+ship_class = ""
+modifiers = {"shield_regen": 1.1}
+color = Color(1, 0.7, 0.95, 1)
+visual_style = "vesperi_prism"
+starter = false
+research_cost = 0

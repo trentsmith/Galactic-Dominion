@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "weapon_focus"
+display_name = "Focused Pulse"
+description = "Stronger laser bolts with a slightly slower firing cycle."
+kind = "component"
+rarity = "uncommon"
+slot = "weapon"
+species = ""
+ship_class = ""
+modifiers = {"laser_damage": 1.22, "laser_cooldown": 1.12}
+color = Color(1, 0.6, 0.25, 1)
+visual_style = "focus"
+starter = false
+research_cost = 80

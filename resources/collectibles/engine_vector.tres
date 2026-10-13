@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "engine_vector"
+display_name = "Vectorial Drive"
+description = "Precision steering and acceleration, with reduced cruise speed."
+kind = "component"
+rarity = "rare"
+slot = "engine"
+species = ""
+ship_class = ""
+modifiers = {"turn_speed": 1.22, "acceleration": 1.2, "speed": 0.96}
+color = Color(0.65, 0.45, 1, 1)
+visual_style = "vector"
+starter = false
+research_cost = 180

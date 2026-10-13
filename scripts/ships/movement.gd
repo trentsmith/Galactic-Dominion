@@ -9,7 +9,7 @@ var ability_multiplier := 1.0
 
 func tick(delta: float) -> void:
  var boosting := boost_requested and boost_energy > 1.0 and thrust.length_squared() > 0.01
- boost_energy = clampf(boost_energy + (-32.0 if boosting else 18.0) * delta, 0.0, 100.0)
+ boost_energy = clampf(boost_energy + (-32.0 if boosting else ship.stats.boost_regen) * delta, 0.0, ship.stats.boost_capacity)
  var top_speed := ship.stats.speed * ability_multiplier * (1.8 if boosting else 1.0)
  var desired := ship.global_basis * thrust.limit_length() * top_speed
  # Mild drag preserves a short drift while still making stopping accessible.

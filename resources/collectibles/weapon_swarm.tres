@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "weapon_swarm"
+display_name = "Rapid Pulse"
+description = "Rapid-fire laser and missile control, with lighter laser hits."
+kind = "component"
+rarity = "rare"
+slot = "weapon"
+species = ""
+ship_class = ""
+modifiers = {"laser_cooldown": 0.78, "laser_damage": 0.9, "missile_cooldown": 0.9}
+color = Color(1, 0.35, 0.5, 1)
+visual_style = "swarm"
+starter = false
+research_cost = 180

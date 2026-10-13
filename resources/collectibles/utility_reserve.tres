@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "utility_reserve"
+display_name = "Deep Reserve"
+description = "Expanded boost reserve and faster replenishment."
+kind = "component"
+rarity = "uncommon"
+slot = "utility"
+species = ""
+ship_class = ""
+modifiers = {"boost_capacity": 1.35, "boost_regen": 1.1}
+color = Color(1, 0.8, 0.2, 1)
+visual_style = "reserve"
+starter = false
+research_cost = 80

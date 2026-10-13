@@ -12,4 +12,14 @@ extends Resource
 @export var missile_damage: float = 55.0
 @export var missile_cooldown: float = 3.5
 @export var ability: String = "overcharge"
+@export var shield_regen: float = 12.0
+@export var boost_capacity: float = 100.0
+@export var boost_regen: float = 18.0
+@export var ability_recharge: float = 20.0
+@export var engine_style: String = "standard"
+@export var shield_style: String = "standard"
+@export var weapon_style: String = "standard"
+@export var utility_style: String = "standard"
+@export var variant_style: String = "standard"
+@export var variant_name: String = "Vanguard Livery"
 @export var color: Color = Color(0.2, 0.7, 1.0)

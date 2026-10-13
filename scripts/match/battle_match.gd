@@ -13,8 +13,13 @@ var finished := false
 var winner := -1
 var end_reason := ""
 var hud: BattleHUD
+var profile: PlayerProfile
+var rewards: Array[Dictionary] = []
+var reward_summary := ""
+var battle_id := ""
 
 func _ready() -> void:
+ battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
  var arena := SpaceArena.new()
  add_child(arena)
  zone = BattleZone.new()
@@ -32,7 +37,10 @@ func _ready() -> void:
  for team_index in range(2):
   for slot in range(3):
    var ship := CombatShip.new()
-   ship.stats = CLASSES[slot]
+   ship.stats = profile.configured_stats(slot) if team_index == 0 and profile != null else CLASSES[slot]
+   if team_index == 0 and profile != null:
+    var crew := CollectionCatalog.find(str(profile.loadouts[slot].crew))
+    ship.crew_name = crew.display_name if crew != null else "Unassigned"
    ship.team = team_index
    ship.fleet_slot = slot
    ship.callsign = ("Vanguard" if team_index == 0 else "Ravager") + " %d" % (slot + 1)
@@ -103,5 +111,13 @@ func finish(team: int, reason: String) -> void:
  for child in get_children():
   if child is SpaceProjectile:
    child.set_physics_process(false)
+ if profile != null:
+  var kills := 0
+  var damage := 0.0
+  for ally in fleet.ships:
+   kills += ally.kills
+   damage += ally.damage_dealt
+  rewards = profile.settle_battle(battle_id, winner, kills, damage)
+  reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, rewards.size()]
  ended.emit(team, reason)
  hud.show_results()

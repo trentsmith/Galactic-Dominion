@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "engine_sprint"
+display_name = "Sprint Drive"
+description = "Fast thrusters trade a little structural reinforcement for speed."
+kind = "component"
+rarity = "uncommon"
+slot = "engine"
+species = ""
+ship_class = ""
+modifiers = {"speed": 1.15, "acceleration": 1.12, "hull": 0.94}
+color = Color(0.3, 1, 0.75, 1)
+visual_style = "sprint"
+starter = false
+research_cost = 80

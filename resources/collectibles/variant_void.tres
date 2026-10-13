@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "variant_void"
+display_name = "Voidglass Interceptor"
+description = "Extremely rare Interceptor variant with obsidian hull and magenta energy lattice."
+kind = "variant"
+rarity = "mythic"
+slot = "variant"
+species = ""
+ship_class = "Interceptor"
+modifiers = {}
+color = Color(0.12, 0.07, 0.25, 1)
+visual_style = "voidglass"
+starter = false
+research_cost = 0
