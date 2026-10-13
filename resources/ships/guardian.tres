@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ShipStats" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/ships/ship_stats.gd" id="1"]
+[resource]
+script = ExtResource("1")
+class_name_text = "Guardian"
+hull = 200.0
+shield = 240.0
+speed = 46.0
+acceleration = 55.0
+turn_speed = 1.4
+laser_damage = 22.0
+laser_cooldown = 0.36
+ability = "aegis"
+color = Color(0.6, 0.45, 1, 1)
