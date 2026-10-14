@@ -26,8 +26,10 @@ var fitting_item: OptionButton
 var hull_choice: OptionButton
 var fit_options: Array = []
 var busy := false
+var connection := ServerConnection.new()
 
 func _ready() -> void:
+ connection.load_settings()
  theme = CartoonStyle.ui_theme()
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  var bg := ColorRect.new()
@@ -60,10 +62,13 @@ func _ready() -> void:
  connect_tab.name = "Connect & Lobby"
  connect_tab.add_theme_constant_override("separation", 14)
  tabs.add_child(connect_tab)
- api_address = field(connect_tab, "Account server URL", api.base_url)
- combat_address = field(connect_tab, "Combat server address", "127.0.0.1")
- combat_port = number(connect_tab, "Combat UDP port", 7777, 65535)
- username = field(connect_tab, "Commander name (3–24 letters, numbers, underscores)", "")
+ api_address = field(connect_tab, "Account server URL", connection.api_url)
+ combat_address = field(connect_tab, "Combat server address", connection.combat_host)
+ combat_port = number(connect_tab, "Combat UDP port", connection.combat_port, 65535)
+ button(connect_tab, "USE THIS ADDRESS FOR A LOCAL-NETWORK HOST", func():
+  var host := combat_address.text.strip_edges()
+  if not host.is_empty(): api_address.text = "http://" + host + ":8080")
+ username = field(connect_tab, "Commander name (3–24 letters, numbers, underscores)", connection.commander)
  password = field(connect_tab, "Password (at least 10 characters)", "")
  password.secret = true
  var login_buttons := HBoxContainer.new()
@@ -225,6 +230,10 @@ func _sign_in(register: bool) -> void:
   return
  busy = true
  session.disconnect_session()
+ if not connection.save_settings(api_address.text,combat_address.text,int(combat_port.value),username.text):
+  status.text = "Check the server URL, address and port. Connection settings could not save."
+  busy = false
+  return
  api.base_url = api_address.text.strip_edges()
  status.text = "Contacting account server…"
  var reply := await api.sign_in(username.text.strip_edges(), password.text, register)
@@ -237,6 +246,10 @@ func _sign_in(register: bool) -> void:
 
 func _join() -> void:
  if busy:
+  return
+ if not connection.save_settings(api_address.text,combat_address.text,int(combat_port.value),username.text):
+  status.text = "Check the server URL, address and port. Connection settings could not save."
+  busy = false
   return
  api.base_url = api_address.text.strip_edges()
  await session.join_server(combat_address.text.strip_edges(), int(combat_port.value))
@@ -381,6 +394,10 @@ func _offer_action(path: String) -> void:
   await _refresh_market()
 
 func _public_profile() -> void:
+ if not connection.save_settings(api_address.text,combat_address.text,int(combat_port.value),username.text):
+  status.text = "Check the server URL, address and port. Connection settings could not save."
+  busy = false
+  return
  api.base_url = api_address.text.strip_edges()
  var reply := await api.request("/profiles?name=" + public_name.text.strip_edges().uri_encode(), {}, HTTPClient.METHOD_GET)
  if not is_inside_tree():

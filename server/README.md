@@ -2,7 +2,17 @@
 
 Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with 4.6.3). No Python packages, Docker, paid assets or hosted accounts are required. One server instance runs one lobby and either a Fleet Royale arena or a continuous free-roam world, with up to six human pilots. AI fills empty pilot slots; free roam also contains twelve raider ships.
 
-## Windows: play on this PC
+## One-click Windows host package
+
+Download **Galactic-Dominion-Server-Windows.zip** from [the v0.6 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.6.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
+
+The server window prints the PC's LAN addresses. Friends on your same network run the player download, open Online, put that IP in Combat Server Address and click **Use This Address For A Local-Network Host**. The shortcut sets the account URL to `http://HOST:8080`. Clients on the hosting PC can use `127.0.0.1`. Connection preferences remember the address and username.
+
+The default ports are **TCP 8080** for accounts and **UDP 7777** for combat. If needed, run the included `Allow-LAN-Windows.ps1` from an Administrator PowerShell window; its rules apply only to Private networks and the local subnet. An executable-only host can also run `python server/launch.py --game PATH_TO_GAME --host 0.0.0.0`.
+
+This package hosts your own six-player session; it does not register with a global matchmaking service. The server must keep running while people play. For Internet access, the LAN shortcut is insufficient: configure an HTTPS hostname/reverse proxy for the account service and forward the combat UDP port, or use a private VPN. There is no Internet relay or public domain provisioned by this package.
+
+## Windows: host from the source project
 
 1. Install Python from https://www.python.org/downloads/windows/ if needed. Include the Python launcher when installing.
 2. Extract the full game ZIP.

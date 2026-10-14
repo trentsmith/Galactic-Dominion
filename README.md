@@ -1,8 +1,24 @@
-# Galactic Dominion — Phase 5: Free Roam & Little Space Crew
+# Galactic Dominion — Phase 6: Playable PC Release
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
-## Open and play
+## Download and play without Godot
+
+The v0.6 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.6.0)** and choose:
+
+- **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
+- **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
+- Linux player/server ZIPs and SHA256 checksums are available alongside Windows builds.
+
+For friends on your home network, the server window displays the host PC's LAN address. In the game choose Online, enter that address in **Combat server address**, click **Use This Address For A Local-Network Host**, create/sign into your account and Join Open Arena. Ready up; the lobby leader launches Free Roam or Fleet Royale. Your address and commander name are remembered between launches; passwords and tokens are not saved in connection preferences.
+
+If Windows blocks LAN connections, allow the game on Private networks. The host package includes an optional `Allow-LAN-Windows.ps1` setup script with rules restricted to your local subnet on Private networks. It needs an Administrator PowerShell window when used.
+
+Your Windows PC hosts only while the server window is open. This is a six-player alpha with AI, not a globally hosted service. Internet friends need router port forwarding or a VPN and an HTTPS account endpoint; the hosting guide explains the ports and DNS requirements. There is no public server or domain configured in this build.
+
+See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/README.md)**. Developers can rebuild the packages using `python tools/build_release.py --godot PATH --templates TEMPLATE_DIRECTORY --python-embed PYTHON_EMBED_ZIP`. A `server.cfg` next to the standalone executable can preconfigure your host's account URL and combat address before distributing it.
+
+## Open the source project in Godot
 
 1. Install Godot 4.x (the standard version; .NET is not required).
 2. Extract the project folder if downloaded as a ZIP.

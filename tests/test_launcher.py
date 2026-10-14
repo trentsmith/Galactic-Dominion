@@ -6,7 +6,7 @@ from urllib.request import urlopen
 root=Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory() as temporary:
     tmp=Path(temporary);game=tmp/'game'
-    shutil.copytree(root,game,ignore=shutil.ignore_patterns('.git','.godot','__pycache__','server-data'))
+    shutil.copytree(root,game,ignore=shutil.ignore_patterns('.git','.godot','__pycache__','server-data','build','releases'))
     def port(kind):
         with socket.socket(socket.AF_INET,kind) as s:
             s.bind(('127.0.0.1',0));return s.getsockname()[1]

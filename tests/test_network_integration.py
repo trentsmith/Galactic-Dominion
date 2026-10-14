@@ -46,7 +46,10 @@ def main():
                 raise AssertionError('Reward endpoint did not enforce combat-server authentication')
             except HTTPError as e: assert e.code==403
             server_log=open(tmp/'server.log','w')
-            server=subprocess.Popen(['godot','--headless','--path',str(root),'--','--server','--port',str(udp_port),'--match-seconds','8' if count==6 else '5'],env=env,stdout=server_log,stderr=subprocess.STDOUT); processes.append(server)
+            executable=os.environ.get('GD_TEST_COMBAT_BINARY')
+            command=[executable,'--headless'] if executable else ['godot','--headless','--path',str(root)]
+            command += ['--','--server','--port',str(udp_port),'--match-seconds','8' if count==6 else '5']
+            server=subprocess.Popen(command,env=env,stdout=server_log,stderr=subprocess.STDOUT); processes.append(server)
             deadline=time.monotonic()+10
             while 'GALACTIC_COMBAT_READY' not in (tmp/'server.log').read_text():
                 if server.poll() is not None or time.monotonic()>deadline: raise AssertionError('Dedicated server did not start')

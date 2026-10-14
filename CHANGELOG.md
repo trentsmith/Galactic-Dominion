@@ -1,5 +1,13 @@
 # Changes
 
+## 0.6.0 — Playable PC Release
+
+- Added Windows/Linux standalone exports, embedded game packs, release ZIP packaging, checksums and an automated GitHub prerelease workflow.
+- Added a one-click Windows host package with official portable Python, exported game engine, LAN address display and optional local-subnet firewall rules.
+- Added saved server/commander preferences and a one-address LAN shortcut without storing passwords or tokens.
+- Added standalone free-roam/battle startup options and immediate server readiness log flushing.
+- Windows files are cross-exported and checked structurally; interactive Windows execution remains untested in the Linux development environment.
+
 ## 0.5.0 — Free Roam & Little Space Crew
 
 - Added a connected four-region world, service stations, direct flight, validated warp, local scan signals and recurring AI patrols, with no shrinking zone or match timeout.

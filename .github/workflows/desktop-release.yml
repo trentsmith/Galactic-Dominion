@@ -1,0 +1,54 @@
+name: Build playable desktop release
+on:
+  push:
+    branches: [phase-6-playable-release]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot and native export templates
+        run: |
+          curl -fL --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.6.3-stable_linux.x86_64
+          ln -s /tmp/godot/Godot_v4.6.3-stable_linux.x86_64 /tmp/godot/godot
+          echo '/tmp/godot' >> "$GITHUB_PATH"
+          curl -fL --retry 3 -o /tmp/templates.tpz https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          out=Path('/tmp/templates');out.mkdir()
+          with ZipFile('/tmp/templates.tpz') as archive:
+              for name in archive.namelist():
+                  if any(x in name for x in ['windows_release_x86_64','linux_release.x86_64','version.txt']):
+                      (out/Path(name).name).write_bytes(archive.read(name))
+          PY
+          curl -fL --retry 3 -o /tmp/python-embed.zip https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip
+      - name: Export and package clients and servers
+        run: python3 tools/build_release.py --godot /tmp/godot/Godot_v4.6.3-stable_linux.x86_64 --templates /tmp/templates --python-embed /tmp/python-embed.zip
+      - name: Verify standalone Linux startup
+        run: |
+          build/linux/GalacticDominion.x86_64 --headless --quit-after 30 -- --free-roam > /tmp/game.log 2>&1
+          cat /tmp/game.log
+          grep GALACTIC_FREE_ROAM_READY /tmp/game.log
+          if grep -E 'SCRIPT ERROR|ERROR:' /tmp/game.log; then exit 1; fi
+      - name: Verify packaged multiplayer server
+        run: GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_network_integration.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: galactic-dominion-desktop
+          path: releases/*
+      - name: Publish downloadable alpha release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=v0.6.0
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.6 — Playable PC alpha' --notes-file docs/RELEASE.md
+          fi
+          gh release upload "$tag" releases/* --clobber

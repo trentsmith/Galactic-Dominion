@@ -45,6 +45,10 @@ func _ready() -> void:
  AudioServer.set_bus_volume_db(0, linear_to_db(volume))
  _apply_display()
  show_menu()
+ if "--free-roam" in arguments:
+  start_free_roam()
+ elif "--battle" in arguments:
+  start_battle()
 
 func _unhandled_input(event: InputEvent) -> void:
  if event.is_action_pressed("pause") and is_instance_valid(battle) and not battle.finished:
@@ -305,3 +309,4 @@ func start_free_roam() -> void:
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
+ print("GALACTIC_FREE_ROAM_READY ships=%d" % battle.ships.size())
