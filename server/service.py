@@ -47,7 +47,11 @@ class Store:
             CREATE TABLE IF NOT EXISTS listings(id TEXT PRIMARY KEY, seller TEXT NOT NULL REFERENCES users(id), item TEXT NOT NULL, price INTEGER NOT NULL, status TEXT NOT NULL, buyer TEXT, created REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS offers(id TEXT PRIMARY KEY, listing TEXT NOT NULL REFERENCES listings(id), buyer TEXT NOT NULL REFERENCES users(id), amount INTEGER NOT NULL, status TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS matches(id TEXT PRIMARY KEY, roster TEXT NOT NULL, status TEXT NOT NULL, created REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS roam_sessions(match_id TEXT PRIMARY KEY REFERENCES matches(id));
+            CREATE TABLE IF NOT EXISTS roam_receipts(event_id TEXT PRIMARY KEY, match_id TEXT NOT NULL REFERENCES matches(id), user_id TEXT NOT NULL, ship TEXT NOT NULL, created REAL NOT NULL);
             ''')
+            columns = {r['name'] for r in db.execute('PRAGMA table_info(users)')}
+            if 'active_match' not in columns: db.execute("ALTER TABLE users ADD COLUMN active_match TEXT NOT NULL DEFAULT ''")
     def connect(self):
         db = sqlite3.connect(self.path, timeout=15)
         db.row_factory = sqlite3.Row
@@ -247,7 +251,8 @@ class Store:
                 bp = self._profile(self._user(db, offer['buyer'])); bp['salvage'] += offer['amount']; self._save(db, offer['buyer'], bp)
                 db.execute("UPDATE offers SET status='refunded' WHERE id=?", (oid,))
             return {'resolved': oid}
-    def start_match(self, mid, roster):
+    def start_match(self, mid, roster, mode="royale"):
+        if mode not in ["royale", "free_roam"]: raise ServiceError("Unknown game mode")
         if not isinstance(mid, str) or not 1 <= len(mid) <= 100 or not isinstance(roster, list) or not 1 <= len(roster) <= 6: raise ServiceError('Invalid roster')
         users = [entry.get('user_id') for entry in roster]
         if len(set(users)) != len(users) or any(type(e.get('team')) is not int or e['team'] not in [0,1] for e in roster): raise ServiceError('Invalid teams')
@@ -255,7 +260,8 @@ class Store:
             for uid in users: self._unlocked(self._user(db, uid))
             try: db.execute('INSERT INTO matches VALUES(?,?,?,?)', (mid, json.dumps(roster), 'live', time.time()))
             except sqlite3.IntegrityError: raise ServiceError('Match already exists', 409)
-            for uid in users: db.execute('UPDATE users SET locked_until=? WHERE id=?', (time.time() + 600, uid))
+            if mode == 'free_roam': db.execute('INSERT INTO roam_sessions VALUES(?)', (mid,))
+            for uid in users: db.execute('UPDATE users SET locked_until=?,active_match=? WHERE id=?', (time.time() + (120 if mode == 'free_roam' else 600), mid, uid))
             profiles = [self._profile(self._user(db, uid)) for uid in users]
         return {'started': mid, 'profiles': profiles}
     def finish_match(self, mid, winner, metrics):
@@ -264,6 +270,7 @@ class Store:
         with self.transaction() as db:
             match = db.execute('SELECT * FROM matches WHERE id=?', (mid,)).fetchone()
             if not match: raise ServiceError('Unknown match', 404)
+            if db.execute('SELECT 1 FROM roam_sessions WHERE match_id=?', (mid,)).fetchone(): raise ServiceError('Use free-roam settlement for this session')
             if match['status'] != 'live': return {'already_settled': True}
             for entry in json.loads(match['roster']):
                 uid = entry['user_id']; p = self._profile(self._user(db, uid)); won = winner == entry['team']
@@ -279,12 +286,76 @@ class Store:
                     item = secrets.choice([x for x in CATALOG if x['rarity'] == tier])['id']
                     duplicate = item in p['inventory']; self._grant(p, item, 'Authoritative online battle')
                     if duplicate: p['salvage'] += 15
-                self._save(db, uid, p); db.execute('UPDATE users SET locked_until=0 WHERE id=?', (uid,))
+                self._save(db, uid, p); db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (uid, mid))
             db.execute("UPDATE matches SET status='settled' WHERE id=?", (mid,))
         return {'settled': mid, 'victory_ships': prizes}
 
+    def _roam_match(self, db, mid):
+        row = db.execute('SELECT m.* FROM matches m JOIN roam_sessions r ON r.match_id=m.id WHERE m.id=?', (mid,)).fetchone()
+        if not row or row['status'] != 'live': raise ServiceError('Free-roam session is not active', 409)
+        return row
+    def roam_join(self, mid, uid, team):
+        if type(team) is not int or team not in [0,1]: raise ServiceError('Invalid team')
+        with self.transaction() as db:
+            row = self._roam_match(db, mid)
+            roster = json.loads(row['roster'])
+            if len(roster) >= 6 or any(e['user_id'] == uid for e in roster): raise ServiceError('Session is full or account already joined', 409)
+            user = self._user(db,uid); self._unlocked(user)
+            roster.append({'user_id':uid,'team':team})
+            db.execute('UPDATE matches SET roster=? WHERE id=?', (json.dumps(roster),mid))
+            db.execute('UPDATE users SET locked_until=?,active_match=? WHERE id=?', (time.time()+120,mid,uid))
+            p = self._profile(self._user(db,uid))
+        return {'profile':p}
+    def roam_lease(self, mid):
+        with self.transaction() as db:
+            row = self._roam_match(db, mid)
+            for member in json.loads(row['roster']):
+                db.execute('UPDATE users SET locked_until=? WHERE id=? AND active_match=?', (time.time()+120, member['user_id'], mid))
+        return {'renewed': mid}
+    def roam_reward(self, mid, event_id, uid, damage):
+        if not isinstance(event_id, str) or not 1 <= len(event_id) <= 150: raise ServiceError('Invalid encounter receipt')
+        if type(damage) not in [int,float] or not 0 <= damage <= 1000000: raise ServiceError('Invalid damage')
+        with self.transaction() as db:
+            session = self._roam_match(db, mid)
+            if uid not in [e['user_id'] for e in json.loads(session['roster'])]: raise ServiceError('Pilot is not in this session', 403)
+            user = self._user(db, uid)
+            if user['active_match'] != mid: raise ServiceError('Pilot has left this session', 409)
+            receipt = db.execute('SELECT * FROM roam_receipts WHERE event_id=?', (event_id,)).fetchone()
+            if receipt:
+                if receipt['match_id'] != mid or receipt['user_id'] != uid: raise ServiceError('Receipt belongs to another encounter', 409)
+                return {'already_settled': True, 'ship': receipt['ship']}
+            p = self._profile(user)
+            prize = 'ship_' + secrets.choice(list(CLASS_NAMES))
+            self._grant(p, prize, 'Free-roam encounter victory — permanent ownership')
+            p['battles'] += 1; p['wins'] += 1; p['total_kills'] += 1
+            p['total_damage'] += damage; p['salvage'] += 60
+            for _ in range(2):
+                tier = rarity_for_ticket(secrets.randbelow(16384))
+                item = secrets.choice([x for x in CATALOG if x['rarity'] == tier])['id']
+                duplicate = item in p['inventory']; self._grant(p, item, 'Free-roam encounter discovery')
+                if duplicate: p['salvage'] += 15
+            self._save(db, uid, p)
+            db.execute('INSERT INTO roam_receipts VALUES(?,?,?,?,?)', (event_id,mid,uid,prize,time.time()))
+        return {'ship': prize, 'settled': event_id}
+    def roam_leave(self, mid, uid):
+        with self.transaction() as db:
+            row = self._roam_match(db, mid)
+            roster = [e for e in json.loads(row['roster']) if e['user_id'] != uid]
+            db.execute('UPDATE matches SET roster=? WHERE id=?', (json.dumps(roster),mid))
+            db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (uid,mid))
+        return {'left': uid}
+    def roam_end(self, mid):
+        with self.transaction() as db:
+            row = db.execute('SELECT m.* FROM matches m JOIN roam_sessions r ON r.match_id=m.id WHERE m.id=?', (mid,)).fetchone()
+            if not row: raise ServiceError('Unknown free-roam session', 404)
+            if row['status'] != 'live': return {'already_closed': True}
+            for entry in json.loads(row['roster']):
+                db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (entry['user_id'],mid))
+            db.execute("UPDATE matches SET status='closed' WHERE id=?", (mid,))
+        return {'closed': mid}
+
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.3'
+    server_version = 'GalacticDominion/0.5'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -295,7 +366,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.3.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.5.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:
@@ -310,7 +381,12 @@ class Handler(BaseHTTPRequestHandler):
                 if not key or not hmac.compare_digest(key, store.server_key): raise ServiceError('Combat server authentication required', 403)
                 if method != 'POST': raise ServiceError('Use POST', 405)
                 if path == '/server/ticket': result = store.resolve_ticket(data.get('ticket', ''))
-                elif path == '/server/start': result = store.start_match(data.get('match_id'), data.get('roster'))
+                elif path == '/server/start': result = store.start_match(data.get('match_id'), data.get('roster'), data.get('mode', 'royale'))
+                elif path == '/server/roam/join': result = store.roam_join(data.get('match_id'), data.get('user_id'), data.get('team'))
+                elif path == '/server/roam/lease': result = store.roam_lease(data.get('match_id'))
+                elif path == '/server/roam/reward': result = store.roam_reward(data.get('match_id'), data.get('event_id'), data.get('user_id'), data.get('damage',0))
+                elif path == '/server/roam/leave': result = store.roam_leave(data.get('match_id'), data.get('user_id'))
+                elif path == '/server/roam/end': result = store.roam_end(data.get('match_id'))
                 elif path == '/server/finish': result = store.finish_match(data.get('match_id'), data.get('winner'), data.get('metrics', {}))
                 else: raise ServiceError('Not found', 404)
             else:

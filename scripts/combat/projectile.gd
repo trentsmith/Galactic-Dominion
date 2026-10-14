@@ -7,17 +7,19 @@ var spec: WeaponSpec
 var direction := Vector3.FORWARD
 var elapsed := 0.0
 var team := 0
+var companion_shot := false
+var projectile_color := Color.TRANSPARENT
 
 func _ready() -> void:
  var mesh := MeshInstance3D.new()
  var shape := SphereMesh.new()
- shape.radius = 0.32 if spec.tracking else 0.17
+ shape.radius = 0.28 if companion_shot else 0.32 if spec.tracking else 0.17
  shape.height = shape.radius * 2.0
  mesh.mesh = shape
- mesh.scale.z = 3.0
+ mesh.scale.z = 1.0 if companion_shot else 3.0
  var mat := StandardMaterial3D.new()
  mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
- mat.albedo_color = Color(1, 0.7, 0.2) if spec.tracking else (Color(0.25, 0.9, 1) if team == 0 else Color(1, 0.25, 0.25))
+ mat.albedo_color = projectile_color if projectile_color.a > 0 else Color(1, 0.7, 0.2) if spec.tracking else (Color(0.25, 0.9, 1) if team == 0 else Color(1, 0.25, 0.25))
  mesh.material_override = mat
  add_child(mesh)
 

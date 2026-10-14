@@ -10,9 +10,15 @@ var state := State.FOLLOW
 var alert_time := 0.0
 var retarget_timer := 0.0
 var retreat_latch := false
+# Defaults preserve arena behavior; free-roam ships only sense nearby opponents.
+var sensor_range := INF
+var roaming := false
+var roam_center := Vector3.ZERO
+var patrol_time := 0.0
 
 func tick(delta: float) -> void:
  alert_time = maxf(0.0, alert_time - delta)
+ patrol_time += delta
  retarget_timer -= delta
  if retarget_timer <= 0.0:
   retarget_timer = 0.6
@@ -29,7 +35,9 @@ func tick(delta: float) -> void:
   var away := Vector3(0, 30, 0)
   if is_instance_valid(enemy):
    away = enemy.global_position.direction_to(ship.global_position) * 130.0
-  destination = (ship.global_position + away).limit_length(radius * 0.72)
+  destination = ship.global_position + away
+  if not roaming:
+   destination = destination.limit_length(radius * 0.72)
   ship.movement.boost_requested = ship.movement.boost_energy > 20.0
  elif command == "regroup" and is_instance_valid(leader) and leader.alive:
   state = State.REGROUP
@@ -51,9 +59,9 @@ func tick(delta: float) -> void:
   ship.movement.boost_requested = distance > 300.0
  else:
   state = State.DEFEND if command == "defend" else State.FOLLOW
-  destination = _formation() if is_instance_valid(leader) and leader.alive else Vector3.ZERO
+  destination = _formation() if is_instance_valid(leader) and leader.alive else (roam_center + Vector3(sin(patrol_time * 0.12 + ship.fleet_slot) * 230, sin(patrol_time * 0.09) * 70, cos(patrol_time * 0.12 + ship.fleet_slot) * 230) if roaming else Vector3.ZERO)
   ship.movement.boost_requested = false
- if ship.global_position.length() > radius * 0.9:
+ if not roaming and ship.global_position.length() > radius * 0.9:
   destination = Vector3.ZERO
  SpaceNavigation.steer(ship, destination, delta)
  if state in [State.FOLLOW, State.REGROUP, State.DEFEND] and ship.global_position.distance_to(destination) < 18.0:
@@ -73,7 +81,7 @@ func _find_target() -> void:
   if not candidate.alive or candidate.team == ship.team:
    continue
   var distance: float = ship.global_position.distance_squared_to(candidate.global_position)
-  if distance < score:
+  if distance < score and distance <= sensor_range * sensor_range:
    score = distance
    best = candidate
  ship.targeting.select(best)

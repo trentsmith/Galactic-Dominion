@@ -208,6 +208,8 @@ func configured_stats(index: int) -> ShipStats:
   for key in definition.modifiers:
    if key in CollectionCatalog.MODIFIABLE_STATS:
     stats.set(key, float(stats.get(key)) * float(definition.modifiers[key]))
+  if definition.kind == "crew":
+   stats.crew_id = definition.id
   if definition.kind == "component":
    stats.set(definition.slot + "_style", definition.visual_style)
   if definition.kind == "variant" and definition.visual_style != "standard":

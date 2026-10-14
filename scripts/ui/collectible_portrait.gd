@@ -15,7 +15,7 @@ func _draw() -> void:
  draw_set_transform(center, 0, Vector2.ONE * scale_factor)
  var color := definition.color
  var rarity := definition.rarity_color()
- draw_circle(Vector2.ZERO, 72, Color(0.035, 0.06, 0.11))
+ draw_circle(Vector2.ZERO, 72, Color(0.1, 0.13, 0.25))
  draw_arc(Vector2.ZERO, 76, 0, TAU, 64, rarity, 2)
  if definition.kind == "crew":
   var style := definition.visual_style
@@ -28,26 +28,29 @@ func _draw() -> void:
    if style == "human_solar":
     draw_arc(Vector2(0, -8), 53, 0, TAU, 48, Color(1, 0.8, 0.2), 4)
     draw_circle(Vector2(0, -12), 16, Color(0.2, 0.1, 0.05))
-  elif style.begins_with("vesperi"):
-   draw_circle(Vector2(0, -10), 33, color)
-   for side in [-1, 1]:
-    draw_line(Vector2(side * 19, -35), Vector2(side * 32, -60), color.lightened(0.3), 3)
-    draw_circle(Vector2(side * 32, -60), 5, rarity)
-    draw_circle(Vector2(side * 13, -14), 8, Color(0.03, 0.03, 0.06))
-    draw_circle(Vector2(side * 13, -15), 3, Color(0.8, 1, 1))
-   if style == "vesperi_prism":
-    draw_polyline(PackedVector2Array([Vector2(-22, 10), Vector2(0, -28), Vector2(22, 10)]), Color.WHITE, 2)
-  elif style == "kharon":
-   draw_colored_polygon(PackedVector2Array([Vector2(-37, -3), Vector2(-24, -35), Vector2(-6, -43), Vector2(8, -32), Vector2(27, -37), Vector2(37, -3), Vector2(22, 25), Vector2(-22, 25)]), color)
-   for side in [-1, 1]:
-    draw_line(Vector2(side * 5, -5), Vector2(side * 23, -10), Color(1, 0.85, 0.35), 4)
   else:
-   draw_circle(Vector2(0, -12), 34, color)
-   for x in [-15, 15]:
-    for y in [-23, -6]:
-     draw_circle(Vector2(x, y), 5, Color(0.02, 0.08, 0.14))
-     draw_circle(Vector2(x, y), 2, Color(0.8, 1, 1))
-   draw_arc(Vector2(0, -12), 43, PI / 6, PI * 5 / 6, 24, color.lightened(0.3), 4)
+   var skin := color.lightened(0.2)
+   draw_circle(Vector2(0, -5), 37, Color(0.05, 0.07, 0.14))
+   draw_circle(Vector2(0, -5), 34, skin)
+   for side in [-1, 1]:
+    draw_circle(Vector2(side * 24, 9), 6, Color(1, 0.48, 0.65))
+    draw_circle(Vector2(side * 14, -11), 11, Color(0.04, 0.055, 0.13))
+    draw_circle(Vector2(side * 14 - 3, -15), 4, Color.WHITE)
+    draw_circle(Vector2(side * 20, 49), 10, skin.lightened(0.15))
+   draw_arc(Vector2(0, 9), 10, 0.12, PI - 0.12, 16, Color(0.18, 0.1, 0.22), 3)
+   if definition.species == "Vesperi":
+    for side in [-1, 1]:
+     draw_line(Vector2(side * 18, -31), Vector2(side * 26, -58), skin, 6)
+     draw_circle(Vector2(side * 26, -58), 8, definition.accent)
+   elif definition.species == "Auralith":
+    for side in [-1, 1]:
+     draw_circle(Vector2(side * 29, -38), 15, skin)
+    draw_circle(Vector2(0, -35), 7, definition.accent)
+   else:
+    for side in [-1, 1]:
+     draw_colored_polygon(PackedVector2Array([Vector2(side * 16, -29),Vector2(side * 30, -54),Vector2(side * 37, -25)]),Color(1,0.85,0.58))
+   if definition.rarity in ["legendary", "mythic"]:
+    draw_arc(Vector2(0, -3), 53, 0, TAU, 48, rarity, 4)
  elif definition.kind == "component":
   draw_rect(Rect2(-32, -32, 64, 64), color.darkened(0.5))
   draw_rect(Rect2(-25, -25, 50, 50), color, false, 3)

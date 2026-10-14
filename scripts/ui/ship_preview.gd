@@ -21,10 +21,11 @@ func _ready() -> void:
  env.background_color = Color(0.018, 0.03, 0.065)
  env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  env.ambient_light_color = Color(0.6, 0.7, 1)
- env.ambient_light_energy = 0.8
+ env.ambient_light_energy = 0.5
  env_node.environment = env
  scene.add_child(env_node)
  var light := DirectionalLight3D.new()
+ light.light_energy = 0.9
  light.rotation_degrees = Vector3(-35, -25, 0)
  scene.add_child(light)
  var camera := Camera3D.new()

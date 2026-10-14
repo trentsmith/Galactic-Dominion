@@ -26,6 +26,7 @@ var hits := 0
 var outside_time := 0.0
 var crew_name := "Unassigned"
 var hit_effect_remaining := 0.0
+var companion: AlienCompanion
 
 func _ready() -> void:
  add_to_group("ships")
@@ -56,19 +57,37 @@ func _ready() -> void:
  brain.ship = self
  add_child(brain)
  _build_visual()
+ var crew := CollectionCatalog.find(stats.crew_id)
+ if crew != null and crew.kind == "crew" and crew.species != "Human":
+  companion = AlienCompanion.new()
+  companion.ship = self
+  companion.definition = crew
+  add_child(companion)
 
 func _build_visual() -> void:
  var color := stats.color if team == 0 or stats.variant_style != "standard" else Color(0.95, 0.25, 0.20)
- var body := BoxMesh.new()
- body.size = Vector3(2.0, 1.2, 6.0)
- _mesh(body, Vector3.ZERO, color)
- var wing := BoxMesh.new()
- wing.size = Vector3(7.0 if stats.ability != "aegis" else 9.0, 0.3, 2.4)
- _mesh(wing, Vector3(0, 0, 1), color.darkened(0.3))
+ color = color.lightened(0.12)
+ var body := CapsuleMesh.new()
+ body.radius = 1.5 if stats.ability in ["aegis", "barrage"] else 1.2 if stats.ability in ["overcharge", "repair"] else 0.95
+ body.height = 5.4 if stats.ability != "aegis" else 4.4
+ _mesh(body, Vector3.ZERO, color).rotation.x = PI / 2
+ var wing := CapsuleMesh.new()
+ wing.radius = 0.48
+ wing.height = 8.6 if stats.ability == "aegis" else 6.8
+ _mesh(wing, Vector3(0, -0.1, 0.8), color.darkened(0.18)).rotation.z = PI / 2
  var cockpit := SphereMesh.new()
- cockpit.radius = 0.75
- cockpit.height = 1.5
- _mesh(cockpit, Vector3(0, 0.65, -1.0), Color(0.1, 0.9, 1))
+ cockpit.radius = 0.95
+ cockpit.height = 1.9
+ _mesh(cockpit, Vector3(0, 0.85, -0.9), Color(0.13, 0.19, 0.36)).scale = Vector3(1.05, 0.75, 1.1)
+ CartoonStyle.ball(self, Vector3(-0.35, 1.38, -1.1), Vector3(0.18, 0.06, 0.3), Color(0.82, 0.96, 1), true)
+ for side in [-1, 1]:
+  CartoonStyle.ball(self, Vector3(side * 2.5, 0, 0.8), Vector3(0.7, 0.6, 1.35), color.lightened(0.16))
+  CartoonStyle.ball(self, Vector3(side * 0.65, 0.12, -2.15), Vector3(0.26, 0.17, 0.16), Color(1, 0.88, 0.52), true)
+ if stats.ability == "barrage":
+  for side in [-1, 1]:
+   CartoonStyle.ball(self, Vector3(side * 1.7, -0.3, -0.8), Vector3(0.75, 0.65, 1.8), Color(1, 0.73, 0.52))
+ elif stats.ability == "repair":
+  CartoonStyle.ball(self, Vector3(0, 1.1, 1.1), Vector3(0.7, 0.28, 0.7), Color(0.71, 1, 0.76))
  var engine := SphereMesh.new()
  engine.radius = 0.55
  engine.height = 1.1
@@ -139,12 +158,7 @@ func _mesh(shape: Mesh, position: Vector3, color: Color, unshaded: bool = false)
  var mesh := MeshInstance3D.new()
  mesh.mesh = shape
  mesh.position = position
- var material := StandardMaterial3D.new()
- material.albedo_color = color
- material.metallic = 0.5
- material.roughness = 0.4
- if unshaded:
-  material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ var material := CartoonStyle.material(color, unshaded)
  mesh.material_override = material
  add_child(mesh)
  return mesh
@@ -199,3 +213,28 @@ func _destroy(attacker: CombatShip) -> void:
  collision_mask = 0
  velocity = Vector3.ZERO
  eliminated.emit(self, attacker)
+
+# Reuse the existing ship and signal connections after a free-roam destruction.
+func redeploy(at: Vector3, protection_seconds: float = 8.0) -> void:
+ alive = true
+ visible = true
+ collision_layer = 1
+ collision_mask = 3
+ position = at
+ rotation = Vector3.ZERO
+ velocity = Vector3.ZERO
+ health.dead = false
+ health.configure(stats)
+ health.damage_received = 0
+ health.damage_by_attacker.clear()
+ health.regen_delay = 0
+ movement.boost_energy = stats.boost_capacity
+ movement.thrust = Vector3.ZERO
+ movement.boost_requested = false
+ ability_remaining = 0
+ ability_cooldown = 0
+ targeting.select(null)
+ brain.retreat_latch = false
+ weapons.laser_remaining = 0
+ weapons.missile_remaining = 0
+ set_meta("spawn_protection", protection_seconds)

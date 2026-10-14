@@ -1,5 +1,15 @@
 # Changes
 
+## 0.5.0 — Free Roam & Little Space Crew
+
+- Added a connected four-region world, service stations, direct flight, validated warp, local scan signals and recurring AI patrols, with no shrinking zone or match timeout.
+- Added offline fleet redeployment and continuous online free roam with six human pilot slots plus twelve AI raiders, live joining, server-owned travel/service/respawn and persistent encounter rewards.
+- Added transactional encounter receipts, inventory leases, leave/end cleanup and database migration preserving existing accounts.
+- Added original rounded spacecraft, bubble cockpits, cartoon materials/outlines, cute alien meshes, matching portraits and rounded UI panels.
+- Equipped alien crew now orbit their ship and fire species-specific automatic projectiles; damage is credited to the host and remains server-authoritative online. Rare appearances retain normal attack stats.
+- Fixed offline pause to stop battle/exploration/free-roam simulation; reduced distant HUD clutter and free-roam target cycling.
+- Verified 171 Godot checks, 21 backend tests, real two-client Royale/free-roam runs and inspected OpenGL renderer captures. Manual interactive and Internet/VPS playtesting remain outstanding.
+
 ## 0.4.0 — Fast Combat & Victory Ships
 
 - Reduced hull/shields and regeneration; increased laser/missile damage across all five distinct ship roles.

@@ -96,6 +96,7 @@ func show_menu(paused: bool = false) -> void:
  backdrop.color = Color(0.015, 0.025, 0.065, 0.95)
  menu.add_child(backdrop)
  var center := CenterContainer.new()
+ center.theme = CartoonStyle.ui_theme()
  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  menu.add_child(center)
  var row := HBoxContainer.new()
@@ -115,12 +116,13 @@ DOMINION"
  title.add_theme_font_size_override("font_size", 54)
  column.add_child(title)
  var subtitle := Label.new()
- subtitle.text = "FLEET ROYALE  •  HANGAR & DISCOVERY
-Three ships. One command. Hold the stars."
+ subtitle.text = "OPEN SPACE  •  YOUR LITTLE SPACE CREW
+Explore, collect companions, and fly together."
  subtitle.add_theme_color_override("font_color", Color(0.6, 0.7, 0.85))
  column.add_child(subtitle)
  _button(column, "RESUME FLIGHT" if paused else "PLAY  /  DEPLOY FLEET", resume if paused else start_battle)
  if not paused:
+  _button(column, "FREE ROAM / OPEN SPACE", start_free_roam)
   _button(column, "GALACTIC EXPLORATION", func(): start_exploration(0))
   _button(column, "ONLINE / LOBBY / MARKETPLACE", show_online)
   _button(column, "FLEET HANGAR / COLLECTION", show_hangar)
@@ -182,6 +184,7 @@ func show_settings(paused: bool) -> void:
  bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  menu.add_child(bg)
  var center := CenterContainer.new()
+ center.theme = CartoonStyle.ui_theme()
  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  menu.add_child(center)
  var column := VBoxContainer.new()
@@ -289,3 +292,16 @@ func show_online() -> void:
  hub.session = network
  hub.back_requested.connect(show_menu)
  menu.add_child(hub)
+
+func start_free_roam() -> void:
+ network.disconnect_session()
+ get_tree().paused = false
+ if is_instance_valid(menu): menu.queue_free()
+ if is_instance_valid(battle):
+  battle.get_parent().remove_child(battle)
+  battle.queue_free()
+ battle = FreeRoamMatch.new()
+ battle.profile = profile
+ add_child(battle)
+ battle.pilot.sensitivity = sensitivity
+ battle.pilot.inverted = inverted

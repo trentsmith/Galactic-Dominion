@@ -1,6 +1,6 @@
 # Galactic Dominion self-hosted server
 
-Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with 4.6.3). No Python packages, Docker, paid assets or hosted accounts are required. One server instance runs one lobby/arena, with up to six human pilots and AI filling empty ships.
+Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with 4.6.3). No Python packages, Docker, paid assets or hosted accounts are required. One server instance runs one lobby and either a Fleet Royale arena or a continuous free-roam world, with up to six human pilots. AI fills empty pilot slots; free roam also contains twelve raider ships.
 
 ## Windows: play on this PC
 
@@ -12,9 +12,17 @@ Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with
 6. Run the game in Godot with F5 and choose **Online / Lobby / Marketplace**.
 7. Leave the account URL at `http://127.0.0.1:8080`, combat address at `127.0.0.1`, and UDP port at `7777`.
 8. Create an account using a name containing 3–24 letters, numbers or underscores, and a password of at least 10 characters.
-9. Click **Join Open Arena**. Choose a team if desired, then click **Ready**. The first pilot in the lobby clicks **Launch Match** when everyone is ready. Missing human slots are filled by AI.
+9. Click **Join Open Arena**. Choose a team if desired, then click **Ready**. The first pilot in the lobby clicks **Launch Match** when everyone is ready. Missing human slots are filled by AI. For continuous space travel and combat, the leader instead clicks **Launch Free Roam**. Additional pilots can join a running free-roam session.
 
 You can open multiple game windows and sign in as different users to test multiplayer on one PC. F1–F3 request control of ships on your own team; a ship occupied by another human cannot be taken. Fitting slots on the Online Fleet tab correspond to the three slots shown in the lobby. Preparing all three slots lets you use your chosen fittings whichever position you receive.
+
+## Online free roam and alien companions
+
+Launch Free Roam from the ready lobby. Fly directly between four regions, or press **M** to warp outside combat. Approach a station within 180 metres and press **G** for repair/refill; hostiles within 650 metres or recent damage block service and warp. Ships redeploy after destruction and there is no shrinking zone or timer. Up to six pilots share two teams; twelve additional AI raiders roam the world. Joining an active session replaces an available pilot slot with the joining account's fitted hull. A human-occupied ship cannot be switched into by another player.
+
+Equip an owned alien in **Online Fleet → Crew** before joining. Its companion orbits and automatically attacks nearby hostiles; the server alone creates projectiles and applies damage. Legendary/Mythic variants use normal species attack stats. Confirmed hostile kills pay a permanent random hull, two collectible rolls and salvage immediately, with idempotent SQLite receipts. Leave the world and refresh Online Fleet to trade your reward copies. Account inventory is locked while flying, renewed with short leases, and released when you leave; an interrupted server's lock expires automatically. Local scan discoveries are separate from online inventory.
+
+Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.5 game build is required on the server and every client.
 
 ## Explicit launch command
 

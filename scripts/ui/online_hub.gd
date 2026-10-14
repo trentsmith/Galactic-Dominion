@@ -28,6 +28,7 @@ var fit_options: Array = []
 var busy := false
 
 func _ready() -> void:
+ theme = CartoonStyle.ui_theme()
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  var bg := ColorRect.new()
  bg.color = Color(0.014, 0.025, 0.055)
@@ -85,11 +86,16 @@ func _ready() -> void:
  button(ready_buttons, "LAUNCH MATCH (LOBBY LEADER)", func():
   if not session.client_lobby.is_empty():
    session.request_start.rpc_id(1))
+ var roam_buttons := HBoxContainer.new()
+ connect_tab.add_child(roam_buttons)
+ button(roam_buttons, "LAUNCH FREE ROAM (LOBBY LEADER)", func():
+  if not session.client_lobby.is_empty(): session.request_start.rpc_id(1, "free_roam"))
  button(ready_buttons, "LEAVE LOBBY", func():
   session.disconnect_session()
   lobby_info.text = "Disconnected.")
  lobby_info = label("Up to six pilots; each team has three ships. AI fills every empty slot.
-One arena per server instance. All connected pilots must be ready.", 16)
+Choose Fleet Royale or a continuous free-roam session with AI patrols.
+One session per server instance. All connected pilots must be ready.", 16)
  connect_tab.add_child(lobby_info)
  var fleet_tab := VBoxContainer.new()
  fleet_tab.name = "Online Fleet"

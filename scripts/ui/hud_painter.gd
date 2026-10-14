@@ -17,8 +17,12 @@ func text(at: Vector2, content: String, color: Color = Color.WHITE, font_size: i
  draw_string(font, at, content, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 
 func panel(rect: Rect2) -> void:
- draw_rect(rect, Color(0.015, 0.03, 0.065, 0.88))
- draw_line(rect.position, rect.position + Vector2(rect.size.x, 0), Color(0.25, 0.55, 0.7, 0.5), 1)
+ var style := StyleBoxFlat.new()
+ style.bg_color = Color(0.055, 0.07, 0.17, 0.91)
+ style.border_color = Color(0.32, 0.43, 0.65, 0.8)
+ style.set_border_width_all(2)
+ style.set_corner_radius_all(14)
+ draw_style_box(style, rect)
 
 func bar(at: Vector2, label: String, value: float, maximum: float, color: Color) -> void:
  text(at, label, MUTED, 13)
@@ -33,15 +37,19 @@ func _draw() -> void:
  var width := size.x
  var height := size.y
  var center := size / 2.0
+ var free_roam := battle is FreeRoamMatch
+ var opponents := 0
+ for candidate in battle.ships:
+  if candidate.alive and candidate.team != ship.team: opponents += 1
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
- text(Vector2(42, 72), "FLEET ROYALE  /  VANGUARD", MUTED, 13)
- text(Vector2(42, 93), "ALLIES  %d / 3     HOSTILES  %d / 3" % [battle.living(battle.local_team()), battle.living(1 - battle.local_team())], Color.WHITE, 15)
+ text(Vector2(42, 72), "FREE ROAM / OPEN SPACE" if free_roam else "FLEET ROYALE  /  VANGUARD", MUTED, 13)
+ text(Vector2(42, 93), "ALLIES %d / HOSTILES %d" % [battle.living(battle.local_team()), opponents], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
  var exploring := battle is ExplorationMatch
  var remaining := maxi(0, 480 - int(battle.elapsed))
- text(Vector2(width / 2 - 104, 48), "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
- text(Vector2(width / 2 - 98, 70), "FREE FLIGHT / G SCAN / M MAP" if exploring else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
+ text(Vector2(width / 2 - 104, 48), "FREE ROAM" if free_roam else "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
+ text(Vector2(width / 2 - 98, 70), "G SERVICE / M STAR CHART" if free_roam else "FREE FLIGHT / G SCAN / M MAP" if exploring else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
  panel(Rect2(Vector2(24, height - 200), Vector2(320, 176)))
  text(Vector2(42, height - 174), "%s  /  %s" % [ship.callsign.to_upper(), ship.stats.class_name_text.to_upper()], CYAN, 16)
  bar(Vector2(42, height - 145), "HULL INTEGRITY", ship.health.hull, ship.health.max_hull, Color(0.6, 0.9, 0.65))
@@ -62,6 +70,8 @@ func _draw() -> void:
   var color := CYAN if ally == ship else MUTED
   text(Vector2(width - 300, y), "F%d  %s  %s" % [ally.fleet_slot + 1, ally.stats.class_name_text, "%d%%" % int(ally.health.hull / ally.health.max_hull * 100) if ally.alive else "LOST"], color, 14)
  text(Vector2(42, 128), "PILOT  /  " + ship.crew_name.to_upper(), MUTED, 13)
+ if is_instance_valid(ship.companion):
+  text(Vector2(42, 149), "ALIEN COMPANION / AUTO ATTACK", CYAN, 13)
  text(Vector2(width / 2 - 234, height - 30), "1 Follow   2 Attack   3 Defend   4 Regroup   5 Retreat", MUTED, 14)
  # Reticle remains centered on the ship's weapon axis (camera is offset upward).
  var weapon_point := ship.global_position - ship.global_basis.z * 500.0
@@ -71,6 +81,16 @@ func _draw() -> void:
  draw_line(reticle + Vector2(10, 0), reticle + Vector2(24, 0), CYAN)
  draw_line(reticle - Vector2(0, 24), reticle - Vector2(0, 10), CYAN)
  draw_circle(reticle, 2, CYAN)
+ if free_roam:
+  var roaming := battle as FreeRoamMatch
+  for index in range(4):
+   if ship.position.distance_to(FreeRoamWorld.CENTERS[index]) > 1600: continue
+   _draw_location(FreeRoamWorld.CENTERS[index], FreeRoamWorld.NAMES[index] + " STATION", CYAN, ship)
+  for index in range(roaming.beacons.size()):
+   var definition: SectorDefinition = ExplorationMatch.SECTORS[index / 3]
+   if ship.position.distance_to(roaming.beacons[index].position) > 1400: continue
+   if not roaming.profile.exploration_records.has("%s.signal.%d" % [definition.id, index % 3]):
+    _draw_location(roaming.beacons[index].position, "SIGNAL", Color(0.8, 0.5, 1), ship)
  if exploring:
   var exploration := battle as ExplorationMatch
   for index in range(exploration.beacons.size()):
@@ -84,6 +104,7 @@ func _draw() -> void:
  var target := ship.targeting.target
  for candidate in battle.ships:
   if candidate.alive and candidate != ship:
+   if free_roam and candidate != target and ship.position.distance_to(candidate.position) > 1400: continue
    _draw_ship_marker(candidate, candidate == target)
  if is_instance_valid(target) and target.alive:
   var info := "%s  /  %dm" % [target.callsign.to_upper(), int(ship.global_position.distance_to(target.global_position))]
@@ -122,3 +143,10 @@ func _draw_ship_marker(ship: CombatShip, selected: bool) -> void:
   draw_rect(Rect2(screen + Vector2(-25, -radius - 20), Vector2(50 * ship.health.shield / ship.health.max_shield, 3)), CYAN)
  if selected:
   text(screen + Vector2(25, -8), ship.stats.class_name_text, color, 12)
+
+func _draw_location(at: Vector3, name_text: String, color: Color, ship: CombatShip) -> void:
+ if battle.camera.is_position_behind(at): return
+ var screen := battle.camera.unproject_position(at)
+ if screen.x < 20 or screen.x > size.x - 20 or screen.y < 20 or screen.y > size.y - 20: return
+ draw_circle(screen, 9, color, false, 1.5)
+ text(screen + Vector2(14, 0), "%s / %dm" % [name_text, int(ship.position.distance_to(at))], color, 12)

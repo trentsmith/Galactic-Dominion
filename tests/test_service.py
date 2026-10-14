@@ -128,6 +128,63 @@ class AccountMarketTests(unittest.TestCase):
         for boundary in ['ticket == 0','ticket < 5','ticket < 824','ticket < 4756']:
             self.assertIn(boundary,source)
         self.assertTrue(all(x['research_cost']==0 for x in ITEMS.values() if x['rarity'] in ['legendary','mythic']))
+    def test_free_roam_receipts_persist_and_cannot_pay_twice(self):
+        self.store.start_match('roam',[{'user_id':self.a,'team':0}],mode='free_roam')
+        self.store.roam_lease('roam')
+        reward=self.store.roam_reward('roam','kill-one',self.a,90)
+        self.assertIn(reward['ship'],self.store.me(self.a)['inventory'])
+        before=self.store.me(self.a)
+        reopened=Store(self.store.path,'test-only-key')
+        self.assertTrue(reopened.roam_reward('roam','kill-one',self.a,90)['already_settled'])
+        self.assertEqual(before,reopened.me(self.a))
+        self.assertEqual((before['wins'],before['battles'],before['total_kills'],before['total_damage']),(1,1,1,90))
+        with self.assertRaises(ServiceError): self.store.list_item(self.a,'engine_sprint',10)
+        self.store.roam_end('roam')
+        self.store.list_item(self.a,'engine_sprint',10)
+        with self.assertRaises(ServiceError): self.store.roam_reward('roam','kill-two',self.a,10)
+        self.assertTrue(self.store.roam_end('roam')['already_closed'])
+    def test_free_roam_drop_in_leave_and_leases(self):
+        self.store.start_match('roam',[{'user_id':self.a,'team':0}],mode='free_roam')
+        joined=self.store.roam_join('roam',self.b,1)
+        self.assertEqual(joined['profile']['user_id'],self.b)
+        with self.assertRaises(ServiceError): self.store.roam_join('roam',self.b,1)
+        with self.store.connect() as db:
+            db.execute('UPDATE users SET locked_until=0 WHERE id=?',(self.b,))
+        self.store.roam_lease('roam')
+        with self.assertRaises(ServiceError): self.store.equip(self.b,0,'engine','engine_sprint')
+        self.store.roam_leave('roam',self.b)
+        self.store.equip(self.b,0,'engine','engine_sprint')
+        with self.assertRaises(ServiceError): self.store.roam_reward('roam','kill-one',self.b,10)
+        self.store.roam_join('roam',self.b,1)
+        self.store.roam_end('roam')
+        self.assertEqual(self.store.me(self.b)['battles'],0)
+    def test_free_roam_rejects_invalid_rewards_and_royale_mixups(self):
+        self.store.start_match('roam',[{'user_id':self.a,'team':0}],mode='free_roam')
+        with self.assertRaises(ServiceError): self.store.finish_match('roam',0,{})
+        with self.assertRaises(ServiceError): self.store.roam_reward('roam','one',self.b,10)
+        with self.assertRaises(ServiceError): self.store.roam_reward('roam','one',self.a,float('nan'))
+        with self.assertRaises(ServiceError): self.store.roam_reward('roam','',self.a,10)
+        self.store.roam_end('roam')
+        self.store.start_match('royale',[{'user_id':self.a,'team':0}])
+        with self.assertRaises(ServiceError): self.store.roam_reward('royale','one',self.a,10)
+        with self.assertRaises(ServiceError): self.store.start_match('other',[{'user_id':self.b,'team':1}],mode='unknown')
+    def test_expired_roam_cannot_unlock_or_reward_a_new_session(self):
+        self.store.start_match('old-roam',[{'user_id':self.a,'team':0}],mode='free_roam')
+        with self.store.connect() as db: db.execute('UPDATE users SET locked_until=0 WHERE id=?',(self.a,))
+        self.store.start_match('new-match',[{'user_id':self.a,'team':0}])
+        self.store.roam_lease('old-roam')
+        with self.assertRaises(ServiceError): self.store.roam_reward('old-roam','one',self.a,10)
+        self.store.roam_end('old-roam')
+        with self.assertRaises(ServiceError): self.store.equip(self.a,0,'engine','engine_sprint')
+    def test_existing_database_migrates_without_losing_inventory(self):
+        import sqlite3
+        path=Path(self.tmp.name)/'legacy.sqlite3'
+        with sqlite3.connect(path) as db:
+            db.execute('CREATE TABLE users(id TEXT PRIMARY KEY,username TEXT UNIQUE,salt TEXT,password_hash TEXT,profile TEXT,locked_until REAL DEFAULT 0)')
+            db.execute('INSERT INTO users VALUES(?,?,?,?,?,?)',('legacy','Legacy','salt','hash',json.dumps(self.store.me(self.a)),0))
+        migrated=Store(path,'test-only-key')
+        self.assertEqual(migrated.me('legacy')['inventory'],self.store.me(self.a)['inventory'])
+        with migrated.connect() as db: self.assertIn('active_match',[r['name'] for r in db.execute('PRAGMA table_info(users)')])
     def test_public_profile_excludes_secrets(self):
         p=self.store.public('Pilot_A')
         self.assertNotIn('password_hash',p); self.assertNotIn('token',p); self.assertNotIn('user_id',p)

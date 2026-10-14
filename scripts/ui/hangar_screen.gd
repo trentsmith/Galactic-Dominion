@@ -23,6 +23,7 @@ var records_list: ItemList
 var fleet_title: Label
 
 func _ready() -> void:
+ theme = CartoonStyle.ui_theme()
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  var background := ColorRect.new()
  background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

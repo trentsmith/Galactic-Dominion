@@ -4,6 +4,7 @@ extends Node
 var ship: CombatShip
 var target: CombatShip
 var lock_time := 0.0
+var selection_range := INF
 
 func tick(delta: float) -> void:
  if not is_instance_valid(target) or not target.alive:
@@ -27,7 +28,7 @@ func select(candidate: CombatShip) -> void:
 func cycle() -> void:
  var enemies: Array[CombatShip] = []
  for node in get_tree().get_nodes_in_group("ships"):
-  if node.alive and node.team != ship.team:
+  if node.alive and node.team != ship.team and ship.global_position.distance_to(node.global_position) <= selection_range:
    enemies.append(node)
  if enemies.is_empty():
   select(null)

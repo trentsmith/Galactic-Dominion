@@ -1,6 +1,6 @@
-# Galactic Dominion — Phase 4: Fast Combat & Victory Ships
+# Galactic Dominion — Phase 5: Free Roam & Little Space Crew
 
-A single-player Godot 4.x 3D Fleet Royale game prototype with exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins, paid assets, or network access required.
+A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Open and play
 
@@ -8,14 +8,50 @@ A single-player Godot 4.x 3D Fleet Royale game prototype with exploration, a per
 2. Extract the project folder if downloaded as a ZIP.
 3. In Godot's Project Manager click **Import**, select `project.godot`, and open it.
 4. Press **F5** (Run Project).
-5. Click **PLAY / DEPLOY FLEET**. The mouse is captured for steering; **Esc** pauses and releases it.
+5. Click **FREE ROAM / OPEN SPACE** to explore, or **PLAY / DEPLOY FLEET** for Fleet Royale. The mouse is captured for steering; **Esc** pauses and releases it.
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
 
+## Free-roaming space
+
+**Free Roam / Open Space** loads four connected regions into one world. Fly directly between Vesper Reach, Kharon Belt, Auralith Drift and Ember Frontier, or open **M** for station warp. There is no shrinking zone, boundary damage, eight-minute timeout or session-ending team elimination. Nearby ship markers and **Tab** targeting are limited to 1,400 metres to keep the view readable.
+
+- Your three configured fleet ships travel together; F1–F3 switching and the five fleet orders work as before.
+- Twelve AI raiders patrol the four regions, while four friendly civilian escorts roam near stations. Raider factions can fight each other as well as your fleet.
+- Approach a station within **180 metres** and press **G** to restore nearby fleet hull, shields and boost. Warp and station service require no nearby hostiles within 650 metres and no recent damage. Warp preserves damage; it does not repair ships.
+- Twelve signals grant the existing local exploration discoveries. Approach within 35 metres and **hold G for two seconds**. Signals share saved IDs with Exploration, so rescanning cannot grant duplicate rewards.
+- Defeat a three-ship patrol with your fleet to receive a **permanent hull, two discovery rolls and 60 salvage**. The world stays active; new patrols arrive after 45 seconds.
+- Destroyed fleet ships redeploy at the nearest station after 12 seconds. Eight seconds of launch protection helps prevent immediate repeat deaths; firing ends protection. Offline **Esc** pause now stops simulation, including the free-roam world.
+
+Online free roam supports **up to six human pilots plus twelve AI raiders** in the same world. In Online / Lobby / Marketplace, join the server, ready up, and have the leader click **Launch Free Roam**. Additional pilots can join an active free-roam session without interrupting its players. Two three-ship teams remain in this prototype; empty pilot slots use AI and F1–F3 switching cannot take another human's vessel. Warp and service move/repair only your controlled online ship. The server handles movement, damage, travel, service and respawning. Each server-confirmed player kill of a hostile ship grants a permanent hull and discovery rewards, saved immediately; leaving unlocks your inventory for trading. Online scanning is not added in this build; local exploration and online inventories remain separate.
+
+One server process runs either Fleet Royale or a continuous free-roam session. With no human pilots left, the free-roam session closes and its lobby becomes available again. World positions and encounter waves are session state, while your collected ships, fittings and records persist.
+
+## Cute cartoon ships and alien companions
+
+Ships now use rounded hulls, bubble cockpits, chunky wing pods, pastel colors and cartoon outline/shading passes. Planets have rings, asteroids use softer colors, and HUD/menu panels have rounded edges. All geometry and portraits are original procedural assets; no external art packages are used.
+
+**Equip an alien in a ship's Crew slot** in Fleet Hangar or Online Fleet. Its 3D companion orbits the ship, bobs and blinks, chooses a nearby enemy within 320 metres, and fires real projectiles. A selected enemy takes priority. Shots obey cooldowns, avoid allies, apply shields/hull damage and credit the host ship. Alien attacks are automatic on player and AI ships; online clients only animate companions and render server-owned projectiles. Companions stop attacking when their ship is destroyed and return when it redeploys. Astronauts retain their crew bonuses without spawning an alien companion.
+
+| Species | Companion attack |
+| --- | --- |
+| Vesperi | 6 damage plasma orb every 1.4 seconds |
+| Kharon | 10 damage charged orb every 2.1 seconds |
+| Auralith | 4 damage rapid orb every 1.0 second |
+| Drakari | 8 damage tracking orb every 1.7 seconds |
+
+These attacks supplement the crew's existing stat bonus. Legendary/Mythic appearances do not increase companion damage or firing speed. To discover your first alien locally, scan the first Vesper signal to find Nyx, then equip Nyx in the hangar. Alien crew can also be researched or discovered through battle rewards.
+
+The images below were captured from the actual Godot renderer. The flight capture parks AI to keep the screenshot reproducible; gameplay runs the patrols normally.
+
+![Original rounded ship and alien models](docs/images/space-crew.png)
+
+![Free-roam flight HUD with an equipped alien companion](docs/images/free-roam.png)
+
 ## Faster combat and permanent victory ships
 
-Hull and shields are roughly halved; lasers and missiles hit harder, and shield regeneration is reduced. The eight-minute match ceiling remains. An automated six-AI match ended in **56.48 seconds**, versus **235 seconds** in the preceding build; this is one simulation, not a promised player match length.
+Hull and shields are roughly halved; lasers and missiles hit harder, and shield regeneration is reduced. The eight-minute match ceiling remains. The previous build finished a six-AI match in **56.48 seconds**, versus **235 seconds** before the damage/health changes. This build, which adds alien opponents, completed its test battle in **20.42 simulated seconds**. These are individual simulations, not promised player match lengths; balance still needs interactive playtesting.
 
 | Ship | Hull / Shield | Laser / Missile damage | Distinct role and R ability |
 | --- | --- | --- | --- |
@@ -127,31 +163,37 @@ The spherical zone starts at 600 metres, begins shrinking after 30 seconds, and 
 
 - `scripts/ships`: ship composition, Resource statistics, momentum movement and pilot/camera input.
 - `scripts/combat`: health/shield signals, extensible weapon specs, cooldowns, swept-ray projectiles, homing and target locking.
-- `scripts/ai`: behavior states and separate steering/obstacle avoidance.
+- `scripts/ai`: behavior states, nearby perception, patrol steering, obstacle avoidance and alien companion targeting/attacks.
 - `scripts/fleet`: control ownership, switching and command propagation.
 - `scripts/match`: spawning, ability aura aggregation, timer, team elimination and results.
-- `scripts/world`: deterministic arena, safe zone and transient combat effects.
+- `scripts/world`: deterministic arena, safe zone, connected free-roam regions/stations and transient combat effects.
+- `scripts/visuals` and `resources/shaders`: shared cartoon materials, outline shader and original 3D alien meshes.
 - `scripts/ui`: HUD, projected health/target markers, results, fleet hangar, 3D preview and primitive crew portraits.
 - `scripts/progression`: collectible definitions, catalog, fitting validation, stat composition, reward settlement and local profile persistence.
 - `scripts/exploration`: Resource-defined sectors, scans, patrol encounters, chart navigation and discovery records.
 - `scripts/online`: HTTP account client, ENet lobby, authoritative simulation, bounded inputs and snapshot presentation.
 - `server`: Python/SQLite account, profile, escrow/offer/market and combat reward service, plus a cross-platform launcher.
 - `resources/collectibles`: 36 reusable `.tres` collectible definitions.
-- `resources/ships`: Interceptor, Skirmisher and Guardian `.tres` definitions.
+- `resources/ships`: reusable Interceptor, Skirmisher, Guardian, Bomber and Support `.tres` definitions.
 
 Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation. The online server simulates all ships; clients present snapshots. Prediction and lag compensation are future work.
 
 ## Automated checks actually run
 
-- Godot headless editor import and main-menu startup.
+- Godot headless editor import and main-menu startup. Restricted-sandbox editor debug sockets were unavailable; script imports and the real renderer completed.
 - `tests/smoke_test.gd`: **38 checks passed**, including spawning, switching, abilities, commands, damage, regeneration, laser/missile impacts, momentum, boost, zone escalation, destruction, victory/defeat, timeout and menu cleanup.
 - `tests/progression_test.gd`: **51 checks passed**, including catalog integrity, research costs, fitting ownership, wrong-slot/class rejection, crew transfers, Resource isolation, duplicate rewards, save/reload, backup recovery, malformed-save repair, future-version preservation, real hangar callbacks, rare appearance geometry and match reward integration.
 - `tests/exploration_test.gd`: **16 checks passed**, including sector spawning, scans, repeat-reward rejection, patrol rewards, warp, hull unlocks, Bomber/Support abilities, discovery persistence, save migration and online UI creation.
 - `tests/online_presentation_test.gd`: **11 checks passed** for replicated health, boost, locking, cooldowns, destruction, zone/timer, projectile cleanup, control transfer and correct team-two victory/defeat messages.
-- `tests/test_service.py`: **16 Python tests passed** for authentication, single-use tickets, fitting/research rules, listing/offer escrow, simultaneous purchase rejection, public profile privacy and idempotent authoritative rewards.
+- `tests/test_service.py`: **21 Python tests passed** for authentication, single-use tickets, fitting/research rules, listing/offer escrow, simultaneous purchase rejection, public profile privacy and idempotent authoritative rewards.
 - `tests/test_network_integration.py`: this build: a real dedicated-server run with **two Godot clients** (the previous build also passed six-client testing), testing authentication, ready lobbies, server-owned movement, switching/ownership, result delivery, protected reward endpoints and persisted rewards. HTTP checks also cover actual service routes for registration, profiles, fittings, offers and trade settlement.
-- `tests/test_launcher.py`: a fresh project copy imported and started both self-hosted services, generated its private key, responded to readiness checks and shut down cleanly.
-- `tests/ai_battle_test.gd`: an autonomous six-ship battle completed with a Ravagers victory at **56.48 simulated seconds**, dealing **670.4 total damage**.
+- `tests/test_launcher.py`: a fresh copy of this build imported successfully, generated its private server key, started the account and combat services, passed readiness checks and shut down cleanly.
+- `tests/ai_battle_test.gd`: an autonomous six-ship battle completed with a Ravagers victory at **20.42 simulated seconds**, dealing **545.0 total damage**.
+
+- `tests/free_roam_test.gd`: **33 checks passed** for connected world population, indefinite flight, warp validation, repairs, exploration records, permanent rewards, recurring patrols, respawning, launch protection, actual pause and client authority.
+- `tests/alien_companion_test.gd`: **22 checks passed** for crew binding, original mesh details, orbit motion, enemy selection, real projectile damage/credit, cooldowns, friendly-fire/range rejection, rare-appearance parity, host destruction/redeployment, preview behavior, save/reload and client authority.
+- `tests/test_free_roam_network.py`: **two real Godot clients** verified joining an active world, replicated hull fitting and NPCs, travel, station service, a real automatic companion projectile kill, controlled PvP damage, station respawn, persisted/tradable rewards, inventory unlock and protected server endpoints. The server fixture parks AI and injects PvP damage for reproducibility; the companion projectile itself runs the normal combat code.
+- `tests/render_preview.gd` and `tests/render_flight.gd`: actual **1280 × 720 OpenGL renders** inspected using Mesa software rendering. A manual interactive playtest and Internet/VPS deployment were not completed.
 
 Run from the project directory:
 
@@ -161,13 +203,16 @@ godot --headless --path . --script res://tests/smoke_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/progression_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/exploration_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/online_presentation_test.gd --fixed-fps 60
+godot --headless --path . --script res://tests/free_roam_test.gd --fixed-fps 60
+godot --headless --path . --script res://tests/alien_companion_test.gd --fixed-fps 60
 godot --headless --path . --script res://tests/ai_battle_test.gd --fixed-fps 60
 python -m unittest discover -s tests -p test_service.py -v
 python tests/test_network_integration.py
+python tests/test_free_roam_network.py
 ```
 
 If your sandbox does not allow Godot to write its user directories, set `XDG_DATA_HOME`, `XDG_CACHE_HOME`, and `XDG_CONFIG_HOME` to writable directories for those commands.
 
 ## Current limits
 
-This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The new modes were validated headlessly; rendered interactive playtests of this expansion and real Internet/VPS deployment have not been completed. The online server handles one arena per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.
+This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The modes have automated combat/network checks and inspected scripted renderer captures; manual interactive playtests and real Internet/VPS deployment have not been completed. The online server handles one arena or free-roam session per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing Fleet Royale match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.

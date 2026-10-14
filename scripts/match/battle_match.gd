@@ -21,6 +21,9 @@ var rewards: Array[Dictionary] = []
 var reward_summary := ""
 var battle_id := ""
 
+func _init() -> void:
+ process_mode = Node.PROCESS_MODE_PAUSABLE
+
 func _ready() -> void:
  battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
  var arena := SpaceArena.new()
@@ -46,6 +49,10 @@ func _ready() -> void:
     ship.crew_name = crew.display_name if crew != null else "Unassigned"
    if preconfigured_stats.size() == 6:
     ship.stats = preconfigured_stats[team_index * 3 + slot]
+   if team_index == 1 and network_role == "offline":
+    ship.stats = ship.stats.duplicate(true)
+    ship.stats.crew_id = ["crew_nyx", "crew_kael", "crew_orith"][slot]
+    ship.crew_name = CollectionCatalog.find(ship.stats.crew_id).display_name
    ship.team = team_index
    ship.fleet_slot = slot
    ship.callsign = ("Vanguard" if team_index == 0 else "Ravager") + " %d" % (slot + 1)

@@ -13,6 +13,9 @@ var ship_totals: Array[Vector2] = []
 var roster: Array[Dictionary] = []
 var match_id := ""
 var server_key := ""
+var match_mode := "royale"
+var lease_clock := 0.0
+var roam_joining_slots: Array[int] = []
 var max_seconds := 480.0
 var aim := Vector2.ZERO
 var input_provider: Callable
@@ -82,18 +85,18 @@ func _peer_connected(id: int) -> void:
 
 func _connected() -> void:
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.4.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.5.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.4.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.5.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
- if not pending_peers.has(sender) or ticket.length() > 128 or starting or (is_instance_valid(arena) and not arena.finished):
+ if not pending_peers.has(sender) or ticket.length() > 128 or starting or (is_instance_valid(arena) and not arena.finished and not arena is FreeRoamMatch):
   reject.rpc_id(sender, "The current arena is busy. Try again after its match.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -101,7 +104,7 @@ func authenticate(ticket: String, version: String = "") -> void:
  var reply := await api.request("/server/ticket", {"ticket": ticket}, HTTPClient.METHOD_POST, server_key)
  if not multiplayer.get_peers().has(sender):
   return
- if starting or (is_instance_valid(arena) and not arena.finished):
+ if starting or (is_instance_valid(arena) and not arena.finished and not arena is FreeRoamMatch):
   reject.rpc_id(sender, "The arena has started. Join after the current match.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -114,6 +117,9 @@ func authenticate(ticket: String, version: String = "") -> void:
    reject.rpc_id(sender, "This account is already in the lobby.")
    multiplayer.multiplayer_peer.disconnect_peer(sender)
    return
+ if arena is FreeRoamMatch and not arena.finished:
+  _join_running_roam(sender, reply.data)
+  return
  var used_slots: Array[int] = []
  for existing in members.values():
   used_slots.append(int(existing.index))
@@ -159,7 +165,7 @@ func ready_up(ready: bool) -> void:
   _broadcast_lobby()
 
 @rpc("any_peer", "call_remote", "reliable")
-func request_start() -> void:
+func request_start(mode: String = "royale") -> void:
  var sender := multiplayer.get_remote_sender_id()
  if not server_mode or starting or members.is_empty() or sender != members.keys()[0] or (is_instance_valid(arena) and not arena.finished):
   return
@@ -167,12 +173,14 @@ func request_start() -> void:
   if not member.ready:
    reject.rpc_id(sender, "All connected pilots must be ready.")
    return
+ if mode not in ["royale", "free_roam"]: return
+ match_mode = mode
  starting = true
  roster.clear()
  match_id = Crypto.new().generate_random_bytes(16).hex_encode()
  for member in members.values():
   roster.append({"user_id": member.profile.user_id, "team": int(member.index) / 3})
- var reply := await api.request("/server/start", {"match_id": match_id, "roster": roster}, HTTPClient.METHOD_POST, server_key)
+ var reply := await api.request("/server/start", {"match_id": match_id, "roster": roster, "mode": match_mode}, HTTPClient.METHOD_POST, server_key)
  if reply.has("error"):
   starting = false
   for id in members:
@@ -217,12 +225,17 @@ func request_start() -> void:
   names.append(ship_name)
   crew_names.append(crew_name)
   ship_totals.append(Vector2.ZERO)
- arena = BattleMatch.new()
+ arena = FreeRoamMatch.new() if match_mode == "free_roam" else BattleMatch.new()
  arena.name = "Arena"
  arena.network_role = "server"
  arena.preconfigured_stats = stats_list
  arena.max_duration = max_seconds
  add_child(arena)
+ while slot_owners.size() < arena.ships.size():
+  slot_owners.append(0)
+  ship_totals.append(Vector2.ZERO)
+ if arena is FreeRoamMatch:
+  arena.encounter_won.connect(_roam_encounter_won)
  for index in range(6):
   arena.ships[index].callsign = names[index]
   arena.ships[index].crew_name = crew_names[index]
@@ -245,11 +258,11 @@ func request_start() -> void:
   serialized.append(entry)
  for id in members:
   if _connected_peer(id):
-   begin_match.rpc_id(id, serialized, names, slot_owners, crew_names)
+   begin_match.rpc_id(id, serialized, names, slot_owners, crew_names, match_mode)
  starting = false
 
 @rpc("authority", "call_remote", "reliable")
-func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Array) -> void:
+func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Array, mode: String = "royale") -> void:
  if server_mode or serialized.size() != 6:
   return
  var host := get_parent()
@@ -258,7 +271,8 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
  if is_instance_valid(arena):
   remove_child(arena)
   arena.queue_free()
- arena = BattleMatch.new()
+ match_mode = mode
+ arena = FreeRoamMatch.new() if mode == "free_roam" else BattleMatch.new()
  arena.name = "Arena"
  arena.network_role = "client"
  for entry in serialized:
@@ -268,6 +282,9 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
   arena.preconfigured_stats.append(stats)
  add_child(arena)
  host.battle = arena
+ if arena is FreeRoamMatch:
+  arena.travel_requested.connect(func(index): ship_event.rpc_id(1, "warp", index))
+  arena.dock_requested.connect(func(): ship_event.rpc_id(1, "dock"))
  slot_owners.clear()
  for owner in owners:
   slot_owners.append(int(owner))
@@ -278,7 +295,7 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
  arena.fleet.current_command = "attack"
  aim = Vector2.ZERO
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
- status_changed.emit("Online match running")
+ status_changed.emit("Online free-roam running" if match_mode == "free_roam" else "Online match running")
  match_loaded.rpc_id(1)
 
 func _choose_client_ship() -> void:
@@ -323,6 +340,15 @@ func ship_event(action: String, argument: int = 0) -> void:
   arena.ships[requested].player_controlled = true
   inputs.erase(sender)
  elif ship.alive:
+  if arena is FreeRoamMatch:
+   if action == "warp":
+    var moved: bool = arena.travel_ship(ship, argument)
+    roam_notice.rpc_id(sender, "Arrived / " + FreeRoamWorld.NAMES[argument] if moved else "Warp denied: leave combat before travelling.")
+    return
+   if action == "dock":
+    var serviced: bool = arena.service_ship(ship)
+    roam_notice.rpc_id(sender, "Station service complete." if serviced else "Service denied: approach a station outside combat.")
+    return
   match action:
    "target": ship.targeting.cycle()
    "missile": ship.weapons.fire(true)
@@ -395,11 +421,16 @@ func _physics_process(delta: float) -> void:
     ship.basis = ship.basis.orthonormalized()
     if input.laser:
      ship.weapons.fire()
+  if match_mode == "free_roam":
+   lease_clock += delta
+   if lease_clock >= 60:
+    lease_clock = 0
+    _renew_roam_lease()
   snapshot_clock += delta
   if snapshot_clock >= 1.0 / 15.0:
    snapshot_clock = 0
    var states: Array = []
-   for index in range(6):
+   for index in range(arena.ships.size()):
     var ship := arena.ships[index]
     var owner := slot_owners[index]
     var totals := Vector2(ship.kills, ship.damage_dealt)
@@ -411,17 +442,17 @@ func _physics_process(delta: float) -> void:
    var bullets: Array = []
    for child in arena.get_children():
     if child is SpaceProjectile:
-     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking})
+     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color})
    for id in members:
     if _connected_peer(id):
      receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
  else:
   if not is_instance_valid(arena) or arena.finished:
    return
-  for index in range(mini(6, desired_states.size())):
+  for index in range(mini(arena.ships.size(), desired_states.size())):
    var ship := arena.ships[index]
    var state: Dictionary = desired_states[index]
-   ship.position = ship.position.lerp(state.position, minf(1, delta * 18))
+   ship.position = state.position if ship.position.distance_to(state.position) > 1000 else ship.position.lerp(state.position, minf(1, delta * 18))
    ship.basis = ship.basis.slerp(Basis(state.rotation), minf(1, delta * 18)).orthonormalized()
   arena.pilot.update_camera(delta)
   aim = aim.move_toward(Vector2.ZERO, delta * 0.75)
@@ -439,7 +470,7 @@ func _physics_process(delta: float) -> void:
 
 @rpc("authority", "call_remote", "reliable", 2)
 func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: float, bullets: Array) -> void:
- if not is_instance_valid(arena) or states.size() != 6:
+ if not is_instance_valid(arena) or states.size() != arena.ships.size() or owners.size() != arena.ships.size():
   return
  desired_states = states
  var old_index := _controlled_index(peer_id)
@@ -452,7 +483,7 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
  arena.zone.radius = radius
  for ring in arena.zone.rings:
   ring.scale = Vector3.ONE * radius
- for index in range(6):
+ for index in range(arena.ships.size()):
   var ship := arena.ships[index]
   var state: Dictionary = states[index]
   if ship.alive and not state.alive:
@@ -488,18 +519,22 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
  for bullet in bullets:
   var mesh := MeshInstance3D.new()
   mesh.set_meta("network_projectile", true)
+  mesh.set_meta("companion", bullet.get("companion", false))
   var shape := SphereMesh.new()
-  shape.radius = 0.32 if bullet.missile else 0.18
+  shape.radius = 0.28 if bullet.get("companion", false) else 0.32 if bullet.missile else 0.18
   shape.height = shape.radius * 2
   mesh.mesh = shape
   var material := StandardMaterial3D.new()
   material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-  material.albedo_color = Color(1, 0.7, 0.2) if bullet.missile else Color(0.2, 0.8, 1) if bullet.team == 0 else Color(1, 0.3, 0.2)
+  material.albedo_color = bullet.color if bullet.get("color", Color.TRANSPARENT).a > 0 else Color(1, 0.7, 0.2) if bullet.missile else Color(0.2, 0.8, 1) if bullet.team == 0 else Color(1, 0.3, 0.2)
   mesh.material_override = material
   arena.add_child(mesh)
   mesh.position = bullet.position
 
 func _server_finished(winner: int, reason: String) -> void:
+ if match_mode == "free_roam":
+  await api.request("/server/roam/end", {"match_id": match_id}, HTTPClient.METHOD_POST, server_key)
+  return
  var results := {}
  for entry in roster:
   results[entry.user_id] = {"kills": 0, "damage": 0.0}
@@ -535,6 +570,8 @@ func _peer_disconnected(id: int) -> void:
  if not server_mode:
   return
  pending_peers.erase(id)
+ if match_mode == "free_roam" and members.has(id):
+  _leave_roam_account(str(members[id].profile.user_id))
  members.erase(id)
  inputs.erase(id)
  loading_peers.erase(id)
@@ -620,3 +657,94 @@ func choose_team(team: int) -> void:
    _broadcast_lobby()
    return
  reject.rpc_id(sender, "That team already has three pilots.")
+
+func _renew_roam_lease() -> void:
+ var reply := await api.request("/server/roam/lease", {"match_id": match_id}, HTTPClient.METHOD_POST, server_key)
+ if reply.has("error"):
+  push_error("Free-roam inventory lease failed: " + str(reply.error))
+
+func _roam_encounter_won(attacker: CombatShip, victim: CombatShip, event_id: String) -> void:
+ var index := arena.ships.find(attacker)
+ if index < 0: return
+ var owner := slot_owners[index]
+ if not members.has(owner): return
+ var reply := await api.request("/server/roam/reward", {"match_id": match_id, "event_id": event_id, "user_id": members[owner].profile.user_id, "damage": float(victim.health.damage_by_attacker.get(attacker.get_instance_id(), 0))}, HTTPClient.METHOD_POST, server_key)
+ if not _connected_peer(owner): return
+ if reply.has("error"):
+  roam_notice.rpc_id(owner, "Encounter reward could not save: " + str(reply.error))
+ elif reply.data.has("ship"):
+  var prize := CollectionCatalog.find(str(reply.data.ship))
+  roam_notice.rpc_id(owner, "ENCOUNTER WON / PERMANENT SHIP: " + prize.display_name + " / +60 salvage and 2 discoveries saved online")
+
+@rpc("authority", "call_remote", "reliable")
+func roam_notice(message: String) -> void:
+ if arena is FreeRoamMatch:
+  arena.log_label.text = message
+  arena.map_panel.visible = false
+  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+ status_changed.emit(message)
+
+func _leave_roam_account(user_id: String) -> void:
+ await api.request("/server/roam/leave", {"match_id": match_id, "user_id": user_id}, HTTPClient.METHOD_POST, server_key)
+
+func _join_running_roam(id: int, account: Dictionary) -> void:
+ var index := -1
+ for candidate in [0, 3, 1, 4, 2, 5]:
+  if slot_owners[candidate] == 0 and not candidate in roam_joining_slots:
+   index = candidate
+   break
+ if index < 0:
+  reject.rpc_id(id, "Free-roam session has six pilots already.")
+  multiplayer.multiplayer_peer.disconnect_peer(id)
+  return
+ roam_joining_slots.append(index)
+ var session_id := match_id
+ var reply := await api.request("/server/roam/join", {"match_id": session_id, "user_id": account.user_id, "team": index / 3}, HTTPClient.METHOD_POST, server_key)
+ roam_joining_slots.erase(index)
+ if reply.has("error"):
+  if _connected_peer(id): reject.rpc_id(id, str(reply.error))
+  return
+ if not _connected_peer(id) or not arena is FreeRoamMatch or arena.finished or match_id != session_id:
+  await api.request("/server/roam/leave", {"match_id": session_id, "user_id": account.user_id}, HTTPClient.METHOD_POST, server_key)
+  return
+ account = reply.data.profile
+ var profile := PlayerProfile.new()
+ profile.inventory = account.inventory
+ profile.ship_classes.clear()
+ for hull in account.ship_classes: profile.ship_classes.append(str(hull))
+ profile.loadouts.clear()
+ for fitting in account.loadouts: profile.loadouts.append(fitting)
+ var stats := profile.configured_stats(index % 3)
+ var crew := CollectionCatalog.find(str(account.loadouts[index % 3].crew))
+ var crew_name := crew.display_name if crew != null else "Unassigned"
+ members[id] = {"profile": account, "index": index, "ready": true}
+ metrics[id] = {"kills": 0.0, "damage": 0.0, "user_id": account.user_id}
+ slot_owners[index] = id
+ arena.replace_pilot_ship(index, stats, str(account.commander_name), crew_name, true)
+ ship_totals[index] = Vector2.ZERO
+ var serialized := _serialize_stats(stats)
+ for other in members:
+  if other != id and _connected_peer(other):
+   refit_roam_ship.rpc_id(other, index, serialized, str(account.commander_name), crew_name)
+ var configurations: Array = []
+ var names: Array[String] = []
+ var crew_names: Array[String] = []
+ for slot in range(6):
+  configurations.append(_serialize_stats(arena.ships[slot].stats))
+  names.append(arena.ships[slot].callsign)
+  crew_names.append(arena.ships[slot].crew_name)
+ begin_match.rpc_id(id, configurations, names, slot_owners, crew_names, "free_roam")
+
+func _serialize_stats(stats: ShipStats) -> Dictionary:
+ var result := {}
+ for property in stats.get_property_list():
+  if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+   result[property.name] = stats.get(property.name)
+ return result
+
+@rpc("authority", "call_remote", "reliable")
+func refit_roam_ship(index: int, serialized: Dictionary, callsign: String, crew_name: String) -> void:
+ if not arena is FreeRoamMatch or index < 0 or index >= 6: return
+ var stats := ShipStats.new()
+ for key in serialized: stats.set(key, serialized[key])
+ arena.replace_pilot_ship(index, stats, callsign, crew_name, false)

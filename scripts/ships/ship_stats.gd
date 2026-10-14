@@ -16,6 +16,7 @@ extends Resource
 @export var boost_capacity: float = 100.0
 @export var boost_regen: float = 18.0
 @export var ability_recharge: float = 20.0
+@export var crew_id: String = ""
 @export var engine_style: String = "standard"
 @export var shield_style: String = "standard"
 @export var weapon_style: String = "standard"

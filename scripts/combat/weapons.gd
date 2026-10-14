@@ -28,6 +28,10 @@ func fire(missile: bool = false) -> bool:
   return false
  if missile and not ship.targeting.locked():
   return false
+ # Firing ends spawn protection so it cannot be used to attack invulnerably.
+ if float(ship.get_meta("spawn_protection", 0)) > 0:
+  ship.set_meta("spawn_protection", 0.0)
+  ship.health.protection = 1.0
  var base := secondary if missile else primary
  var spec := base.duplicate() as WeaponSpec
  if overcharge:
