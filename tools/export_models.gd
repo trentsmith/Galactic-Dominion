@@ -57,6 +57,11 @@ func run() -> void:
    animal.name = species.display_name.replace(" ", "")
    SurfaceArt.creature(animal,species)
    save_model(animal,"fauna_"+species.id)
+   for stage in [1,2]:
+    var form := Node3D.new()
+    form.name = SanctuaryForms.form_name(species.id,stage).replace(" ","")
+    SanctuaryFormArt.creature(form,species,stage)
+    save_model(form,"fauna_"+species.id+("_kindred" if stage==1 else "_radiant"))
  var station := Node3D.new()
  station.name = "PearlGoldStation"
  SpaceModelFactory.station(station)

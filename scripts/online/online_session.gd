@@ -23,6 +23,7 @@ var peer_id := 0
 var joining := false
 var starting := false
 var snapshot_clock := 0.0
+var army_snapshot_clock := 0.0
 var send_clock := 0.0
 var desired_states: Array = []
 var pending_peers: Dictionary = {}
@@ -85,14 +86,14 @@ func _peer_connected(id: int) -> void:
 
 func _connected() -> void:
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.11.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.12.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.11.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.12.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -284,6 +285,7 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
  host.battle = arena
  if arena is FreeRoamMatch:
   arena.travel_requested.connect(func(index): ship_event.rpc_id(1, "warp", index))
+  arena.army_requested.connect(func(action, argument): ship_event.rpc_id(1, "army_" + action, argument))
   arena.dock_requested.connect(func(): ship_event.rpc_id(1, "dock"))
  slot_owners.clear()
  for owner in owners:
@@ -341,6 +343,9 @@ func ship_event(action: String, argument: int = 0) -> void:
   inputs.erase(sender)
  elif ship.alive:
   if arena is FreeRoamMatch:
+   if action.begins_with("army_"):
+    army_notice.rpc_id(sender, arena.army_action(sender, ship, action.trim_prefix("army_"), argument))
+    return
    if action == "warp":
     var moved: bool = arena.travel_ship(ship, argument)
     roam_notice.rpc_id(sender, "Arrived / " + FreeRoamWorld.NAMES[argument] if moved else "Warp denied: leave combat before travelling.")
@@ -401,6 +406,9 @@ func _physics_process(delta: float) -> void:
    if index < 0:
     continue
    var ship := arena.ships[index]
+   if arena is FreeRoamMatch:
+    for troop in arena.army.units.values():
+     if troop.owner == id and troop.order == "follow": troop.leader = index
    if not ship.alive:
     for candidate in range(ship.team * 3, ship.team * 3 + 3):
      if arena.ships[candidate].alive and slot_owners[candidate] == 0:
@@ -426,6 +434,7 @@ func _physics_process(delta: float) -> void:
    if lease_clock >= 60:
     lease_clock = 0
     _renew_roam_lease()
+  army_snapshot_clock += delta
   snapshot_clock += delta
   if snapshot_clock >= 1.0 / 15.0:
    snapshot_clock = 0
@@ -445,7 +454,10 @@ func _physics_process(delta: float) -> void:
      bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color})
    for id in members:
     if _connected_peer(id):
+     if arena is FreeRoamMatch and army_snapshot_clock >= 0.2:
+      receive_army.rpc_id(id, arena.army.snapshot())
      receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
+   if army_snapshot_clock >= 0.2: army_snapshot_clock = 0.0
  else:
   if not is_instance_valid(arena) or arena.finished:
    return
@@ -572,6 +584,8 @@ func _peer_disconnected(id: int) -> void:
  pending_peers.erase(id)
  if match_mode == "free_roam" and members.has(id):
   _leave_roam_account(str(members[id].profile.user_id))
+ if arena is FreeRoamMatch:
+  arena.army.remove_owner(id)
  members.erase(id)
  inputs.erase(id)
  loading_peers.erase(id)
@@ -748,3 +762,13 @@ func refit_roam_ship(index: int, serialized: Dictionary, callsign: String, crew_
  var stats := ShipStats.new()
  for key in serialized: stats.set(key, serialized[key])
  arena.replace_pilot_ship(index, stats, callsign, crew_name, false)
+
+@rpc("authority", "call_remote", "reliable", 2)
+func receive_army(data: Dictionary) -> void:
+ if not server_mode and arena is FreeRoamMatch:
+  arena.army.apply_snapshot(data)
+
+@rpc("authority", "call_remote", "reliable")
+func army_notice(message: String) -> void:
+ if arena is FreeRoamMatch: arena.log_label.text = message
+ status_changed.emit(message)

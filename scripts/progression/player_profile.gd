@@ -2,7 +2,7 @@ class_name PlayerProfile
 extends RefCounted
 signal changed
 
-const VERSION := 3
+const VERSION := 4
 const SLOTS = ["engine", "shield", "weapon", "utility", "crew", "variant"]
 const DEFAULT_CREW = ["crew_astra", "crew_milo", "crew_sera"]
 var save_path := "user://commander_profile.json"
@@ -90,7 +90,7 @@ func _read(path: String) -> bool:
   save_blocked = true
   notice = "This save belongs to a newer game version. Saving is disabled to preserve it."
   return false
- if not int(parsed.version) in [1, 2, VERSION] or not parsed.get("inventory") is Dictionary or not parsed.get("loadouts") is Array:
+ if not int(parsed.version) in [1, 2, 3, VERSION] or not parsed.get("inventory") is Dictionary or not parsed.get("loadouts") is Array:
   return false
  _defaults()
  for id in parsed.inventory:

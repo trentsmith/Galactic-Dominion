@@ -7,7 +7,7 @@ const FLIGHT_RECIPES=[{"title":"Survey Anchor","cost":{"ore":8,"fiber":6,"bloom"
 static func defaults() -> Dictionary:
  return {"name":"Little Star Sanctuary","palette":0,"materials":{"food":12,"bloom":3,"fiber":2,"ore":4,"pearl":0,"alloy":0,"essence":0,"crystal":0,"capture_pod":3},"habitats":[{"id":1,"kind":"meadow","x":-1,"z":0,"level":1},{"id":2,"kind":"planter","x":1,"z":0,"level":1}],"residents":[new_resident(1,"bloodstag","Ruby")],"plants":[{"id":"starter.berry","name":"Starberry Bush","growth":0.0,"stored":0,"clock":0.0}],"seeds":{},"flight_stage":0,"location":3,"next_id":2,"time":0.0}
 static func new_resident(id: int,species: String,nickname: String="") -> Dictionary:
- return {"id":id,"species":species,"name":nickname,"nutrition":75.0,"happiness":70.0,"energy":80.0,"growth":0.0,"bond":0.0,"production":0,"clock":0.0,"pet_cooldown":0.0,"habitat":1 if species=="bloodstag" else 0}
+ return {"id":id,"species":species,"name":nickname,"nutrition":75.0,"happiness":70.0,"energy":80.0,"growth":0.0,"bond":0.0,"love":0.0,"care_time":0.0,"form_stage":0,"production":0,"clock":0.0,"pet_cooldown":0.0,"habitat":1 if species=="bloodstag" else 0}
 static func fauna(id: String) -> FaunaDefinition:
  for planet in PlanetCatalog.WORLDS:
   for item in planet.fauna:
@@ -53,6 +53,9 @@ static func sanitize(value: Variant) -> Dictionary:
    resident_ids[id]=true
    var resident:=new_resident(id,species,str(entry.get("name","")).left(24))
    for key in ["nutrition","happiness","energy","growth","bond"]:resident[key]=number(entry.get(key,resident[key]),0,100)
+   resident.love=number(entry.get("love",minf(50,resident.bond*.5)),0,100)
+   resident.care_time=number(entry.get("care_time",0),0,99999999)
+   resident.form_stage=int(number(entry.get("form_stage",0),0,2))
    resident.clock=number(entry.get("clock",0),0,60);resident.production=int(number(entry.get("production",0),0,12));resident.pet_cooldown=number(entry.get("pet_cooldown",0),0,5)
    resident.habitat=int(number(entry.get("habitat",0),0,999999));state.residents.append(resident)
  state.plants=[]
@@ -138,13 +141,13 @@ static func care(state: Dictionary,id: int,action: String) -> bool:
   if resident.id!=id:continue
   if action=="feed":
    if resident.nutrition>=100 or not pay(state,{"food":1}):return false
-   resident.nutrition=minf(100,resident.nutrition+30);resident.energy=minf(100,resident.energy+12);resident.bond=minf(100,resident.bond+2)
+   resident.nutrition=minf(100,resident.nutrition+30);resident.energy=minf(100,resident.energy+12);resident.bond=minf(100,resident.bond+2);resident.love=minf(100,resident.love+3)
   elif action=="pet":
    if resident.pet_cooldown>0:return false
-   resident.happiness=minf(100,resident.happiness+12);resident.bond=minf(100,resident.bond+4);resident.pet_cooldown=5
+   resident.happiness=minf(100,resident.happiness+12);resident.bond=minf(100,resident.bond+4);resident.pet_cooldown=5;resident.love=minf(100,resident.love+4)
   elif action=="play":
    if resident.energy<12:return false
-   resident.energy-=12;resident.happiness=minf(100,resident.happiness+20);resident.growth=minf(100,resident.growth+3);resident.bond=minf(100,resident.bond+5)
+   resident.energy-=12;resident.happiness=minf(100,resident.happiness+20);resident.growth=minf(100,resident.growth+3);resident.bond=minf(100,resident.bond+5);resident.love=minf(100,resident.love+5)
   else:return false
   return true
  return false
@@ -155,11 +158,13 @@ static func tick(state: Dictionary,delta: float) -> void:
   resident.nutrition=maxf(0,resident.nutrition-dt*.025);resident.happiness=maxf(0,resident.happiness-dt*.008)
   resident.energy=minf(100,resident.energy+dt*.2)
   if resident.habitat==0 or resident.nutrition<20 or resident.happiness<20:continue
+  if resident.nutrition>=60 and resident.happiness>=65:
+   resident.care_time+=dt;resident.love=minf(100,resident.love+dt*.015)
   resident.growth=minf(100,resident.growth+dt*.06)
   var level:=1
   for habitat in state.habitats:
    if habitat.id==resident.habitat:level=habitat.level
-  resident.clock+=dt*(1+(level-1)*.25)*(1+resident.growth/200)*(1+resident.bond/200)
+  resident.clock+=dt*(1+(level-1)*.25)*(1+resident.growth/200)*(1+resident.bond/200)*SanctuaryForms.production_multiplier(resident.form_stage)
   if resident.clock>=45:
    resident.clock-=45;resident.production=mini(12,resident.production+1)
  var planter_level:=0
@@ -196,3 +201,10 @@ static func launch(state: Dictionary,destination: int) -> bool:
  if state.flight_stage<3 or destination<0 or destination>2 or state.location==destination:return false
  if not pay(state,{"pearl":3,"essence":3,"food":5}):return false
  state.location=destination;return true
+
+static func awaken(state: Dictionary,id: int) -> bool:
+ for resident in state.residents:
+  if resident.id!=id:continue
+  if not SanctuaryForms.ready(resident):return false
+  resident.form_stage+=1;return true
+ return false

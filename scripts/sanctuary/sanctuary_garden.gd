@@ -55,7 +55,7 @@ func refresh_world() -> void:
  for child in residents_root.get_children():residents_root.remove_child(child);child.queue_free()
  actors.clear()
  for resident in state.residents:
-  var actor:=SurfaceArt.creature(residents_root,SanctuaryState.fauna(resident.species));actors[resident.id]=actor
+  var actor:=SanctuaryFormArt.creature(residents_root,SanctuaryState.fauna(resident.species),resident.form_stage);actors[resident.id]=actor
  plant_actors.clear()
  var slots: Array[Vector3]=[]
  for habitat in state.habitats:
@@ -103,7 +103,7 @@ func _process(delta: float) -> void:
   actor.rotation.y=-phase-PI/2
   var bounce: float=maxf(0,float(care_bounce.get(resident.id,0))-delta);care_bounce[resident.id]=bounce
   actor.position.y+=absf(sin(bounce*PI*4))*.5 if bounce>0 else 0
-  actor.scale=Vector3.ONE*(.8+resident.growth*.006)
+  actor.scale=Vector3.ONE*(.8+resident.growth*.006)*(1+resident.form_stage*.08)
  for index in range(plant_actors.size()):
   plant_actors[index].scale=Vector3.ONE*(.18+float(state.plants[index].growth)*.003)
  if refresh_clock>=.5:refresh_clock=0;panel.refresh_status()
@@ -149,3 +149,19 @@ func care_for_resident(action: String) -> bool:
   bubble.global_position=actor.global_position+Vector3.UP*2
   var tween:=bubble.create_tween();tween.tween_property(bubble,"position:y",bubble.position.y+1.5,1.0);tween.tween_callback(bubble.queue_free)
  profile.save_profile();return true
+
+func awaken_resident() -> bool:
+ var previous: Node3D=actors.get(selected_resident)
+ var previous_position: Vector3=previous.position if is_instance_valid(previous) else Vector3.ZERO
+ var success:=SanctuaryState.awaken(state,selected_resident)
+ if not success:panel.message="More friendship, love, growth or happy care is needed";panel.refresh_status();return false
+ var new_name:=""
+ for resident in state.residents:
+  if resident.id==selected_resident:new_name=SanctuaryForms.form_name(resident.species,resident.form_stage)
+ panel.message="A NEW BOND / "+new_name
+ save_and_refresh();care_bounce[selected_resident]=2.0
+ var actor: Node3D=actors.get(selected_resident)
+ if is_instance_valid(actor):
+  actor.position=previous_position
+  SpaceEffects.burst(self,actor.global_position+Vector3.UP,Color(1,.7,.9),2.0)
+ return true

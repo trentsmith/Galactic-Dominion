@@ -5,6 +5,8 @@ var message:="Feed, play and grow together. Bring new friends home from expediti
 var inventory_label: Label
 var info: Label
 var resident_info: Label
+var form_info: Label
+var awaken_button: Button
 var flight_info: Label
 var message_label: Label
 var residents: OptionButton
@@ -42,6 +44,8 @@ func _ready() -> void:
    if resident.id==garden.selected_resident:resident.name=resident_name.text.strip_edges().left(24)
   garden.save_and_refresh())
  resident_info=_label(column,"",14)
+ form_info=_label(column,"",14)
+ awaken_button=Button.new();awaken_button.text="AWAKEN FRIENDSHIP FORM";awaken_button.custom_minimum_size.y=40;awaken_button.pressed.connect(garden.awaken_resident);column.add_child(awaken_button)
  var care_row:=HBoxContainer.new();column.add_child(care_row)
  for action in ["feed","pet","play"]:
   _button(care_row,action.to_upper(),func():
@@ -96,7 +100,7 @@ func refresh_lists() -> void:
  for resident in garden.state.residents:
   resident_ids.append(resident.id)
   var name_text: String=resident.name if not resident.name.is_empty() else SanctuaryState.fauna(resident.species).display_name
-  residents.add_item(name_text+" / "+SanctuaryState.PRODUCE[resident.species])
+  residents.add_item(name_text+" / "+SanctuaryForms.form_name(resident.species,resident.form_stage))
   if resident.id==garden.selected_resident:residents.select(residents.item_count-1)
  habitats.clear();habitat_ids.clear()
  for habitat in garden.state.habitats:
@@ -121,9 +125,13 @@ func refresh_status() -> void:
   if resident.habitat==0:waiting+=1
  info.text="%d residents / %d habitats / %d in nursery\nPlants: %d · Flight stage: %d / 3" % [state.residents.size(),state.habitats.size(),waiting,state.plants.size(),state.flight_stage]
  resident_info.text="Select a resident"
+ form_info.text="";awaken_button.disabled=true
  for resident in state.residents:
   if resident.id!=garden.selected_resident:continue
-  resident_info.text="Food %d / Joy %d / Energy %d\nGrowth %d / Bond %d / Stored %d / 12\n%s" % [resident.nutrition,resident.happiness,resident.energy,resident.growth,resident.bond,resident.production,"Assigned to habitat %d" % resident.habitat if resident.habitat>0 else "Needs a compatible habitat"]
+  resident_info.text="%s\nFood %d / Joy %d / Energy %d\nGrowth %d / Friendship %d / Love %d\nStored %d / 12 / Produces %s" % [SanctuaryForms.form_name(resident.species,resident.form_stage),resident.nutrition,resident.happiness,resident.energy,resident.growth,resident.bond,resident.love,resident.production,SanctuaryState.PRODUCE[resident.species]]
+  form_info.text=SanctuaryForms.progress_text(resident)
+  awaken_button.disabled=not SanctuaryForms.ready(resident)
+  awaken_button.text="RADIANT FORM ACHIEVED" if resident.form_stage==2 else "AWAKEN "+("KINDRED" if resident.form_stage==0 else "RADIANT")+" FORM"
  flight_info.text=""
  if state.flight_stage<3:
   var recipe: Dictionary=SanctuaryState.FLIGHT_RECIPES[state.flight_stage]

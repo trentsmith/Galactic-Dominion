@@ -1,3 +1,11 @@
+## v0.12.0 — Creature armies and Kindred forms
+
+- Host-controlled online/offline Free Roam armies; 50 total active creatures, 10 per pilot, cooldown-validated squad deployment and three orders.
+- Three AI-garrisoned world outposts with contested 30-second captures and player recapture; creature-versus-creature/ship combat and replicated troop/attack/control state.
+- Nine original friendship/love growth lines, Kindred/Radiant forms, permanent saved identity and production improvements.
+- Schema 4 migration and eighteen additional editable 3D models; 38 model pairs total.
+- Conquest is orbital and session-based. Sanctuary pets remain separate from expedition troops and online inventory.
+
 # Changes
 
 ## 0.11.0 — Flying Creature Sanctuary

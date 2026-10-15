@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-11-sanctuary]
+    branches: [phase-12-creature-armies]
   workflow_dispatch:
 permissions:
   contents: write
@@ -51,6 +51,11 @@ jobs:
           cat /tmp/sanctuary.log
           grep GALACTIC_SANCTUARY_READY /tmp/sanctuary.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/sanctuary.log; then exit 1; fi
+      - name: Verify friendship forms and army conquest
+        run: |
+          godot --headless --path . --script res://tests/sanctuary_forms_test.gd
+          godot --headless --path . --script res://tests/creature_army_test.gd
+          python3 tests/test_army_network.py
       - name: Verify packaged multiplayer server
         run: GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_network_integration.py
       - uses: actions/upload-artifact@v4
@@ -61,8 +66,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.11.0
+          tag=v0.12.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.11 — Flying Creature Sanctuary' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.12 — Creature Armies & Kindred Forms' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

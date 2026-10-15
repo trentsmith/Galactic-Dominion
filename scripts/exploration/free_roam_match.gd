@@ -2,8 +2,12 @@ class_name FreeRoamMatch
 extends BattleMatch
 signal encounter_won(attacker, victim, event_id)
 signal travel_requested(index)
+signal army_requested(action, argument)
 signal dock_requested
 
+var army: CreatureArmy
+var army_status: Label
+var army_species: OptionButton
 var world: FreeRoamWorld
 var map_panel: PanelContainer
 var info: Label
@@ -77,6 +81,9 @@ func _ready() -> void:
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)
+ army = CreatureArmy.new()
+ army.battle = self
+ add_child(army)
  _build_roam_ui()
  if network_role == "server":
   hud.visible = false
@@ -151,11 +158,15 @@ func _build_roam_ui() -> void:
  map_panel = PanelContainer.new()
  map_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
  map_panel.position = Vector2(340, 140)
- map_panel.size = Vector2(600, 430)
+ map_panel.size = Vector2(600, 560)
  layer.add_child(map_panel)
  var choices := VBoxContainer.new()
  choices.add_theme_constant_override("separation", 12)
- map_panel.add_child(choices)
+ var chart_scroll := ScrollContainer.new()
+ chart_scroll.custom_minimum_size = Vector2(600, 560)
+ map_panel.add_child(chart_scroll)
+ choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ chart_scroll.add_child(choices)
  var title := Label.new()
  title.text = "FREE-ROAM STAR CHART / CONNECTED SPACE"
  title.add_theme_font_size_override("font_size", 22)
@@ -171,6 +182,19 @@ func _build_roam_ui() -> void:
  var note := Label.new()
  note.text = "You can also fly directly between stations. Warp and service require\nno hostiles within 650m and no recent damage. Warp preserves health."
  choices.add_child(note)
+ army_species = OptionButton.new()
+ for species in CreatureArmy.SPECIES:
+  army_species.add_item(SanctuaryForms.form_name(species, 0))
+ choices.add_child(army_species)
+ for action in ["deploy", "follow", "assault", "recall"]:
+  var order := Button.new()
+  order.text = {"deploy":"DEPLOY 5 CREATURES", "follow":"ARMY / FOLLOW SHIP", "assault":"ARMY / ASSAULT NEAREST WORLD", "recall":"ARMY / RECALL TROOPS"}[action]
+  order.pressed.connect(func():
+   if network_role == "client": army_requested.emit(action, army_species.selected)
+   else: log_label.text = army_action(1, pilot.ship, action, army_species.selected))
+  choices.add_child(order)
+ army_status = Label.new()
+ choices.add_child(army_status)
  var close := Button.new()
  close.text = "RESUME FREE FLIGHT"
  close.pressed.connect(toggle_chart)
@@ -223,13 +247,19 @@ func _physics_process(delta: float) -> void:
 func _update_roam_ui(delta: float) -> void:
  if network_role == "server" or not is_instance_valid(pilot.ship): return
  var ship := pilot.ship
+ if is_instance_valid(army_status):
+  var owner := 1 if network_role == "offline" else multiplayer.get_unique_id()
+  army_status.text = "ARMY %d/10 / SERVER %d/50\n" % [army.owned_count(owner), army.units.size()]
+  for outpost in army.worlds:
+   army_status.text += "%s: Team %d / %d%%\n" % [outpost.name, outpost.owner + 1, int(outpost.progress / CreatureArmy.CAPTURE_SECONDS * 100)]
  var region := FreeRoamWorld.nearest_region(ship.position)
  if region != current_region:
   current_region = region
   if profile != null:
    var definition: SectorDefinition = ExplorationMatch.SECTORS[region]
    profile.record_discovery(definition.id + ".sector", definition.display_name)
- info.text = "%s / FREE SPACE / %dm TO STATION" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region]))]
+ var nearby: Dictionary = army.worlds[army.nearest_world(ship.position)]
+ info.text = "%s / FREE SPACE / %dm TO STATION\nARMIES %d/50 / %s / TEAM %d / %dm / M: ARMY ORDERS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), army.units.size(), nearby.name, nearby.owner + 1, int(ship.position.distance_to(nearby.position))]
  if not ship.alive:
   prompt.text = "SHIP LOST / REDEPLOYING AT NEAREST STATION"
   return
@@ -381,3 +411,9 @@ func replace_pilot_ship(index: int, stats: ShipStats, callsign: String, crew_nam
   ship.set_physics_process(false)
   ship.collision_layer = 0
   ship.collision_mask = 0
+
+func army_action(owner: int, ship: CombatShip, action: String, argument: int = 0) -> String:
+ if network_role == "client": return "Orders require the host."
+ if action == "deploy": return army.deploy(owner, ship, argument)
+ if army.command(owner, ship, action): return "Army order / " + action
+ return "Order denied / approach a world outpost within 1600m and use a living ship."

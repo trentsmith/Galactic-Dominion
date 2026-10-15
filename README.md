@@ -1,10 +1,10 @@
-# Galactic Dominion — Phase 6: Playable PC Release
+# Galactic Dominion — Creature Armies & Kindred Forms
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.11 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.11.0)** and choose:
+The v0.12 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.12.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,38 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Creature armies and world conquest
+
+Free Roam now supports **50 active creatures across the server**, including 18 initial AI defenders. Each pilot can command up to 10 expedition troops. Press **M**, scroll down, choose one of nine species and deploy a squad of up to five. Reinforcements have a 20-second cooldown. Orders: **Follow**, **Assault Nearest World**, **Recall**. A living ship within 1600m of an outpost can order an assault. Your HUD gives the nearest outpost name, owner and distance.
+
+Conquer orbital outposts at **Varkhoss Prime**, **Pelagia** and **Ny’Zaroth**: keep troops within 330m for 30 uncontested seconds. Hostile troops contest progress; abandoned captures decay. Opponents can recapture worlds. Scouts (Duskbat, Riftfin Hunter, Riftwisp) move faster; strikers (Nightfang, Riftfin Hunter, Veilcrawler) hit harder; wardens (Antlerstag, Prism Reefgrazer, Manyeye) have 65 HP rather than 45. Troops attack hostile creatures and ships automatically; nearby ships automatically retaliate. Server AI owns all damage and capture, and shares troops/attacks/ownership with online players.
+
+Troops are free expedition units, **separate from sanctuary pets and trading inventory**. Destroyed troops free capacity; recall removes surviving troops; disconnecting removes that pilot’s roster. Army kills do not mint ship encounter rewards. Conquest resets at session end; no persistent territorial ownership or online surface invasions yet. Fleet Royale stays ship-only.
+
+![Actual 3D army render](docs/images/creature-armies.webp)
+
+## Friendship and love growth forms
+
+In **My Planet / Creature Sanctuary**, feed, pet and play with residents to build friendship and love. The sidebar shows the next original form and every requirement. Click **Awaken Friendship Form** when ready. Kindred needs friendship 35, love 25, growth 20 and 90 seconds of happy care; Radiant needs 80, 70, 65 and 360 seconds. Happy care accumulates while housed with food 60+ and joy 65+ while the garden is open. Awakening requires food 40+ and joy 65+.
+
+Forms are permanent and keep each resident’s identity and nickname. Kindred adds 15% production; Radiant adds 35%. They add species-specific 3D antlers, petals, fins, manes or tendrils. These are original growth names and designs. They currently apply to sanctuary fauna, not online expedition troops or ship crew bots.
+
+| Species | Kindred | Radiant |
+| --- | --- | --- |
+| Antlerstag | Petalcrest Stag | Auroracrown Warden |
+| Duskbat | Velvetwing | Dawnveil Guide |
+| Nightfang | Hearthfang | Embermane Sentinel |
+| Lantern Jelly | Lullalume | Pearlveil Lantern |
+| Prism Reefgrazer | Coralglide | Tidegarden Keeper |
+| Riftfin Hunter | Gleamfin | Mooncurrent Guardian |
+| Riftwisp | Whisperglow | Dreamweave Beacon |
+| Manyeye | Starlit Seer | Bloomgaze Oracle |
+| Veilcrawler | Softveil | Starbloom Weaver |
+
+Schema 4 saves load older schemas 1–3, preserve friendship and provide partial love credit without skipping form requirements. The 3D model pack contains 38 GLB models and 38 editable scenes, including all eighteen growth forms.
+
+![Actual 3D growth forms](docs/images/growth-forms.webp)
 
 ## Free-roaming space
 
@@ -121,7 +153,7 @@ Ships and companions now use pearl armor, warm gold trim, glossy navy faceplates
 
 ![Free-roam flight with Pixlet and a pearl docking station](docs/images/pearl-space-flight.webp)
 
-Download **Galactic-Dominion-3D-Models.zip** from the release for twenty reusable models: Pixlet, Lunaflutter, Cinderbit, their two scout appearances, five standard ship classes, nine wildlife species and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
+Download **Galactic-Dominion-3D-Models.zip** from the release for 38 reusable models: Pixlet, Lunaflutter, Cinderbit, their two scout appearances, five standard ship classes, nine wildlife species, eighteen Kindred/Radiant forms and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
 
 **Equip an alien in a ship's Crew slot** in Fleet Hangar or Online Fleet. Its 3D companion orbits the ship, bobs and blinks, chooses a nearby enemy within 320 metres, and fires real projectiles. A selected enemy takes priority. Shots obey cooldowns, avoid allies, apply shields/hull damage and credit the host ship. Alien attacks are automatic on player and AI ships; online clients only animate companions and render server-owned projectiles. Companions stop attacking when their ship is destroyed and return when it redeploys. Astronauts retain their crew bonuses without spawning an alien companion.
 
@@ -308,6 +340,8 @@ If your sandbox does not allow Godot to write its user directories, set `XDG_DAT
 
 This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The modes have automated combat/network checks and inspected scripted renderer captures; manual interactive playtests and real Internet/VPS deployment have not been completed. The online server handles one arena or free-roam session per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing Fleet Royale match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.
 
-### v0.11 validation
+### v0.12 validation
 
-Passed **312 Godot checks** (48 new sanctuary checks plus 264 existing checks) and **21 backend tests**. The sanctuary suite checks care, production, housing, capture, delivery/loss, save migration and flight gating. The surface suite checks movement and ground collision, fauna AI, defensive pulses, shields/hull, swimming, scanner range, duplicate prevention, successful extraction, saved discoveries, bot destruction, pending-survey loss, low-gravity events and pause/cleanup. Existing combat, progression, exploration, companions, UI and connection tests were also run. Actual OpenGL renders of a populated sanctuary and its care camera were inspected. Earlier surface-world captures are retained above. Windows GUI execution remains untested on this Linux machine.
+Passed **380 Godot checks** (312 existing, 39 friendship-form and 29 army checks) and **21 backend tests**. Two actual authenticated clients verified army deployment, shared troop state, AI combat/destruction and a 30-second world capture on both clients. The deterministic server fixture positions opposing squads and gives one side extra endurance; normal army AI performs combat and capture. The existing two-client free-roam integration also passed, including late joining, companion attacks, PvE/PvP, respawn, persistence and trading. The exported Linux server passed the two-client Fleet Royale integration. All five native entry points (free roam, sanctuary and three planets) started successfully. Actual OpenGL army and growth-form captures were inspected. The model ZIP contains 38 GLBs and 38 self-contained scenes; package checksums were verified.
+
+These checks do not replace manual playtesting. Windows GUI execution and Internet/VPS deployment remain untested on this Linux machine. Some abrupt headless test exits emit ObjectDB cleanup warnings; no failed checks or GDScript errors occurred in the regression suite.
