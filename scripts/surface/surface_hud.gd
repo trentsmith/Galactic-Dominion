@@ -15,7 +15,7 @@ func _ready() -> void:
  label(panel,expedition.definition.display_name.to_upper(),Vector2(25,20),24)
  info=label(panel,"",Vector2(25,60),17)
  notes=label(panel,"",Vector2(25,112),15)
- label(panel,"WASD move · Mouse look · Shift sprint · LMB defensive pulse\nG hold: scan nearby wildlife/plants · E: extract at ship · Esc: pause\n"+("Space/Ctrl: swim up/down" if expedition.definition.aquatic else "Space: jump"),Vector2(25,180),14)
+ label(panel,"WASD move · Mouse look · Shift sprint · LMB defensive pulse\nG hold: scan · C: capture animal · F: gather seed · E: extract · Esc: pause\n"+("Space/Ctrl: swim up/down" if expedition.definition.aquatic else "Space: jump"),Vector2(25,180),14)
  prompt=label(panel,"",Vector2(25,610),18)
  var cross:=label(panel,"+",Vector2(630,345),24);cross.modulate=Color(.65,1,1)
  pause_panel=_menu("EXPEDITION PAUSED",false)
@@ -24,7 +24,7 @@ func _process(_delta: float) -> void:
  if not is_instance_valid(expedition.bot):return
  var bot:=expedition.bot
  info.text="%s / HULL %d  SHIELD %d  ENERGY %d\nSURVEY %d / 6  ·  %d UNEXTRACTED  ·  SHIP %dm" % [bot.definition.display_name,int(bot.hull),int(bot.shield),int(bot.stamina),expedition.survey_count(),expedition.pending.size(),int(bot.position.length())]
- notes.text=expedition.status_message
+ notes.text=expedition.status_message+"\nTRANSPORT %d / 4  ·  SEEDS %d  ·  CAPTURE PODS %d" % [expedition.cargo_animals.size(),expedition.cargo_seeds.size(),expedition.profile.sanctuary.materials.capture_pod]
  if expedition.gravity_multiplier()<.5:notes.text+="\nREALITY FRACTURE / LOW GRAVITY / jump with care"
  var nearest:=expedition.nearest_specimen()
  if expedition.finished:prompt.text=""
@@ -50,6 +50,6 @@ func _button(parent: Control,text: String,callback: Callable) -> void:
  var button:=Button.new();button.text=text;button.custom_minimum_size.y=44;button.pressed.connect(callback);parent.add_child(button)
 func show_result(success: bool) -> void:
  if success:
-  expedition.status_message="%d new surveys saved. Planet survey: %d / 6.\nEach new specimen awards 25 salvage; complete surveys unlock a crew collectible once.\n%s" % [expedition.pending.size(),expedition.survey_count(),expedition.profile.save_error]
+  expedition.status_message="%d new surveys saved. Planet survey: %d / 6.\nDelivered %d animals and %d seeds to your sanctuary.\n%s" % [expedition.pending.size(),expedition.survey_count(),expedition.cargo_animals.size(),expedition.cargo_seeds.size(),expedition.profile.save_error]
  else:expedition.status_message="The expedition bot was destroyed. Unextracted surveys were lost.\nYour owned bots and previously saved discoveries remain available."
  _menu("EXTRACTION COMPLETE" if success else "BOT DESTROYED",true)

@@ -355,7 +355,7 @@ class Store:
         return {'closed': mid}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.10'
+    server_version = 'GalacticDominion/0.11'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -366,7 +366,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.10.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.11.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:

@@ -4,7 +4,7 @@ A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting a
 
 ## Download and play without Godot
 
-The v0.10 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.10.0)** and choose:
+The v0.11 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.11.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -43,6 +43,47 @@ From a terminal: `godot --path /path/to/galactic-dominion`.
 Online free roam supports **up to six human pilots plus twelve AI raiders** in the same world. In Online / Lobby / Marketplace, join the server, ready up, and have the leader click **Launch Free Roam**. Additional pilots can join an active free-roam session without interrupting its players. Two three-ship teams remain in this prototype; empty pilot slots use AI and F1–F3 switching cannot take another human's vessel. Warp and service move/repair only your controlled online ship. The server handles movement, damage, travel, service and respawning. Each server-confirmed player kill of a hostile ship grants a permanent hull and discovery rewards, saved immediately; leaving unlocks your inventory for trading. Online scanning is not added in this build; local exploration and online inventories remain separate.
 
 One server process runs either Fleet Royale or a continuous free-roam session. With no human pilots left, the free-roam session closes and its lobby becomes available again. World positions and encounter waves are session state, while your collected ships, fittings and records persist.
+
+## Personal planet / creature sanctuary
+
+Open **MY PLANET / CREATURE SANCTUARY** from the main menu. This is an original local creature garden inspired by playful pet-care games. You start with **Ruby the Antlerstag**, one meadow, a food planter with a Starberry Bush, some supplies and three capture pods.
+
+![Populated sanctuary overview rendered in Godot](docs/images/sanctuary-garden.webp)
+![Resident care close-up rendered in Godot](docs/images/sanctuary-care.webp)
+
+These screenshots use an isolated populated preview save to show multiple habitats; a new game starts with the smaller starter garden described above.
+
+**Bring things home:** on a planet expedition, scan a living animal with G, approach within 8m and press **C** to capture it. Predators must have 50% health or less. Each capture spends one saved transport pod; a trip holds up to four animals. Scan a flora specimen, approach within 7m and press **F** for a seed (one of each type per trip). Return to the landing ship and press E to deliver your cargo. Destruction or abandoning the trip loses cargo; used pods remain spent. Repeat extraction cannot duplicate residents.
+
+**Care and growth:** select a resident to feed, pet, play or rename it. Food restores nutrition and energy; affection and play improve happiness, bond and growth. Petting has a five-second cooldown, and play costs energy. Growth changes model size. Use **FOCUS RESIDENT / OVERVIEW** to move between a close-up care camera and planet design. Residents do not die from neglect, and care/production clocks do not run while the garden is closed.
+
+**Design:** name the planet, choose mint/lavender/sunset colors, place habitats on the 24 buildable plots, move them and upgrade them through three levels. RMB drag orbits the camera; the mouse wheel zooms. Choose Build or Move, then click an empty highlighted plot. Meadow gardens house Varkhoss fauna; reef lagoons house aquatic fauna; dream conservatories house eldritch fauna. A habitat holds `2 + 2 × level` residents. Unhoused arrivals wait in a nursery without producing. Planters hold three seeds per level; delivered plants retain their biome-inspired appearance.
+
+**Production:** a housed, nourished and happy creature stores a resource about every 45 active-garden seconds. Growth, bond and habitat levels improve the rate. Plants store food and bloom about every 25 seconds, with planter/growth bonuses. Each resident or plant stores at most twelve harvests; click **COLLECT ALL PRODUCE** to bank them. Use the workshop to craft pods, ore, fiber or food.
+
+| Fauna | Produce |
+| --- | --- |
+| Ruby Antlerstag | Bloom |
+| Duskwing Bat | Fiber |
+| Nightfang Prowler | Ore |
+| Lantern Jelly | Pearl |
+| Prism Reefgrazer | Food |
+| Riftfin Hunter | Alloy |
+| Rift Wisp | Essence |
+| Many-Eyed Watcher | Crystal |
+| Veil Crawler | Alloy |
+
+**Make the planet fly:** complete the three flight stages in order:
+
+| Stage | Requirements |
+| --- | --- |
+| Survey Anchor | 8 ore, 6 fiber, 6 bloom |
+| Lift Engines | 15 ore, 10 alloy, 6 pearl |
+| Rift Drive | 18 alloy, 12 essence, 10 crystal |
+
+Then choose Varkhoss, Pelagia or Ny’Zaroth orbit and launch for **3 pearl, 3 essence and 5 food**. The island lifts during a five-second travel sequence, its orbit backdrop changes, and its destination saves. Travel is between these three local orbit destinations; free steering in space, multiplayer gardens, breeding and offline production are not implemented.
+
+Local saves now use schema **3**, migrating schemas 1 and 2 while preserving collection and exploration progress. Older game builds refuse to overwrite the newer save. Sanctuary progress and materials are local and separate from the online marketplace.
 
 ## Little bot planet expeditions
 
@@ -267,6 +308,6 @@ If your sandbox does not allow Godot to write its user directories, set `XDG_DAT
 
 This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The modes have automated combat/network checks and inspected scripted renderer captures; manual interactive playtests and real Internet/VPS deployment have not been completed. The online server handles one arena or free-roam session per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing Fleet Royale match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.
 
-### v0.10 validation
+### v0.11 validation
 
-Passed **264 Godot checks** (40 new surface checks plus 224 existing checks) and **21 backend tests**. The new surface suite checks movement and ground collision, fauna AI, defensive pulses, shields/hull, swimming, scanner range, duplicate prevention, successful extraction, saved discoveries, bot destruction, pending-survey loss, low-gravity events and pause/cleanup. Existing combat, progression, exploration, companions, UI and connection tests were also run. Actual OpenGL renders of all three surface worlds were inspected. Windows GUI execution remains untested on this Linux machine.
+Passed **312 Godot checks** (48 new sanctuary checks plus 264 existing checks) and **21 backend tests**. The sanctuary suite checks care, production, housing, capture, delivery/loss, save migration and flight gating. The surface suite checks movement and ground collision, fauna AI, defensive pulses, shields/hull, swimming, scanner range, duplicate prevention, successful extraction, saved discoveries, bot destruction, pending-survey loss, low-gravity events and pause/cleanup. Existing combat, progression, exploration, companions, UI and connection tests were also run. Actual OpenGL renders of a populated sanctuary and its care camera were inspected. Earlier surface-world captures are retained above. Windows GUI execution remains untested on this Linux machine.

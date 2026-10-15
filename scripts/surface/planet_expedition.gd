@@ -11,6 +11,8 @@ var bot: SurfaceBot
 var fauna: Array[SurfaceFauna]=[]
 var specimens: Array[Node3D]=[]
 var pending: Dictionary={}
+var cargo_animals: Array[String]=[]
+var cargo_seeds: Array[String]=[]
 var scan_progress:=0.0
 var scan_target: Node3D
 var elapsed:=0.0
@@ -46,6 +48,8 @@ func _physics_process(delta: float) -> void:
   scan_nearest(delta)
  else:scan_progress=maxf(0,scan_progress-delta*2)
  if Input.is_action_just_pressed("surface_extract"):extract()
+ if Input.is_action_just_pressed("surface_capture"):capture_nearest()
+ if Input.is_action_just_pressed("surface_gather"):gather_nearest()
 func clear_line(a: Vector3,b: Vector3) -> bool:
  var query:=PhysicsRayQueryParameters3D.create(a+Vector3.UP*.8,b+Vector3.UP*.8,1)
  return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
@@ -88,6 +92,8 @@ func survey_count() -> int:
  return total
 func extract() -> bool:
  if finished or not bot.alive or bot.position.distance_to(Vector3(0,1.5,0))>10:return false
+ SanctuaryState.intake(profile.sanctuary,cargo_animals,cargo_seeds)
+ profile.save_profile()
  for id in pending:profile.record_discovery(id,pending[id])
  var complete_id:="surface.%s.complete" % definition.id
  if survey_count()>=6:profile.record_discovery(complete_id,definition.display_name+" / Complete Survey",definition.survey_reward)
@@ -97,7 +103,8 @@ func finish(success: bool) -> void:
  if finished:return
  finished=true;bot.set_physics_process(false)
  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
- if not success:pending.clear()
+ if not success:
+  pending.clear();cargo_animals.clear();cargo_seeds.clear()
  hud.show_result(success)
 func toggle_pause() -> void:
  if finished:return
@@ -108,3 +115,39 @@ func toggle_pause() -> void:
 
 func gravity_multiplier() -> float:
  return .3 if definition.biome=="eldritch" and fmod(elapsed,30)>22 else 1.0
+
+func capture_nearest() -> bool:
+ if finished or not bot.alive:return false
+ if cargo_animals.size()>=4 or profile.sanctuary.residents.size()+cargo_animals.size()>=48:
+  status_message="TRANSPORT FULL / extract before collecting more creatures";return false
+ if profile.sanctuary.materials.capture_pod<1:
+  status_message="NO CAPTURE PODS / craft more in your sanctuary";return false
+ var candidate: SurfaceFauna
+ var distance:=8.0
+ for animal in fauna:
+  if not is_instance_valid(animal) or not animal.alive:continue
+  var next:=bot.position.distance_to(animal.position)
+  if next<distance and clear_line(bot.position,animal.position):distance=next;candidate=animal
+ if not is_instance_valid(candidate):status_message="APPROACH A LIVING ANIMAL WITHIN 8m";return false
+ if not surveyed(candidate):status_message="SCAN THIS SPECIES WITH G BEFORE CAPTURE";return false
+ if candidate.definition.damage>0 and candidate.health>candidate.definition.health*.5:
+  status_message="DANGEROUS FAUNA / weaken to 50% health or less before capture";return false
+ profile.sanctuary.materials.capture_pod-=1
+ if not profile.save_profile():
+  profile.sanctuary.materials.capture_pod+=1;status_message=profile.save_error;return false
+ cargo_animals.append(candidate.definition.id)
+ candidate.alive=false;candidate.visible=false;candidate.collision_layer=0;candidate.respawn_timer=30;candidate.velocity=Vector3.ZERO
+ status_message="IN TRANSPORT: %s / extract to bring it home" % candidate.definition.display_name
+ return true
+func gather_nearest() -> bool:
+ if finished or not bot.alive:return false
+ var candidate: Node3D
+ var distance:=7.0
+ for plant in world.flora_nodes:
+  var next:=bot.position.distance_to(plant.position)
+  if next<distance and clear_line(bot.position,plant.position):distance=next;candidate=plant
+ if not is_instance_valid(candidate):status_message="APPROACH A SURVEY PLANT WITHIN 7m";return false
+ if not surveyed(candidate):status_message="SCAN THIS FLORA WITH G BEFORE COLLECTING A SEED";return false
+ var id:="%s.%s" % [definition.id,str(candidate.get_meta("scan_id")).trim_prefix("flora.")]
+ if cargo_seeds.has(id):status_message="ONE SEED PER FLORA TYPE PER EXPEDITION";return false
+ cargo_seeds.append(id);status_message="SEED COLLECTED / extract to plant it in your sanctuary";return true

@@ -3,6 +3,7 @@ extends Node
 var online_api: OnlineAPI
 var network: OnlineSession
 var menu: CanvasLayer
+var sanctuary_scene: SanctuaryGarden
 var surface: PlanetExpedition
 var battle: BattleMatch
 var sensitivity := 0.0025
@@ -50,11 +51,15 @@ func _ready() -> void:
   start_free_roam()
  elif "--battle" in arguments:
   start_battle()
+ elif "--sanctuary" in arguments:
+  show_sanctuary()
  elif "--planet" in arguments:
   var index:=arguments.find("--planet")
   start_planet(int(arguments[index+1]) if index+1<arguments.size() else 0,"crew_pixlet")
 
 func _unhandled_input(event: InputEvent) -> void:
+ if is_instance_valid(sanctuary_scene) and event.is_action_pressed("pause"):
+  sanctuary_scene.close();get_viewport().set_input_as_handled();return
  if is_instance_valid(surface) and event.is_action_pressed("pause"):
   surface.toggle_pause()
   get_viewport().set_input_as_handled()
@@ -128,7 +133,7 @@ func show_menu(paused: bool = false) -> void:
  var title := Label.new()
  title.text = "GALACTIC
 DOMINION"
- title.add_theme_font_size_override("font_size", 54)
+ title.add_theme_font_size_override("font_size", 48)
  column.add_child(title)
  var subtitle := Label.new()
  subtitle.text = "OPEN SPACE  •  YOUR LITTLE SPACE CREW
@@ -139,6 +144,7 @@ Explore, collect companions, and fly together."
  if not paused:
   _button(column, "FREE ROAM / OPEN SPACE", start_free_roam)
   _button(column, "PLANET EXPEDITIONS / LITTLE BOTS", show_planets)
+  _button(column, "MY PLANET / CREATURE SANCTUARY", show_sanctuary)
   _button(column, "GALACTIC EXPLORATION", func(): start_exploration(0))
   _button(column, "ONLINE / LOBBY / MARKETPLACE", show_online)
   _button(column, "FLEET HANGAR / COLLECTION", show_hangar)
@@ -184,7 +190,7 @@ The safe zone contracts after 30 seconds."
 func _button(parent: Control, text: String, callback: Callable) -> void:
  var button := Button.new()
  button.text = text
- button.custom_minimum_size = Vector2(320, 44)
+ button.custom_minimum_size = Vector2(320, 40)
  button.pressed.connect(func(): SpaceAudio.play("click"))
  button.pressed.connect(callback)
  parent.add_child(button)
@@ -327,6 +333,8 @@ func start_free_roam() -> void:
 
 
 func _clear_surface() -> void:
+ if is_instance_valid(sanctuary_scene):remove_child(sanctuary_scene);sanctuary_scene.queue_free()
+ sanctuary_scene=null
  if is_instance_valid(surface):
   remove_child(surface);surface.queue_free()
  surface=null
@@ -354,3 +362,9 @@ func start_planet(index: int,bot_id: String="") -> void:
  surface=PlanetExpedition.new();surface.profile=profile;surface.definition=PlanetCatalog.WORLDS[clampi(index,0,2)]
  surface.bot_definition=chosen;surface.sensitivity=sensitivity;surface.inverted=inverted
  surface.return_requested.connect(show_planets);add_child(surface)
+
+func show_sanctuary() -> void:
+ network.disconnect_session();get_tree().paused=false;_clear_surface()
+ if is_instance_valid(battle):remove_child(battle);battle.queue_free();battle=null
+ if is_instance_valid(menu):menu.queue_free()
+ sanctuary_scene=SanctuaryGarden.new();sanctuary_scene.profile=profile;sanctuary_scene.back_requested.connect(return_to_menu);add_child(sanctuary_scene)

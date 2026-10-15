@@ -1,5 +1,13 @@
 # Changes
 
+## 0.11.0 — Flying Creature Sanctuary
+
+- Added a personal, editable 3D creature garden with resident care, nicknames, growth, production, plant seeds, habitat placement/movement/upgrades and close-up care views.
+- Added expedition capture pods, weakened-predator captures, flora seed gathering, extraction delivery and cargo loss on deployment failure.
+- Added a workshop and three increasingly costly flight stages, culminating in fueled travel between the three world orbits with a lift sequence.
+- Migrated local save schemas 1/2 to schema 3 and persisted sanctuary materials, residents, plants, layout and flight progress.
+- Validated care, production, capacity, crafting, flight gating, delivery, loss and migration; sanctuary progress remains local.
+
 ## 0.10.0 — Little Bot Planet Expeditions
 
 - Added local single-player bot expeditions to Varkhoss Prime, the alien reef Pelagia and Ny’Zaroth, using the supplied images and Nexus Archives lore.
