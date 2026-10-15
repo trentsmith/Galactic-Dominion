@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FaunaDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/surface/fauna_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "duskbat"
+display_name = "Duskwing Bat"
+description = "Nectar bats wheel beneath the crimson moon."
+behavior = "flyer"
+body_style = "bat"
+color = Color(0.36, 0.06, 0.2, 1)
+glow = Color(1, 0.2, 0.38, 1)
+speed = 6.0
+health = 20.0
+damage = 6.0
+size = 0.85

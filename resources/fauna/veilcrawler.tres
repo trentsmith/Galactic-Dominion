@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FaunaDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/surface/fauna_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "veilcrawler"
+display_name = "Veil Crawler"
+description = "A patient tentacled stalker hiding among the ruins."
+behavior = "stalker"
+body_style = "crawler"
+color = Color(0.16, 0.08, 0.24, 1)
+glow = Color(0.83, 0.3, 1, 1)
+speed = 5.6
+health = 38.0
+damage = 12.0
+size = 1.1

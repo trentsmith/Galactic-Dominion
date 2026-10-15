@@ -3,6 +3,7 @@ extends Node
 var online_api: OnlineAPI
 var network: OnlineSession
 var menu: CanvasLayer
+var surface: PlanetExpedition
 var battle: BattleMatch
 var sensitivity := 0.0025
 var inverted := false
@@ -49,8 +50,15 @@ func _ready() -> void:
   start_free_roam()
  elif "--battle" in arguments:
   start_battle()
+ elif "--planet" in arguments:
+  var index:=arguments.find("--planet")
+  start_planet(int(arguments[index+1]) if index+1<arguments.size() else 0,"crew_pixlet")
 
 func _unhandled_input(event: InputEvent) -> void:
+ if is_instance_valid(surface) and event.is_action_pressed("pause"):
+  surface.toggle_pause()
+  get_viewport().set_input_as_handled()
+  return
  if event.is_action_pressed("pause") and is_instance_valid(battle) and not battle.finished:
   if get_tree().paused or (battle.network_role != "offline" and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE):
    resume()
@@ -61,6 +69,7 @@ func _unhandled_input(event: InputEvent) -> void:
   get_viewport().set_input_as_handled()
 
 func start_battle() -> void:
+ _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
  if is_instance_valid(menu):
@@ -81,6 +90,7 @@ func resume() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func return_to_menu() -> void:
+ _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
  if is_instance_valid(battle):
@@ -90,6 +100,7 @@ func return_to_menu() -> void:
  show_menu()
 
 func show_menu(paused: bool = false) -> void:
+ Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
  if is_instance_valid(menu):
   menu.queue_free()
  menu = CanvasLayer.new()
@@ -127,6 +138,7 @@ Explore, collect companions, and fly together."
  _button(column, "RESUME FLIGHT" if paused else "PLAY  /  DEPLOY FLEET", resume if paused else start_battle)
  if not paused:
   _button(column, "FREE ROAM / OPEN SPACE", start_free_roam)
+  _button(column, "PLANET EXPEDITIONS / LITTLE BOTS", show_planets)
   _button(column, "GALACTIC EXPLORATION", func(): start_exploration(0))
   _button(column, "ONLINE / LOBBY / MARKETPLACE", show_online)
   _button(column, "FLEET HANGAR / COLLECTION", show_hangar)
@@ -269,6 +281,7 @@ func show_hangar() -> void:
  menu.add_child(hangar)
 
 func start_exploration(index: int) -> void:
+ _clear_surface()
  get_tree().paused = false
  if is_instance_valid(menu):
   menu.queue_free()
@@ -298,6 +311,7 @@ func show_online() -> void:
  menu.add_child(hub)
 
 func start_free_roam() -> void:
+ _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
  if is_instance_valid(menu): menu.queue_free()
@@ -310,3 +324,33 @@ func start_free_roam() -> void:
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
  print("GALACTIC_FREE_ROAM_READY ships=%d" % battle.ships.size())
+
+
+func _clear_surface() -> void:
+ if is_instance_valid(surface):
+  remove_child(surface);surface.queue_free()
+ surface=null
+
+func show_planets() -> void:
+ network.disconnect_session();get_tree().paused=false
+ _clear_surface()
+ if is_instance_valid(battle):
+  remove_child(battle);battle.queue_free();battle=null
+ if is_instance_valid(menu):menu.queue_free()
+ Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+ menu=CanvasLayer.new();menu.layer=10;add_child(menu)
+ var selector:=PlanetSelector.new();selector.profile=profile
+ selector.back_requested.connect(show_menu);selector.launched.connect(start_planet);menu.add_child(selector)
+
+func start_planet(index: int,bot_id: String="") -> void:
+ network.disconnect_session();get_tree().paused=false
+ _clear_surface()
+ if is_instance_valid(battle):remove_child(battle);battle.queue_free();battle=null
+ if is_instance_valid(menu):menu.queue_free()
+ var available:=PlanetCatalog.available_bots(profile)
+ var chosen:=CollectionCatalog.find(bot_id)
+ if chosen==null or chosen.kind!="crew" or chosen.species=="Human" or not profile.owns(chosen.id):
+  chosen=available[0] if not available.is_empty() else CollectionCatalog.find("crew_pixlet")
+ surface=PlanetExpedition.new();surface.profile=profile;surface.definition=PlanetCatalog.WORLDS[clampi(index,0,2)]
+ surface.bot_definition=chosen;surface.sensitivity=sensitivity;surface.inverted=inverted
+ surface.return_requested.connect(show_planets);add_child(surface)

@@ -4,7 +4,7 @@ A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting a
 
 ## Download and play without Godot
 
-The v0.9 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.9.0)** and choose:
+The v0.10 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.10.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -44,6 +44,26 @@ Online free roam supports **up to six human pilots plus twelve AI raiders** in t
 
 One server process runs either Fleet Royale or a continuous free-roam session. With no human pilots left, the free-roam session closes and its lobby becomes available again. World positions and encounter waves are session state, while your collected ships, fittings and records persist.
 
+## Little bot planet expeditions
+
+Choose **PLANET EXPEDITIONS / LITTLE BOTS** from the main menu. Select an owned alien/bot, or use a loaner Pixlet if you have none. The loaner does not grant or consume collectible ownership. This is a local single-player mode with three bounded 220m surface areas; it does not implement seamless orbital landings, shared multiplayer planets or the complete faction systems from the Nexus Archives.
+
+1. **Varkhoss Prime — Bloodforged Frontier:** a crimson forest beside volcanic ridges and Crimson Dominion fortresses. Survey Duskwing Bats, Ruby Antlerstags and dangerous Nightfang Prowlers.
+2. **Pelagia — Alien Reef World:** a bioluminescent underwater world of coral, kelp and anemones. Survey Lantern Jellies and Prism Reefgrazers while avoiding Riftfin Hunters. Pelagia is a new prototype name; the other two names come from the supplied lore.
+3. **Ny’Zaroth — The Dreaming Abyss:** a watching organic landform, pale streams, floating rocks, alien plants and ruins. Survey Rift Wisps and Many-Eyed Watchers while avoiding Veil Crawlers. Reality fractures reduce gravity for the last eight seconds of each thirty-second cycle, with a HUD warning.
+
+Each planet has **30 wildlife creatures across three species**, passive and dangerous behavior, obstacle steering, and **three flora species**. Fauna can be scanned alive; dead animals respawn after thirty seconds when their home is clear of the bot. Defensive kills do not award farmable salvage.
+
+**Controls:** WASD move, mouse look, Shift sprint, Space jump (Space/Ctrl swim up/down on Pelagia), left-click defensive pulse, hold G for two seconds within 12m to scan an unrecorded specimen, E within 10m of the landing ship to extract, Esc pause. Pulses aim toward the view with a generous assist cone; terrain blocks shots and scans. Wildlife labels identify nearby dangers and show health. Landing refuge protects the bot.
+
+The bot has **60 hull and 35 regenerating shields**. Predators can destroy the deployed bot and end the expedition. Pending surveys are lost on destruction or abandonment; owned collectibles and previous discoveries remain. Return to the ship to bank surveys: each new fauna/flora record grants 25 salvage; all six species grant one additional 25-salvage record and a one-time crew collectible. Repeat visits cannot duplicate discovery/completion rewards. These surface records use the existing local save and remain separate from online progression.
+
+See [Nexus Archives world continuity](docs/NEXUS_ARCHIVES.md) for the supplied Crimson–Eldritch lore and the distinction between playable surface features and future faction abilities.
+
+![Varkhoss Prime surface expedition](docs/images/planet-varkhoss.webp)
+![Pelagia alien reef expedition](docs/images/planet-viridia.webp)
+![Ny’Zaroth eldritch expedition](docs/images/planet-nyzaroth.webp)
+
 ## Cute cartoon ships and alien companions
 
 ![Cinderbit and its matching Comet Pup scout rendered in Godot](docs/images/cinderbit-space-art.webp)
@@ -60,7 +80,7 @@ Ships and companions now use pearl armor, warm gold trim, glossy navy faceplates
 
 ![Free-roam flight with Pixlet and a pearl docking station](docs/images/pearl-space-flight.webp)
 
-Download **Galactic-Dominion-3D-Models.zip** from the release for eleven reusable models: Pixlet, Lunaflutter, Cinderbit, their two scout appearances, five standard ship classes and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
+Download **Galactic-Dominion-3D-Models.zip** from the release for twenty reusable models: Pixlet, Lunaflutter, Cinderbit, their two scout appearances, five standard ship classes, nine wildlife species and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
 
 **Equip an alien in a ship's Crew slot** in Fleet Hangar or Online Fleet. Its 3D companion orbits the ship, bobs and blinks, chooses a nearby enemy within 320 metres, and fires real projectiles. A selected enemy takes priority. Shots obey cooldowns, avoid allies, apply shields/hull damage and credit the host ship. Alien attacks are automatic on player and AI ships; online clients only animate companions and render server-owned projectiles. Companions stop attacking when their ship is destroyed and return when it redeploys. Astronauts retain their crew bonuses without spawning an alien companion.
 
@@ -247,6 +267,6 @@ If your sandbox does not allow Godot to write its user directories, set `XDG_DAT
 
 This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The modes have automated combat/network checks and inspected scripted renderer captures; manual interactive playtests and real Internet/VPS deployment have not been completed. The online server handles one arena or free-roam session per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing Fleet Royale match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.
 
-### v0.9 art validation
+### v0.10 validation
 
-Ran 224 Godot checks across combat, progression, exploration, free roam, companions, presentation, connection preferences and the new reference-art/model tests, plus 21 backend tests. All passed. Exported eleven GLB/scene model pairs and inspected an actual OpenGL capture of Cinderbit and its matching ship. The earlier free-roam capture remains available above. Windows GUI execution remains untested on this Linux machine.
+Passed **264 Godot checks** (40 new surface checks plus 224 existing checks) and **21 backend tests**. The new surface suite checks movement and ground collision, fauna AI, defensive pulses, shields/hull, swimming, scanner range, duplicate prevention, successful extraction, saved discoveries, bot destruction, pending-survey loss, low-gravity events and pause/cleanup. Existing combat, progression, exploration, companions, UI and connection tests were also run. Actual OpenGL renders of all three surface worlds were inspected. Windows GUI execution remains untested on this Linux machine.

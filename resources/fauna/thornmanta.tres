@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FaunaDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/surface/fauna_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "thornmanta"
+display_name = "Riftfin Hunter"
+description = "A territorial alien shark that patrols the glowing reef."
+behavior = "flyer"
+body_style = "shark"
+color = Color(0.58, 0.14, 0.55, 1)
+glow = Color(1, 0.6, 0.16, 1)
+speed = 6.0
+health = 30.0
+damage = 9.0
+size = 1.2

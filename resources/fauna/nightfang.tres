@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FaunaDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/surface/fauna_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "nightfang"
+display_name = "Nightfang Prowler"
+description = "A territorial wolf that hunts moving lights."
+behavior = "predator"
+body_style = "wolf"
+color = Color(0.13, 0.06, 0.18, 1)
+glow = Color(1, 0.3, 0.16, 1)
+speed = 6.8
+health = 34.0
+damage = 10.0
+size = 1.05

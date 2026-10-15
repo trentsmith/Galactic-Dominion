@@ -1,5 +1,14 @@
 # Changes
 
+## 0.10.0 — Little Bot Planet Expeditions
+
+- Added local single-player bot expeditions to Varkhoss Prime, the alien reef Pelagia and Ny’Zaroth, using the supplied images and Nexus Archives lore.
+- Added collidable terrain, flora, landmarks, thirty wildlife creatures per planet, nine Resource-defined species, passive fleeing and dangerous pursuit/attacks with obstacle steering.
+- Added bot movement, camera/aim, defensive pulses, shields/hull, sprint, swimming, scanning, extraction, destruction and lost pending surveys. Owned collectibles survive deployment loss.
+- Added idempotent saved survey/completion rewards, a planet selector, a loaner bot for new players and a low-gravity reality-fracture event.
+- Added nine fauna models to the GLB/Godot model pack and preserved the broader faction lore as world-continuity notes. Shared multiplayer planets and seamless orbital landings remain future work.
+- Passed 264 Godot checks and 21 backend tests and inspected actual OpenGL captures of all three destinations.
+
 ## 0.9.0 — Cinderbit Comet Pup
 
 - Added a 3D comet pup with pointed ears, crescent eyes, an open-mouth expression, four glowing paw pods and an animated volumetric flame tail.

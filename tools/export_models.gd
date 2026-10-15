@@ -51,6 +51,12 @@ func run() -> void:
   ship.name = str(id).capitalize()
   SpaceModelFactory.ship(ship,CollectionCatalog.SHIP_TYPES[id])
   save_model(ship,"ship_"+str(id))
+ for planet in PlanetCatalog.WORLDS:
+  for species in planet.fauna:
+   var animal := Node3D.new()
+   animal.name = species.display_name.replace(" ", "")
+   SurfaceArt.creature(animal,species)
+   save_model(animal,"fauna_"+species.id)
  var station := Node3D.new()
  station.name = "PearlGoldStation"
  SpaceModelFactory.station(station)

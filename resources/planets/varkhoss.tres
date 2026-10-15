@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PlanetDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/surface/planet_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/fauna/duskbat.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/fauna/bloodstag.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/fauna/nightfang.tres" id="4"]
+[resource]
+script = ExtResource("1")
+id = "varkhoss"
+display_name = "Varkhoss Prime — Bloodforged Frontier"
+description = "A crimson-forest frontier on the Bloodforged Planet. Volcanic ridges and Crimson Dominion fortresses loom beyond the vampire wilderness. Nightfang packs hunt beneath the red sky."
+biome = "vampire"
+ground_color = Color(0.1, 0.055, 0.12, 1)
+foliage_color = Color(0.43, 0.045, 0.18, 1)
+sky_color = Color(0.035, 0.012, 0.08, 1)
+glow_color = Color(1, 0.12, 0.25, 1)
+seed_value = 77
+survey_reward = "crew_threx"
+fauna = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+flora = PackedStringArray("Bloodveil Tree", "Emberstar Orchid", "Moonvein Fern")

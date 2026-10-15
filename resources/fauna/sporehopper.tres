@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FaunaDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/surface/fauna_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "sporehopper"
+display_name = "Lantern Jelly"
+description = "A harmless bioluminescent drifter that pulses above the reef."
+behavior = "grazer"
+body_style = "jelly"
+color = Color(0.35, 0.55, 0.9, 1)
+glow = Color(0.7, 1, 0.35, 1)
+speed = 4.8
+health = 20.0
+damage = 0.0
+size = 0.85

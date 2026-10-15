@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PlanetDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/surface/planet_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/fauna/riftwisp.tres" id="2"]
+[ext_resource type="Resource" path="res://resources/fauna/manyeye.tres" id="3"]
+[ext_resource type="Resource" path="res://resources/fauna/veilcrawler.tres" id="4"]
+[resource]
+script = ExtResource("1")
+id = "nyzaroth"
+display_name = "Ny’Zaroth — The Dreaming Abyss"
+description = "An impossible world beyond ordinary reality. Living structures watch over glowing forests, floating islands and dark-energy streams. Reality fractures alter gravity; Veil Crawlers guard the ruins."
+biome = "eldritch"
+ground_color = Color(0.085, 0.08, 0.16, 1)
+foliage_color = Color(0.25, 0.14, 0.4, 1)
+sky_color = Color(0.018, 0.025, 0.065, 1)
+glow_color = Color(0.65, 0.32, 1, 1)
+seed_value = 289
+survey_reward = "crew_orith"
+fauna = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+flora = PackedStringArray("Whisper Bloom", "Eyevine Cluster", "Void Lantern")
