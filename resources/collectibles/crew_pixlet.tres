@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_pixlet"
+display_name = "Pixlet — Pebble Scout"
+description = "A bright-eyed Pebble scout in pearl armor and gold trim. Its orbiting companion fires Scout Spark plasma orbs at nearby hostiles."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Pebble"
+modifiers = {"boost_regen": 1.1}
+color = Color(0.05, 0.87, 1.0, 1)
+accent = Color(1, 0.65, 0.12, 1)
+visual_style = "pixlet"
+research_cost = 100

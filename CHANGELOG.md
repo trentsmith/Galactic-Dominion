@@ -1,5 +1,12 @@
 # Changes
 
+## 0.7.0 — Pixlet & Pearl Space Art
+
+- Added original Pixlet companion and five redesigned ship classes with pearl armor, gold trim, cyan faces, sculpted fins and engine pods.
+- Added a blue nebula sky, painted planets with atmosphere rims, cratered asteroid geometry and a matching service station.
+- Added reproducible GLB and self-contained Godot scene exports for seven models, packaged separately from the native game. Models are static; gameplay scripts animate companions.
+- Added Pixlet to local and server collection catalogs, keeping existing save IDs and rarity rules.
+
 ## 0.6.0 — Playable PC Release
 
 - Added Windows/Linux standalone exports, embedded game packs, release ZIP packaging, checksums and an automated GitHub prerelease workflow.

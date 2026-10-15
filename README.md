@@ -1,10 +1,10 @@
 # Galactic Dominion — Phase 6: Playable PC Release
 
-A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses only primitive meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.6 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.6.0)** and choose:
+The v0.7 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.7.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -46,7 +46,13 @@ One server process runs either Fleet Royale or a continuous free-roam session. W
 
 ## Cute cartoon ships and alien companions
 
-Ships now use rounded hulls, bubble cockpits, chunky wing pods, pastel colors and cartoon outline/shading passes. Planets have rings, asteroids use softer colors, and HUD/menu panels have rounded edges. All geometry and portraits are original procedural assets; no external art packages are used.
+![Pixlet, a scout ship and procedural space scenery rendered in Godot](docs/images/pixlet-space-art.webp)
+
+Ships and companions now use pearl armor, warm gold trim, glossy navy faceplates, cyan eyes, swept fins and rounded engine pods inspired by the supplied Pixlet reference. Each ship class keeps its own silhouette and gameplay. Pixlet is a new researchable Pebble scout companion that orbits and attacks with Scout Spark. The environment has a procedural blue nebula sky, painted planets with atmosphere rims, cratered 3D asteroids and matching service stations. All geometry is original and generated in Godot; no external art packages are required.
+
+![Free-roam flight with Pixlet and a pearl docking station](docs/images/pearl-space-flight.webp)
+
+Download **Galactic-Dominion-3D-Models.zip** from the release for seven reusable models: Pixlet, five ship classes and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
 
 **Equip an alien in a ship's Crew slot** in Fleet Hangar or Online Fleet. Its 3D companion orbits the ship, bobs and blinks, chooses a nearby enemy within 320 metres, and fires real projectiles. A selected enemy takes priority. Shots obey cooldowns, avoid allies, apply shields/hull damage and credit the host ship. Alien attacks are automatic on player and AI ships; online clients only animate companions and render server-owned projectiles. Companions stop attacking when their ship is destroyed and return when it redeploys. Astronauts retain their crew bonuses without spawning an alien companion.
 
@@ -99,10 +105,10 @@ From the main menu open **FLEET HANGAR / COLLECTION**. Use the fleet buttons or 
 
 Each ship has six slots: engine, shield, weapon, utility, crew and variant. The hangar displays the resulting hull, shields, regeneration, speed, turning, boost capacity, laser/missile output and ability recharge. Loadouts affect your next deployed battle. Component schematics can be fitted to multiple ships; a named crew member can serve aboard only one ship. To transfer a crew member, first set their current ship's crew to **Unassigned**.
 
-There are **36 catalog entries**:
+There are **37 catalog entries**:
 
 - 14 component schematics: four standard and ten alternative fittings, with bonuses and trade-offs.
-- 11 crew collectibles: six human astronaut appearances and five alien appearances from four species (Vesperi, Kharon, Auralith and Drakari).
+- 12 crew collectibles: six human astronaut appearances and six alien appearances from five species (Vesperi, Kharon, Auralith, Drakari and Pebble).
 - 6 ship liveries: the standard fleet livery and five class-specific rare variants.
 - 5 collectible hulls: all five classes can be won and traded. The three starter classes also remain available as fleet issue.
 
@@ -189,7 +195,7 @@ The spherical zone starts at 600 metres, begins shrinking after 30 seconds, and 
 - `scripts/exploration`: Resource-defined sectors, scans, patrol encounters, chart navigation and discovery records.
 - `scripts/online`: HTTP account client, ENet lobby, authoritative simulation, bounded inputs and snapshot presentation.
 - `server`: Python/SQLite account, profile, escrow/offer/market and combat reward service, plus a cross-platform launcher.
-- `resources/collectibles`: 36 reusable `.tres` collectible definitions.
+- `resources/collectibles`: 37 reusable `.tres` collectible definitions.
 - `resources/ships`: reusable Interceptor, Skirmisher, Guardian, Bomber and Support `.tres` definitions.
 
 Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation. The online server simulates all ships; clients present snapshots. Prediction and lag compensation are future work.
@@ -232,3 +238,7 @@ If your sandbox does not allow Godot to write its user directories, set `XDG_DAT
 ## Current limits
 
 This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The modes have automated combat/network checks and inspected scripted renderer captures; manual interactive playtests and real Internet/VPS deployment have not been completed. The online server handles one arena or free-roam session per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing Fleet Royale match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.
+
+### v0.7 art validation
+
+Ran 190 Godot checks across combat, progression, exploration, free roam, companions, presentation, connection preferences and the new reference-art/model tests, plus 21 backend tests. All passed. Exported seven GLB/scene model pairs and inspected actual OpenGL captures of the model showcase and free-roam flight. Windows GUI execution remains untested on this Linux machine.

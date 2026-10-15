@@ -120,6 +120,20 @@
     "slot": "crew"
   },
   {
+    "starter": false,
+    "research_cost": 100,
+    "species": "Pebble",
+    "ship_class": "",
+    "modifiers": {
+      "boost_regen": 1.1
+    },
+    "id": "crew_pixlet",
+    "display_name": "Pixlet \u2014 Pebble Scout",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
     "starter": true,
     "research_cost": 0,
     "species": "Human",

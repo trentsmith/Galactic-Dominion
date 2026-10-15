@@ -15,15 +15,7 @@ func _ready() -> void:
  add_child(viewport)
  scene = Node3D.new()
  viewport.add_child(scene)
- var env_node := WorldEnvironment.new()
- var env := Environment.new()
- env.background_mode = Environment.BG_COLOR
- env.background_color = Color(0.018, 0.03, 0.065)
- env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
- env.ambient_light_color = Color(0.6, 0.7, 1)
- env.ambient_light_energy = 0.5
- env_node.environment = env
- scene.add_child(env_node)
+ scene.add_child(SpaceEnvironmentArt.environment())
  var light := DirectionalLight3D.new()
  light.light_energy = 0.9
  light.rotation_degrees = Vector3(-35, -25, 0)

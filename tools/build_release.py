@@ -27,6 +27,7 @@ def main():
         for path in args.templates.iterdir():
             if path.is_file():shutil.copy2(path,target/path.name)
     subprocess.run([args.godot,'--headless','--editor','--import','--path',str(ROOT),'--quit'],check=True,env=env)
+    subprocess.run([args.godot,'--headless','--path',str(ROOT),'--script','res://tools/export_models.gd'],check=True,env=env)
     platforms=['windows','linux'] if args.platform=='all' else [args.platform]
     outputs=[]
     for platform in platforms:
@@ -39,7 +40,7 @@ def main():
         if platform=='linux':(folder/name).chmod(0o755)
         cfg='[server]\napi_url='+json.dumps(args.api_url)+'\ncombat_host='+json.dumps(args.combat_host)+'\ncombat_port='+str(args.combat_port)+'\n'
         (folder/'server.cfg').write_text(cfg)
-        (folder/'PLAY.txt').write_text('Galactic Dominion v0.6 alpha\n\nRun '+name+'. Godot and Python are not required for players.\nChoose Free Roam for solo play or Online to join your host.\nOnline progress is separate from local progress.\nSee https://github.com/trentsmith/Galactic-Dominion for controls and hosting.\n')
+        (folder/'PLAY.txt').write_text('Galactic Dominion v0.7 alpha\n\nRun '+name+'. Godot and Python are not required for players.\nChoose Free Roam for solo play or Online to join your host.\nOnline progress is separate from local progress.\nSee https://github.com/trentsmith/Galactic-Dominion for controls and hosting.\n')
         if (ROOT/'GODOT_LICENSE.txt').exists():shutil.copy2(ROOT/'GODOT_LICENSE.txt',folder/'GODOT_LICENSE.txt')
         title='Windows' if platform=='windows' else 'Linux'
         package=out/f'Galactic-Dominion-{title}.zip';pack(folder,package);outputs.append(package)
@@ -56,6 +57,11 @@ def main():
         (server/'Start-Server-Linux.sh').write_text('#!/bin/sh\nset -eu\ncd "$(dirname "$0")"\nexec python3 server/launch.py --host 0.0.0.0 "$@"\n')
         (server/'Start-Server-Linux.sh').chmod(0o755)
         package=out/f'Galactic-Dominion-Server-{title}.zip';pack(server,package);outputs.append(package)
+    models=out/'Galactic-Dominion-3D-Models.zip'
+    with zipfile.ZipFile(models,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
+        for path in sorted((ROOT/'art/models').iterdir()):
+            if path.suffix in ['.glb','.tscn','.md']:archive.write(path,path.name)
+    outputs.append(models)
     checksums=''.join(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name+'\n' for path in outputs)
     (out/'SHA256SUMS.txt').write_text(checksums)
     print('Release files:\n'+'\n'.join(str(p) for p in outputs))

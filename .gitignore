@@ -10,3 +10,6 @@ server-data/
 
 build/
 releases/
+art/models/*.glb
+art/models/*.glb.import
+art/models/*.tscn

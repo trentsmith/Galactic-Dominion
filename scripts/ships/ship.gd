@@ -65,48 +65,12 @@ func _ready() -> void:
   add_child(companion)
 
 func _build_visual() -> void:
- var color := stats.color if team == 0 or stats.variant_style != "standard" else Color(0.95, 0.25, 0.20)
- color = color.lightened(0.12)
- var body := CapsuleMesh.new()
- body.radius = 1.5 if stats.ability in ["aegis", "barrage"] else 1.2 if stats.ability in ["overcharge", "repair"] else 0.95
- body.height = 5.4 if stats.ability != "aegis" else 4.4
- _mesh(body, Vector3.ZERO, color).rotation.x = PI / 2
- var wing := CapsuleMesh.new()
- wing.radius = 0.48
- wing.height = 8.6 if stats.ability == "aegis" else 6.8
- _mesh(wing, Vector3(0, -0.1, 0.8), color.darkened(0.18)).rotation.z = PI / 2
- var cockpit := SphereMesh.new()
- cockpit.radius = 0.95
- cockpit.height = 1.9
- _mesh(cockpit, Vector3(0, 0.85, -0.9), Color(0.13, 0.19, 0.36)).scale = Vector3(1.05, 0.75, 1.1)
- CartoonStyle.ball(self, Vector3(-0.35, 1.38, -1.1), Vector3(0.18, 0.06, 0.3), Color(0.82, 0.96, 1), true)
- for side in [-1, 1]:
-  CartoonStyle.ball(self, Vector3(side * 2.5, 0, 0.8), Vector3(0.7, 0.6, 1.35), color.lightened(0.16))
-  CartoonStyle.ball(self, Vector3(side * 0.65, 0.12, -2.15), Vector3(0.26, 0.17, 0.16), Color(1, 0.88, 0.52), true)
- if stats.ability == "barrage":
-  for side in [-1, 1]:
-   CartoonStyle.ball(self, Vector3(side * 1.7, -0.3, -0.8), Vector3(0.75, 0.65, 1.8), Color(1, 0.73, 0.52))
- elif stats.ability == "repair":
-  CartoonStyle.ball(self, Vector3(0, 1.1, 1.1), Vector3(0.7, 0.28, 0.7), Color(0.71, 1, 0.76))
- var engine := SphereMesh.new()
- engine.radius = 0.55
- engine.height = 1.1
- engine_mesh = _mesh(engine, Vector3(0, 0, 3.0), Color(0.2, 0.85, 1.0), true)
- var muzzle := SphereMesh.new()
- muzzle.radius = 0.45
- muzzle.height = 0.9
- muzzle_mesh = _mesh(muzzle, Vector3(0, 0, -3.3), Color(1, 0.85, 0.3), true)
- muzzle_mesh.visible = false
- var shield := SphereMesh.new()
- shield.radius = 4.5
- shield.height = 9.0
- shield_mesh = _mesh(shield, Vector3.ZERO, Color(0.2, 0.8, 1.0, 0.15), true)
- var material := shield_mesh.material_override as StandardMaterial3D
- material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
- material.cull_mode = BaseMaterial3D.CULL_DISABLED
- shield_mesh.visible = false
+ SpaceModelFactory.ship(self, stats, team)
+ engine_mesh = find_child("MainEngine",true,false)
+ muzzle_mesh = find_child("MuzzleFlash",true,false)
+ shield_mesh = find_child("ShieldShell",true,false)
  _build_component_visuals()
- _build_variant_visual(color)
+ _build_variant_visual(stats.color)
 
 func _build_component_visuals() -> void:
  if stats.engine_style != "standard":

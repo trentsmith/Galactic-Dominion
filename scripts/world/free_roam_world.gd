@@ -18,14 +18,11 @@ func _ready() -> void:
   station.position = CENTERS[index]
   add_child(station)
   stations.append(station)
-  var ring := TorusMesh.new()
-  ring.inner_radius = 48
-  ring.outer_radius = 60
-  _visual(station, ring, Vector3.ZERO, COLORS[index])
-  for side in [-1, 1]:
-   var mast := BoxMesh.new()
-   mast.size = Vector3(12, 100, 12)
-   _visual(station, mast, Vector3(side * 70, 0, 0), COLORS[index].darkened(0.3))
+  var model := Node3D.new()
+  model.name = "StationAssembly"
+  model.scale = Vector3.ONE*23
+  station.add_child(model)
+  SpaceModelFactory.station(model,COLORS[index])
   var label := Label3D.new()
   label.text = NAMES[index] + " / SERVICE STATION"
   label.position = Vector3(0, 95, 0)
@@ -34,10 +31,7 @@ func _ready() -> void:
   label.no_depth_test = true
   station.add_child(label)
   if index > 0:
-   var planet := SphereMesh.new()
-   planet.radius = 280
-   planet.height = 560
-   _visual(self, planet, CENTERS[index] + Vector3(-1000, -600, -1400), COLORS[index].darkened(0.65))
+   SpaceEnvironmentArt.planet(self,CENTERS[index]+Vector3(-1000,-600,-1400),330,COLORS[index],float(index)*7.0,index==2)
   for asteroid in range(18):
    var offset := Vector3(rng.randf_range(-1200, 1200), rng.randf_range(-400, 400), rng.randf_range(-1200, 1200))
    if offset.length() < 300:
