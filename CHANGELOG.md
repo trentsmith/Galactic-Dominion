@@ -1,5 +1,12 @@
 # Changes
 
+## 0.9.0 — Cinderbit Comet Pup
+
+- Added a 3D comet pup with pointed ears, crescent eyes, an open-mouth expression, four glowing paw pods and an animated volumetric flame tail.
+- Added researchable Comet Pup crew with fast Meteor Nuzzle sparks and a matching cosmetic Interceptor appearance.
+- Added both GLB/Godot model pairs to the model pack (eleven pairs total), matching portraits and a warm ember palette for hangar previews. Existing saves, class stats and Legendary/Mythic ticket odds remain compatible.
+- Passed 224 Godot checks and 21 backend tests and inspected an actual OpenGL render of both new models.
+
 ## 0.8.0 — Lunaflutter Moon Moth
 
 - Added Lunaflutter’s layered 3D moth wings, crystal-tipped antennae, crescent eyes, purple engines and animated wing joints.

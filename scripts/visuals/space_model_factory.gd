@@ -127,6 +127,7 @@ static func tube(parent: Node3D, path: Curve3D, at: Vector3, radius: float, colo
 
 static func companion(parent: Node3D, definition: CollectibleDefinition) -> Array[Node3D]:
  if definition.visual_style == "lunaflutter": return moon_moth(parent)
+ if definition.visual_style == "cinderbit": return comet_pup(parent)
  var accent := CYAN
  if definition.rarity in ["legendary","mythic"]: accent = definition.rarity_color()
  ball(parent,Vector3.ZERO,Vector3(1.20,1.15,1.02),PEARL,"PearlHelmet")
@@ -153,8 +154,10 @@ static func companion(parent: Node3D, definition: CollectibleDefinition) -> Arra
 static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  var accent := CYAN if team == 0 else Color(1,0.34,0.24)
  if stats.variant_style != "standard": accent = stats.color.lightened(0.25)
+ var comet := stats.variant_style == "comet_pup"
  var lunar := stats.variant_style == "moon_moth"
  if lunar: accent = Color(0.92,0.30,1)
+ if comet: accent = Color(1,0.65,0.06)
  var heavy := stats.ability in ["aegis","barrage"]
  var body := CapsuleMesh.new()
  body.radius = 1.45 if heavy else 1.12
@@ -162,13 +165,13 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  mesh(parent,body,Vector3.ZERO,PEARL,"PearlFuselage").rotation.x = PI/2
  ball(parent,Vector3(0,0.12,1.05),Vector3(1.12,0.95,1.6),BLUE,"BlueRearArmor")
  ball(parent,Vector3(0,0.65,-2.20),Vector3(1.05,0.95,0.94),GOLD,"GoldCanopySeal")
- var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),Color(0.07,0.006,0.16) if lunar else NAVY,"PilotCanopy")
+ var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),Color(0.07,0.006,0.16) if lunar else Color(0.10,0.008,0.018) if comet else NAVY,"PilotCanopy")
  var cockpit_material := visor.material_override as StandardMaterial3D
  cockpit_material.roughness = 0.08
  for side in [-1,1]:
   ball(parent,Vector3(side*0.36,0.80,-3.23),Vector3(0.13,0.22,0.055),accent,"CanopyEye",true)
   var span := 1.15 if heavy else 0.95
-  if not lunar:
+  if not lunar and not comet:
    fin(parent,Vector3(side*0.82,0.3,0.60),Vector3(span,1.25 if stats.ability=="speed" else 1.0,1),side*-0.90,accent)
   pod(parent,Vector3(side*(2.0 if heavy else 1.65),-0.24,0.78),0.92 if heavy else 0.74,accent)
   ring(parent,Vector3(side*0.82,-0.25,-2.75),0.16,0.04,GOLD,"NoseSensorSeal")
@@ -189,6 +192,13 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  if lunar:
   moon_wings(parent,1.45,Vector3(0,0.35,0.6))
   moon_antennae(parent,1.10,Vector3(0,0.75,-1.6))
+ if comet:
+  for side in [-1,1]:
+   comet_ear(parent,Vector3(side*0.68,0.8,-0.9),Vector3(0.90,0.88,1),side*-0.45)
+   comet_paw(parent,Vector3(side*1.65,-0.50,-0.4),0.85)
+   ball(parent,Vector3(side*0.23,0.19,-3.15),Vector3(0.33,0.25,0.18),PEARL,"PupMuzzle")
+  ball(parent,Vector3(0,0.33,-3.35),Vector3(0.18,0.12,0.10),Color(0.02,0.005,0.012),"PupNose")
+  comet_tail(parent,Vector3(0,0.2,2.5),0.95)
  ring(parent,Vector3(0,0,2.52),0.65,0.10,GOLD,"AftEngineCollar")
  var engine := SphereMesh.new()
  engine.radius = 0.47
@@ -331,4 +341,119 @@ static func moon_moth(parent: Node3D) -> Array[Node3D]:
  for side in [-1,1]:pod(parent,Vector3(side*0.74,-1.02,0.10),0.76,violet).rotation.z=side*0.30
  ring(parent,Vector3(0,-0.72,-0.85),0.21,0.05,GOLD,"DreamCoreSeal")
  ball(parent,Vector3(0,-0.72,-0.87),Vector3(0.14,0.14,0.04),violet,"DreamCore",true)
+ return eyes
+
+
+static func comet_ear(parent: Node3D, at: Vector3, size: Vector3, lean: float) -> Node3D:
+ var root := Node3D.new()
+ root.name = "CometEar"
+ root.position = at
+ root.scale = size
+ root.rotation.z = lean
+ parent.add_child(root,true)
+ var shape := petal_mesh()
+ mesh(root,shape,Vector3.ZERO,PEARL,"PearlEarRim")
+ mesh(root,shape,Vector3(0,0.07,-0.09),Color(0.90,0.06,0.025),"RedEarArmor").scale = Vector3(0.89,0.92,0.9)
+ mesh(root,shape,Vector3(0,0.23,-0.22),Color(1,0.47,0.025),"AmberEarInset").scale = Vector3(0.62,0.74,0.8)
+ mesh(root,shape,Vector3(0,0.44,-0.34),Color(1,0.89,0.14),"EarFireLight",true).scale = Vector3(0.30,0.48,0.5)
+ for child in root.get_children():
+  var material := child.material_override as StandardMaterial3D
+  material.cull_mode = BaseMaterial3D.CULL_DISABLED
+  material.next_pass = null
+ return root
+
+static func comet_paw(parent: Node3D, at: Vector3, size: float) -> Node3D:
+ var root := Node3D.new()
+ root.name = "CometPaw"
+ root.position = at
+ root.scale = Vector3.ONE*size
+ parent.add_child(root,true)
+ ball(root,Vector3.ZERO,Vector3(0.56,0.52,0.63),PEARL,"PearlPawArmor")
+ ring(root,Vector3(0,0,-0.52),0.44,0.10,Color(0.88,0.04,0.02),"RedPawCollar")
+ ring(root,Vector3(0,0,-0.69),0.35,0.035,GOLD,"GoldPawSeal")
+ ball(root,Vector3(0,0,-0.62),Vector3(0.33,0.33,0.13),Color(0.09,0.005,0.015),"PawScreen")
+ var glow := Color(1,0.86,0.14)
+ ball(root,Vector3(0,-0.09,-0.78),Vector3(0.16,0.13,0.026),glow,"LuminousPawPad",true)
+ for index in range(3):
+  ball(root,Vector3((index-1)*0.14,0.09+sin(index*PI/2)*0.05,-0.77),Vector3(0.065,0.079,0.023),glow,"LuminousToeBean",true)
+ return root
+
+static func comet_flame_mesh() -> ArrayMesh:
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ var rings: Array[PackedVector3Array] = []
+ for index in range(19):
+  var t := float(index)/18
+  var center := Vector3(-sin(t*PI*0.82)*1.65,t*2.9,t*0.35)
+  var tangent := Vector3(-cos(t*PI*0.82)*1.65*PI*0.82,2.9,0.35).normalized()
+  var right := tangent.cross(Vector3.FORWARD).normalized()
+  var forward := tangent.cross(right).normalized()
+  var radius := 0.48*pow(1.0-t,0.65)*(1.0+sin(t*PI*4)*0.12)
+  var points := PackedVector3Array()
+  for segment in range(12):
+   var angle := TAU*segment/12
+   points.append(center+(right*cos(angle)+forward*sin(angle))*radius)
+  rings.append(points)
+ for index in range(rings.size()-1):
+  for segment in range(12):
+   var next := (segment+1)%12
+   for v in [rings[index][segment],rings[index+1][segment],rings[index][next],rings[index][next],rings[index+1][segment],rings[index+1][next]]: surface.add_vertex(v)
+ # Close the base of the tapered volume for standalone model export.
+ for segment in range(12):
+  for v in [Vector3.ZERO,rings[0][(segment+1)%12],rings[0][segment]]: surface.add_vertex(v)
+ surface.generate_normals()
+ return surface.commit()
+
+static func comet_tail(parent: Node3D, at: Vector3, size: float) -> Node3D:
+ var root := Node3D.new()
+ root.name = "CometTail"
+ root.position = at
+ root.scale = Vector3.ONE*size
+ root.rotation.z = -0.28
+ root.set_meta("rest_rotation",root.rotation)
+ parent.add_child(root,true)
+ var shape := comet_flame_mesh()
+ var outer := mesh(root,shape,Vector3.ZERO,Color(1,0.18,0.01),"OuterCometFlame",true)
+ var inner := mesh(root,shape,Vector3(0,0,-0.12),Color(1,0.70,0.025),"GoldenFlame",true)
+ inner.scale = Vector3(0.78,0.94,0.78)
+ var core := mesh(root,shape,Vector3(0,0,-0.25),Color(1,0.98,0.52),"WhiteHotFlame",true)
+ core.scale = Vector3(0.52,0.84,0.45)
+ for flame in [outer,inner,core]:
+  (flame.material_override as StandardMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
+ return root
+
+static func comet_pup(parent: Node3D) -> Array[Node3D]:
+ var glow := Color(1,0.83,0.12)
+ comet_tail(parent,Vector3(0,0.08,0.9),1.20)
+ ball(parent,Vector3.ZERO,Vector3(1.23,1.17,1.05),PEARL,"CometPearlHelmet")
+ ball(parent,Vector3(0,0.97,0.12),Vector3(0.82,0.24,0.62),Color(0.91,0.045,0.02),"RedCrownArmor")
+ var eyes := face(parent,Vector3(0,0.08,-0.55),0.96,glow)
+ var visor := parent.find_child("GlossyVisor",true,false) as MeshInstance3D
+ (visor.material_override as StandardMaterial3D).albedo_color = Color(0.09,0.003,0.015)
+ var screen := parent.find_child("FaceScreen",true,false) as Node3D
+ for eye in eyes:
+  eye.get_parent().remove_child(eye)
+  eye.free()
+ eyes.clear()
+ for side in [-1,1]:
+  var happy := Node3D.new()
+  happy.name = "CometCrescentEye"
+  happy.position = Vector3(side*0.37,0.12,-0.60)
+  happy.set_meta("open_scale_y",1.0)
+  screen.add_child(happy,true)
+  var curve := Curve3D.new()
+  curve.bake_interval = 0.035
+  for index in range(13):
+   var t := float(index)/12
+   curve.add_point(Vector3(lerpf(-0.17,0.17,t),sin(t*PI)*0.19,0))
+  tube(happy,curve,Vector3.ZERO,0.06,glow,true)
+  eyes.append(happy)
+  comet_ear(parent,Vector3(side*0.65,0.75,0.05),Vector3(0.90,0.76,0.9),side*-0.56)
+  comet_paw(parent,Vector3(side*1.00,-0.62,-0.20),0.92)
+  comet_paw(parent,Vector3(side*0.57,-1.06,0.42),0.61)
+ ball(parent,Vector3(0,-0.32,-1.15),Vector3(0.22,0.25,0.045),Color(0.13,0.005,0.015),"HappyOpenMouth")
+ ball(parent,Vector3(0,-0.42,-1.20),Vector3(0.16,0.14,0.025),Color(1,0.16,0.06),"PupTongue")
+ for side in [-1,1]:ball(parent,Vector3(side*0.10,-0.14,-1.19),Vector3(0.13,0.06,0.025),PEARL,"PupLip")
+ ring(parent,Vector3(0,-0.78,-0.78),0.20,0.045,GOLD,"MeteorCoreSeal")
+ ball(parent,Vector3(0,-0.78,-0.81),Vector3(0.14,0.14,0.04),glow,"MeteorCore",true)
  return eyes

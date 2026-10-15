@@ -96,7 +96,7 @@ func _build_component_visuals() -> void:
   _mesh(antenna, Vector3(0, 1.1, 2.0), Color(0.9, 0.65, 1))
 
 func _build_variant_visual(color: Color) -> void:
- if stats.variant_style in ["standard","moon_moth"]:
+ if stats.variant_style in ["standard","moon_moth","comet_pup"]:
   return
  var accent := Color(1, 0.25, 0.9) if stats.variant_style == "voidglass" else Color(0.2, 1, 1) if stats.variant_style == "aurora" else Color(1, 0.8, 0.25)
  for side in [-1.0, 1.0]:

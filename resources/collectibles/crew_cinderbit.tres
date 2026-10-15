@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_cinderbit"
+display_name = "Cinderbit — Comet Pup"
+description = "A cheerful pearl-and-red comet pup with luminous paw pods and a swishing flame tail. Meteor Nuzzle fires fast amber sparks at nearby enemies."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Comet Pup"
+modifiers = {"boost_regen": 1.1}
+color = Color(1, 0.32, 0.025, 1)
+accent = Color(1, 0.88, 0.14, 1)
+visual_style = "cinderbit"
+research_cost = 140

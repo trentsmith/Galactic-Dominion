@@ -25,6 +25,20 @@
   },
   {
     "starter": false,
+    "research_cost": 140,
+    "species": "Comet Pup",
+    "ship_class": "",
+    "modifiers": {
+      "boost_regen": 1.1
+    },
+    "id": "crew_cinderbit",
+    "display_name": "Cinderbit \u2014 Comet Pup",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
     "research_cost": 100,
     "species": "Human",
     "ship_class": "",
@@ -410,6 +424,18 @@
     "display_name": "Celestial Guardian",
     "kind": "variant",
     "rarity": "legendary",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 200,
+    "species": "",
+    "ship_class": "Interceptor",
+    "modifiers": {},
+    "id": "variant_cinderbit",
+    "display_name": "Cinderbit Scout",
+    "kind": "variant",
+    "rarity": "rare",
     "slot": "variant"
   },
   {

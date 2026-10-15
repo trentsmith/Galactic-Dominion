@@ -31,6 +31,11 @@ func _draw() -> void:
   else:
    var cyan := definition.rarity_color() if definition.rarity in ["legendary","mythic"] else Color(0.05,0.87,1)
    var lunar := style == "lunaflutter"
+   var comet := style == "cinderbit"
+   if comet:
+    cyan = Color(1,0.86,0.14)
+    draw_arc(Vector2(0,-5),58,PI*0.7,PI*1.8,40,Color(1,0.24,0.01),11)
+    draw_arc(Vector2(0,-5),58,PI*0.8,PI*1.7,40,Color(1,0.85,0.15),5)
    if lunar:
     cyan = Color(0.94,0.34,1)
     for side in [-1,1]:
@@ -42,16 +47,18 @@ func _draw() -> void:
     if lunar:
      var tip := Vector2(side*47,-67)
      draw_colored_polygon(PackedVector2Array([tip+Vector2(0,-9),tip+Vector2(6,0),tip+Vector2(0,9),tip+Vector2(-6,0)]),cyan)
-    draw_colored_polygon(PackedVector2Array([Vector2(side*21,-29),Vector2(side*42,-60),Vector2(side*35,-29)]),Color(0.02,0.27,0.5))
+    draw_colored_polygon(PackedVector2Array([Vector2(side*21,-29),Vector2(side*42,-60),Vector2(side*35,-29)]),Color(0.95,0.08,0.025) if comet else Color(0.02,0.27,0.5))
    draw_circle(Vector2(0,0),41,Color(0.94,0.96,1))
    draw_circle(Vector2(0,0),36,Color(1,0.65,0.12))
    draw_circle(Vector2(0,0),32,Color(0.065,0.004,0.15) if lunar else Color(0.005,0.025,0.09))
    for side in [-1,1]:
-    if lunar:draw_arc(Vector2(side*13,0),7,PI,TAU,16,cyan,3)
+    if lunar or comet:draw_arc(Vector2(side*13,0),7,PI,TAU,16,cyan,3)
     else:draw_circle(Vector2(side*13,-4),7,cyan)
     draw_circle(Vector2(side*41,16),13,Color(0.94,0.96,1))
     draw_circle(Vector2(side*41,16),9,Color(1,0.65,0.12))
     draw_circle(Vector2(side*41,16),6,cyan)
+    if comet:
+     for x in [-5,0,5]:draw_circle(Vector2(side*41+x,9),2,cyan)
    draw_arc(Vector2(0,9),8,0.1,PI-0.1,16,cyan,3)
    draw_circle(Vector2(0,41),10,Color(1,0.65,0.12))
    draw_circle(Vector2(0,41),6,cyan)

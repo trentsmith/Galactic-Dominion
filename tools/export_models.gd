@@ -35,6 +35,17 @@ func run() -> void:
  lunar_stats.color = Color(0.82,0.22,1)
  SpaceModelFactory.ship(scout,lunar_stats)
  save_model(scout,"ship_lunaflutter_scout")
+ var cinderbit := Node3D.new()
+ cinderbit.name = "CinderbitCometPup"
+ SpaceModelFactory.companion(cinderbit,CollectionCatalog.find("crew_cinderbit"))
+ save_model(cinderbit,"cinderbit_comet_pup")
+ var cinder_scout := Node3D.new()
+ cinder_scout.name = "CinderbitScout"
+ var comet_stats: ShipStats = CollectionCatalog.SHIP_TYPES.interceptor.duplicate()
+ comet_stats.variant_style = "comet_pup"
+ comet_stats.color = Color(1,0.32,0.025)
+ SpaceModelFactory.ship(cinder_scout,comet_stats)
+ save_model(cinder_scout,"ship_cinderbit_scout")
  for id in CollectionCatalog.SHIP_TYPES:
   var ship := Node3D.new()
   ship.name = str(id).capitalize()

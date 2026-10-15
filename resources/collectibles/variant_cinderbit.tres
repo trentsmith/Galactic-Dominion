@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "variant_cinderbit"
+display_name = "Cinderbit Scout"
+description = "A Comet Pup Interceptor appearance with pearl-and-red ears, a puppy muzzle, glowing paw pods and a sculpted comet tail. Cosmetic only; normal Interceptor handling and damage."
+kind = "variant"
+rarity = "rare"
+slot = "variant"
+ship_class = "Interceptor"
+modifiers = {}
+color = Color(1, 0.32, 0.025, 1)
+visual_style = "comet_pup"
+research_cost = 200
