@@ -1,10 +1,10 @@
 # Galactic Dominion self-hosted server
 
-Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with 4.6.3). No Python packages, Docker, paid assets or hosted accounts are required. One server instance runs one lobby and either a Fleet Royale arena or a continuous free-roam world, with up to six human pilots. AI fills empty pilot slots; free roam also contains twelve raider ships.
+Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with 4.6.3). No Python packages, Docker, paid assets or hosted accounts are required. One server instance runs one lobby and either a Fleet Royale arena or a continuous free-roam world, with up to six human pilots. AI fills empty pilot slots; free roam also contains twenty-one patrol ships.
 
 ## One-click Windows host package
 
-Download **Galactic-Dominion-Server-Windows.zip** from [the v0.12 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.12.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
+Download **Galactic-Dominion-Server-Windows.zip** from [the v0.13 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.13.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
 
 The server window prints the PC's LAN addresses. Friends on your same network run the player download, open Online, put that IP in Combat Server Address and click **Use This Address For A Local-Network Host**. The shortcut sets the account URL to `http://HOST:8080`. Clients on the hosting PC can use `127.0.0.1`. Connection preferences remember the address and username.
 
@@ -28,11 +28,13 @@ You can open multiple game windows and sign in as different users to test multip
 
 ## Online free roam and alien companions
 
-Launch Free Roam from the ready lobby. Fly directly between four regions, or press **M** to warp outside combat. Approach a station within 180 metres and press **G** for repair/refill; hostiles within 650 metres or recent damage block service and warp. Ships redeploy after destruction and there is no shrinking zone or timer. Up to six pilots share two teams; twelve additional AI raiders roam the world. Joining an active session replaces an available pilot slot with the joining account's fitted hull. A human-occupied ship cannot be switched into by another player.
+Launch Free Roam from the ready lobby. Fly directly between seven regions, or press **M** to warp outside combat. Approach a station within 180 metres and press **G** for repair/refill; hostiles within 650 metres or recent damage block service and warp. Ships redeploy after destruction and there is no shrinking zone or timer. Up to six pilots share two teams; twenty-one additional AI patrol ships roam the world. Joining an active session replaces an available pilot slot with the joining account's fitted hull. A human-occupied ship cannot be switched into by another player.
 
 Equip an owned alien in **Online Fleet → Crew** before joining. Its companion orbits and automatically attacks nearby hostiles; the server alone creates projectiles and applies damage. Legendary/Mythic variants use normal species attack stats. Confirmed hostile kills pay a permanent random hull, two collectible rolls and salvage immediately, with idempotent SQLite receipts. Leave the world and refresh Online Fleet to trade your reward copies. Account inventory is locked while flying, renewed with short leases, and released when you leave; an interrupted server's lock expires automatically. Local scan discoveries are separate from online inventory.
 
-Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.12 game build is required on the server and every client.
+The host also runs recurring Crimson/Pelagian/Eldritch invasions, hostile ion storms and a shared 50-creature army limit. M shows a seven-region star chart, raid briefing and army orders. G within 100m surveys a landmark for the session, without inventory rewards. Online landing onto solo surfaces is disabled.
+
+Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.13 game build is required on the server and every client.
 
 ## Explicit launch command
 

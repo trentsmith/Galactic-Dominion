@@ -22,6 +22,7 @@ func _ready() -> void:
   var center: Vector3 = FreeRoamWorld.CENTERS[REGIONS[index]] + Vector3(0, 0, -1100)
   worlds.append({"name": PlanetCatalog.WORLDS[index].display_name, "position": center, "owner": index + 2, "challenger": -1, "progress": 0.0, "captures": 0})
   SpaceEnvironmentArt.planet(self, center + Vector3(0, -170, 0), 110, PlanetCatalog.WORLDS[index].glow_color, 41.0 + index, index == 2)
+  battle.world._solid_sphere(center + Vector3(0, -170, 0), 110)
   var label := Label3D.new()
   label.position = center + Vector3(0, 100, 0)
   label.font_size = 38
@@ -173,10 +174,11 @@ func _capture(delta: float) -> void:
    changed.emit()
 
 func snapshot() -> Dictionary:
- return {"units": units.values().duplicate(true), "worlds": worlds.duplicate(true)}
+ return {"units": units.values().duplicate(true), "worlds": worlds.duplicate(true), "war": battle.war.snapshot() if battle.war != null else {}}
 
 func apply_snapshot(data: Dictionary) -> void:
  if battle.network_role != "client": return
+ if battle.war != null: battle.war.apply_snapshot(data.get("war", {}))
  units.clear()
  for unit in data.get("units", []):
   if units.size() >= CAP: break
@@ -235,7 +237,7 @@ func _sync_visuals(delta: float) -> void:
 func _update_labels() -> void:
  for index in range(labels.size()):
   var world: Dictionary = worlds[index]
-  labels[index].text = "%s / TEAM %d\n%s / %d%%" % [world.name, world.owner + 1, "CONTESTED" if _contested(index) else "CAPTURE", int(world.progress / CAPTURE_SECONDS * 100)]
+  labels[index].text = "%s / %s\n%s / %d%%" % [world.name, WorldWar.FACTION_NAMES.get(world.owner, "Unknown Fleet"), "CONTESTED" if _contested(index) else "CAPTURE", int(world.progress / CAPTURE_SECONDS * 100)]
 
 func _contested(index: int) -> bool:
  var teams := {}

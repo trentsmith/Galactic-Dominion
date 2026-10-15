@@ -28,7 +28,7 @@ func _process(delta: float) -> bool:
   var ids := session.members.keys()
   original_a = session._controlled_index(ids[0])
   original_b = session._controlled_index(ids[1])
-  if roam.ships[original_a].position.distance_to(FreeRoamWorld.CENTERS[2]) < 250 and roam.ships[original_b].position.distance_to(FreeRoamWorld.CENTERS[1]) < 250:
+  if roam.ships[original_a].position.distance_to(FreeRoamWorld.CENTERS[2]) < 250 and roam.ships[original_b].position.distance_to(FreeRoamWorld.CENTERS[6]) < 250:
    roam.ships[original_a].position = FreeRoamWorld.CENTERS[2] + Vector3(0,0,100)
    roam.ships[original_a].velocity = Vector3.ZERO
    roam.ships[original_a].health.regen_delay = 0

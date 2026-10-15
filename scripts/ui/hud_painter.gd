@@ -83,13 +83,15 @@ func _draw() -> void:
  draw_circle(reticle, 2, CYAN)
  if free_roam:
   var roaming := battle as FreeRoamMatch
-  for index in range(4):
+  for index in range(FreeRoamWorld.CENTERS.size()):
    if ship.position.distance_to(FreeRoamWorld.CENTERS[index]) > 1600: continue
    _draw_location(FreeRoamWorld.CENTERS[index], FreeRoamWorld.NAMES[index] + " STATION", CYAN, ship)
+  for landmark in roaming.world.landmarks:
+   if ship.position.distance_to(landmark.position) < 1800:
+    _draw_location(landmark.position, landmark.name, Color(.8, .65, 1), ship)
   for index in range(roaming.beacons.size()):
-   var definition: SectorDefinition = ExplorationMatch.SECTORS[index / 3]
    if ship.position.distance_to(roaming.beacons[index].position) > 1400: continue
-   if not roaming.profile.exploration_records.has("%s.signal.%d" % [definition.id, index % 3]):
+   if roaming.profile != null and not roaming.profile.exploration_records.has(roaming.signal_record(index)):
     _draw_location(roaming.beacons[index].position, "SIGNAL", Color(0.8, 0.5, 1), ship)
  if exploring:
   var exploration := battle as ExplorationMatch

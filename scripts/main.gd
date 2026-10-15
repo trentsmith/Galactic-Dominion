@@ -5,6 +5,7 @@ var network: OnlineSession
 var menu: CanvasLayer
 var sanctuary_scene: SanctuaryGarden
 var surface: PlanetExpedition
+var parked_roam: FreeRoamMatch
 var battle: BattleMatch
 var sensitivity := 0.0025
 var inverted := false
@@ -327,12 +328,15 @@ func start_free_roam() -> void:
  battle = FreeRoamMatch.new()
  battle.profile = profile
  add_child(battle)
+ battle.landing_requested.connect(land_from_roam)
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
  print("GALACTIC_FREE_ROAM_READY ships=%d" % battle.ships.size())
 
 
 func _clear_surface() -> void:
+ if is_instance_valid(parked_roam): parked_roam.queue_free()
+ parked_roam = null
  if is_instance_valid(sanctuary_scene):remove_child(sanctuary_scene);sanctuary_scene.queue_free()
  sanctuary_scene=null
  if is_instance_valid(surface):
@@ -368,3 +372,40 @@ func show_sanctuary() -> void:
  if is_instance_valid(battle):remove_child(battle);battle.queue_free();battle=null
  if is_instance_valid(menu):menu.queue_free()
  sanctuary_scene=SanctuaryGarden.new();sanctuary_scene.profile=profile;sanctuary_scene.back_requested.connect(return_to_menu);add_child(sanctuary_scene)
+
+func land_from_roam(index: int) -> bool:
+ if not battle is FreeRoamMatch or not battle.can_land(index):
+  if battle is FreeRoamMatch: battle.log_label.text = "Landing denied / capture the world, approach within 650m and leave combat. Solo mode only."
+  return false
+ parked_roam = battle
+ remove_child(parked_roam)
+ battle = null
+ if is_instance_valid(menu): menu.queue_free()
+ var available := PlanetCatalog.available_bots(profile)
+ surface = PlanetExpedition.new()
+ surface.profile = profile
+ surface.definition = PlanetCatalog.WORLDS[index]
+ surface.bot_definition = available[0] if not available.is_empty() else CollectionCatalog.find("crew_pixlet")
+ surface.sensitivity = sensitivity
+ surface.inverted = inverted
+ surface.return_label = "RETURN TO ORBIT"
+ surface.return_requested.connect(return_from_planet)
+ add_child(surface)
+ return true
+
+func return_from_planet() -> void:
+ get_tree().paused = false
+ if is_instance_valid(surface):
+  remove_child(surface)
+  surface.queue_free()
+ surface = null
+ if not is_instance_valid(parked_roam):
+  show_menu()
+  return
+ battle = parked_roam
+ parked_roam = null
+ add_child(battle)
+ battle.camera.current = true
+ battle.map_panel.visible = false
+ Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+ battle.log_label.text = "Returned to orbit / the same fleet, war and armies await."

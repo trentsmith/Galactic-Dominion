@@ -26,8 +26,8 @@ func run() -> void:
  for ship in roam.ships: ship.set_physics_process(false)
  roam.pilot.set_physics_process(false)
  roam.set_physics_process(false)
- check(roam.fleet.ships.size() == 3 and roam.ships.size() == 19, "Offline free roam spawns three fleet ships, twelve raiders and four escorts")
- check(roam.world.stations.size() == 4 and roam.beacons.size() == 12, "Four connected regions contain stations and discovery signals")
+ check(roam.fleet.ships.size() == 3 and roam.ships.size() == 31, "Offline free roam spawns three fleet ships, twenty-one patrol ships and seven escorts")
+ check(roam.world.stations.size() == 7 and roam.beacons.size() == 21, "Seven connected regions contain stations and discovery signals")
  check(not roam.zone.visible and roam.zone.radius > 1000000, "Free roam has no shrinking zone or damage boundary")
  check(roam.hud.painter != null and roam.map_panel != null, "Flight HUD and star chart are connected")
  var ship: CombatShip = roam.pilot.ship
@@ -40,7 +40,7 @@ func run() -> void:
  check(roam.travel_fleet(2), "Out-of-combat warp moves the fleet to another region in the same world")
  check(ship.position.distance_to(FreeRoamWorld.CENTERS[2]) < 200 and ship.health.hull == health_before, "Warp preserves existing hull damage")
  check(roam.fleet.ships[1].position.distance_to(ship.position) < 100, "AI teammates travel with the offline fleet")
- check(not roam.travel_fleet(-1) and not roam.travel_fleet(4), "Invalid warp destinations are rejected")
+ check(not roam.travel_fleet(-1) and not roam.travel_fleet(7), "Invalid warp destinations are rejected")
  var hostile: CombatShip = roam.encounters[2].ships[0]
  var old_position := hostile.position
  hostile.position = ship.position + Vector3(100, 0, 0)
@@ -103,7 +103,7 @@ func run() -> void:
  client.network_role = "client"
  root.add_child(client)
  await frames()
- check(client.ships.size() == 18 and client.encounters.size() == 4, "Online world includes six pilot slots plus twelve AI ships")
+ check(client.ships.size() == 27 and client.encounters.size() == 7, "Online world includes six pilot slots plus twenty-one AI ships")
  check(not client.ships[10].is_physics_processing() and client.ships[10].collision_layer == 0, "AI snapshots cannot simulate damage on the client")
  var previous := client.ships[0]
  client.replace_pilot_ship(0, CollectionCatalog.SHIP_TYPES.bomber, "Late pilot", "Astra", false)

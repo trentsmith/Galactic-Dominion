@@ -43,7 +43,7 @@ func _menu(title: String,result: bool) -> Control:
  if result:
   var detail:=Label.new();detail.text=expedition.status_message;detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail.custom_minimum_size.x=520;column.add_child(detail)
  else:_button(column,"RESUME",expedition.toggle_pause)
- _button(column,"RETURN TO PLANET SELECTOR",func():
+ _button(column,expedition.return_label,func():
   get_tree().paused=false;expedition.return_requested.emit())
  return center
 func _button(parent: Control,text: String,callback: Callable) -> void:

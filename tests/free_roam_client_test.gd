@@ -50,13 +50,13 @@ func _process(delta: float) -> bool:
  if roam.pilot.ship.position.distance_to(initial) > 3: moved = true
  if moved and not warp_sent:
   warp_sent = true
-  main.network.ship_event.rpc_id(1,"warp",2 if role == "Roam_A" else 1)
- if warp_sent and roam.pilot.ship.position.distance_to(FreeRoamWorld.CENTERS[2 if role == "Roam_A" else 1]) < 250: warped = true
+  main.network.ship_event.rpc_id(1,"warp",2 if role == "Roam_A" else 6)
+ if warp_sent and roam.pilot.ship.position.distance_to(FreeRoamWorld.CENTERS[2 if role == "Roam_A" else 6]) < 250: warped = true
  if role == "Roam_A" and warped and roam.pilot.ship.health.hull < roam.pilot.ship.health.max_hull and not dock_sent:
   dock_sent = true
   main.network.ship_event.rpc_id(1,"dock")
  if original_slot >= 0 and not roam.ships[original_slot].alive: was_dead = true
- if roam.ships.size() == 18 and roam.ships[3].stats.ability == "barrage": appeared = true
+ if roam.ships.size() == 27 and roam.ships[3].stats.ability == "barrage": appeared = true
  for child in roam.get_children():
   if child.has_meta("network_projectile") and child.get_meta("companion",false): companion_shot_seen = true
  if not completing and elapsed > (26 if role == "Roam_A" else 28) and was_dead and roam.ships[original_slot].alive:

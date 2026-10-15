@@ -47,8 +47,8 @@ func _process(delta: float) -> bool:
   if unit.owner > 0 and unit.owner != me: enemy_seen = true
   if unit.flash > 0: attack_seen = true
  captured = army.worlds[0].owner == 0 and army.worlds[0].captures >= 1
- if units_seen and enemy_seen and attack_seen and captured:
-  print("ARMY_CLIENT_PASS: authenticated deploy, cooldown, other player troops, AI combat and replicated world conquest")
+ if units_seen and enemy_seen and attack_seen and captured and arena.war.dispatches >= 1:
+  print("ARMY_CLIENT_PASS: authenticated deploy, cooldown, other player troops, AI combat and replicated world conquest / faction raid timeline")
   main.network.disconnect_session()
   quit(0)
  return false

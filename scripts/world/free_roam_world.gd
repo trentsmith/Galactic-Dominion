@@ -1,9 +1,15 @@
 class_name FreeRoamWorld
 extends Node3D
 
-const CENTERS = [Vector3.ZERO, Vector3(3600, 200, -1200), Vector3(-3000, -400, -3000), Vector3(1000, 700, -5400)]
-const NAMES = ["Vesper Reach", "Kharon Belt", "Auralith Drift", "Ember Frontier"]
-const COLORS = [Color(0.2, 0.8, 1), Color(1, 0.6, 0.3), Color(0.65, 0.45, 1), Color(1, 0.35, 0.3)]
+const CENTERS = [Vector3.ZERO, Vector3(3600, 200, -1200), Vector3(-3000, -400, -3000), Vector3(1000, 700, -5400), Vector3(-6200, 500, -800), Vector3(6500, -350, -4200), Vector3(-3200, 1100, -8000)]
+const NAMES = ["Vesper Reach", "Kharon Belt", "Auralith Drift", "Ember Frontier", "Pelagian Veil", "Bloodforge Expanse", "Dreaming Rift"]
+const COLORS = [Color(0.2, 0.8, 1), Color(1, 0.6, 0.3), Color(0.65, 0.45, 1), Color(1, 0.35, 0.3), Color(.15, .95, .7), Color(.95, .12, .24), Color(.65, .25, .95)]
+const LANDMARK_NAMES = ["Vesper Listening Spire", "Kharon Broken Refinery", "Auralith Stargate", "Ember Warship Graveyard", "Pelagian Coral Moon", "Bloodforge Siege Foundry", "Ny’Zaroth Echo Monolith"]
+const DESCRIPTIONS = ["Verdant survey lanes", "Dense mining asteroid belt", "Ancient alien ruins", "Wrecks on the war frontier", "Turquoise ocean moons", "Crimson volcanic industry", "Violet rifts and impossible ruins"]
+const FACTIONS = [2, 2, 3, 4, 3, 2, 4]
+var landmarks: Array[Dictionary] = []
+var hazards: Array[Dictionary] = []
+var obstacle_count := 0
 var stations: Array[Node3D] = []
 
 func _ready() -> void:
@@ -32,11 +38,85 @@ func _ready() -> void:
   station.add_child(label)
   if index > 0:
    SpaceEnvironmentArt.planet(self,CENTERS[index]+Vector3(-1000,-600,-1400),330,COLORS[index],float(index)*7.0,index==2)
+   _solid_sphere(CENTERS[index] + Vector3(-1000, -600, -1400), 330)
   for asteroid in range(18):
    var offset := Vector3(rng.randf_range(-1200, 1200), rng.randf_range(-400, 400), rng.randf_range(-1200, 1200))
    if offset.length() < 300:
     offset.z -= 400
    backdrop._asteroid(CENTERS[index] + offset, rng.randf_range(8, 28), rng)
+   obstacle_count += 1
+  _frontier(index, rng)
+
+func _frontier(region: int, rng: RandomNumberGenerator) -> void:
+ var center: Vector3 = CENTERS[region]
+ var at := center + Vector3(-550, 80, -650)
+ landmarks.append({"name": LANDMARK_NAMES[region], "position": at, "region": region})
+ var landmark := Node3D.new()
+ landmark.position = at
+ add_child(landmark)
+ var hub := Node3D.new()
+ hub.scale = Vector3.ONE * (14 if region % 2 == 0 else 9)
+ landmark.add_child(hub)
+ SpaceModelFactory.station(hub, COLORS[region])
+ if region >= 4:
+  var relic := Node3D.new()
+  relic.position.y = 30
+  relic.scale = Vector3.ONE * 12
+  landmark.add_child(relic)
+  if region == 4:
+   for i in range(3): SurfaceArt.plant(relic, "alien", Vector3((i-1)*2,0,0), COLORS[region], Color(.3,1,.8), i)
+  elif region == 5:
+   for i in range(3):
+    SurfaceArt.post(relic, Vector3((i-1)*2, 2, 0), .7, 4+i, Color(.2,.08,.12))
+    SurfaceArt.ball(relic, Vector3((i-1)*2, 4, 0), Vector3(.4,.4,.4), COLORS[region], true)
+  else:
+   for i in range(3): SpaceModelFactory.moon_crystal(relic, Vector3((i-1)*2, i, 0), 2+i*.5)
+ var label := Label3D.new()
+ label.text = LANDMARK_NAMES[region] + " / G TO SURVEY WITHIN 100m"
+ label.position.y = 65
+ label.font_size = 32
+ label.pixel_size = .12
+ label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+ landmark.add_child(label)
+ # Collidable wrecks flank survey lanes, leaving the landmark and station clear.
+ for slot in range(12):
+  var offset := Vector3(rng.randf_range(-220, 220), rng.randf_range(-100, 100), rng.randf_range(-220, 220))
+  if offset.length() < 100: offset.x += 180
+  var body := StaticBody3D.new()
+  body.collision_layer = 2
+  body.collision_mask = 1
+  body.position = at + offset
+  body.rotation = Vector3(rng.randf(), rng.randf(), rng.randf()) * PI
+  var size := Vector3(rng.randf_range(12, 35), 8, rng.randf_range(18, 50))
+  var mesh := BoxMesh.new()
+  mesh.size = size
+  _visual(body, mesh, Vector3.ZERO, SpaceModelFactory.PEARL.darkened(.55))
+  var shape := BoxShape3D.new()
+  shape.size = size
+  var collision := CollisionShape3D.new()
+  collision.shape = shape
+  body.add_child(collision)
+  add_child(body)
+  obstacle_count += 1
+ var cloud_at := center + Vector3(420, 80, -720)
+ hazards.append({"position": cloud_at, "radius": 110.0})
+ var cloud := CartoonStyle.ball(self, cloud_at, Vector3.ONE * 110, COLORS[region], true)
+ var material := cloud.material_override as StandardMaterial3D
+ material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+ material.albedo_color.a = .16
+ material.cull_mode = BaseMaterial3D.CULL_DISABLED
+ var warning := Label3D.new()
+ warning.text = "ION STORM / SHIELD & HULL DAMAGE"
+ warning.position = cloud_at + Vector3(0, 130, 0)
+ warning.font_size = 32
+ warning.pixel_size = .13
+ warning.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+ add_child(warning)
+
+func hazard_at(at: Vector3) -> bool:
+ for hazard in hazards:
+  if at.distance_to(hazard.position) < hazard.radius: return true
+ return false
 
 func _visual(parent: Node3D, mesh: Mesh, at: Vector3, color: Color) -> void:
  var instance := MeshInstance3D.new()
@@ -58,3 +138,15 @@ static func nearest_region(at: Vector3) -> int:
    result = index
    distance = candidate
  return result
+
+func _solid_sphere(at: Vector3, radius: float) -> void:
+ var body := StaticBody3D.new()
+ body.collision_layer = 2
+ body.collision_mask = 1
+ body.position = at
+ var shape := SphereShape3D.new()
+ shape.radius = radius
+ var collision := CollisionShape3D.new()
+ collision.shape = shape
+ body.add_child(collision)
+ add_child(body)

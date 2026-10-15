@@ -1,3 +1,11 @@
+## v0.13.0 — Open world faction war
+
+- Seven connected space regions and clickable star chart, with three new frontier landmarks and shared station travel.
+- Recurring host-controlled faction ship raids and creature landing parties that contest rival worlds under existing army caps.
+- Collidable wrecks and planet bodies, asteroid fields, damaging ion clouds, HUD landmark navigation and surveys.
+- Captured solo worlds connect to real bot surface expeditions and return to the same suspended fleet/army/war session.
+- Session-based online orbital war; shared online surfaces and permanent territorial empires remain future work.
+
 ## v0.12.0 — Creature armies and Kindred forms
 
 - Host-controlled online/offline Free Roam armies; 50 total active creatures, 10 per pilot, cooldown-validated squad deployment and three orders.

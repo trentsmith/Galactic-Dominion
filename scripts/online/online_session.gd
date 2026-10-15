@@ -86,14 +86,14 @@ func _peer_connected(id: int) -> void:
 
 func _connected() -> void:
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.12.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.13.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.12.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.13.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -351,6 +351,10 @@ func ship_event(action: String, argument: int = 0) -> void:
     roam_notice.rpc_id(sender, "Arrived / " + FreeRoamWorld.NAMES[argument] if moved else "Warp denied: leave combat before travelling.")
     return
    if action == "dock":
+    var survey: String = arena.survey_landmark(sender, ship)
+    if not survey.is_empty():
+     army_notice.rpc_id(sender, survey)
+     return
     var serviced: bool = arena.service_ship(ship)
     roam_notice.rpc_id(sender, "Station service complete." if serviced else "Service denied: approach a station outside combat.")
     return

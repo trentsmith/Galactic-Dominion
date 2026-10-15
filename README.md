@@ -1,10 +1,10 @@
-# Galactic Dominion — Creature Armies & Kindred Forms
+# Galactic Dominion — Open World Faction War
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.12 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.12.0)** and choose:
+The v0.13 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.13.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,20 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Open world faction war
+
+Free Roam now spans **seven connected regions**: Vesper Reach, Kharon Belt, Auralith Drift, Ember Frontier, Pelagian Veil, Bloodforge Expanse and Dreaming Rift. Press **M** for the clickable star chart and destination selector, or fly between them directly. Each region contains a service station, survey landmark, asteroid belt, collidable wreck field and dangerous ion cloud. New coral, industrial and crystalline landmarks distinguish the frontier. There are 21 enemy patrol ships online (plus six human/AI pilot slots); solo adds three fleet ships and seven civilian escorts.
+
+The **Crimson Dominion**, **Pelagian Concord** and **Eldritch Host** send raids against rival-held worlds. The first dispatch happens after 25 seconds, then every minute. Up to three existing NPC ships arrive by hyperspace and engage with normal combat AI, accompanied by up to three landing troops under the shared 50-creature cap. AI troop occupancy is capped at 24. The HUD and chart show the next raid countdown and recent attacks. The host runs invasions and shares war state with online clients.
+
+Find a survey landmark using HUD markers and distance, then press **G within 100m**. Solo landmark records persist locally; online surveys are session records and award no inventory items. Existing solo signal discoveries and combat rewards remain available. Ion storms deal 5 damage per second through normal shields/hull; leave the glowing cloud to recover. Hostiles, storms and recent damage prevent safe warp/service.
+
+In **solo Free Roam**, conquer a world outpost, approach within 650m outside combat, and select **Land Bot** in M. Deploy onto Varkhoss Prime, Pelagia or Ny’Zaroth, explore its 3D wildlife habitat, then return to the **same suspended orbital session**. Fleet positions, troops and war state survive the trip. Orbital simulation pauses while on the solo surface; shared online surface exploration and seamless atmospheric flight are not implemented.
+
+The map is finite and fully loaded, with no shrinking battle boundary. Faction territory and raid state last for the current session. Discoveries, collectibles and sanctuary progress persist as before. Online and local inventories stay separate.
+
+![Actual seven-region star chart](docs/images/open-world-chart.webp)
 
 ## Creature armies and world conquest
 
@@ -63,16 +77,16 @@ Schema 4 saves load older schemas 1–3, preserve friendship and provide partial
 
 ## Free-roaming space
 
-**Free Roam / Open Space** loads four connected regions into one world. Fly directly between Vesper Reach, Kharon Belt, Auralith Drift and Ember Frontier, or open **M** for station warp. There is no shrinking zone, boundary damage, eight-minute timeout or session-ending team elimination. Nearby ship markers and **Tab** targeting are limited to 1,400 metres to keep the view readable.
+**Free Roam / Open Space** loads seven connected regions into one world. Fly directly between the original four regions and three new frontier regions, or open **M** for station warp. There is no shrinking zone, boundary damage, eight-minute timeout or session-ending team elimination. Nearby ship markers and **Tab** targeting are limited to 1,400 metres to keep the view readable.
 
 - Your three configured fleet ships travel together; F1–F3 switching and the five fleet orders work as before.
-- Twelve AI raiders patrol the four regions, while four friendly civilian escorts roam near stations. Raider factions can fight each other as well as your fleet.
+- Twenty-one AI patrol ships roam seven regions, while seven friendly civilian escorts roam near stations in solo play. Raider factions can fight each other as well as your fleet.
 - Approach a station within **180 metres** and press **G** to restore nearby fleet hull, shields and boost. Warp and station service require no nearby hostiles within 650 metres and no recent damage. Warp preserves damage; it does not repair ships.
 - Twelve signals grant the existing local exploration discoveries. Approach within 35 metres and **hold G for two seconds**. Signals share saved IDs with Exploration, so rescanning cannot grant duplicate rewards.
 - Defeat a three-ship patrol with your fleet to receive a **permanent hull, two discovery rolls and 60 salvage**. The world stays active; new patrols arrive after 45 seconds.
 - Destroyed fleet ships redeploy at the nearest station after 12 seconds. Eight seconds of launch protection helps prevent immediate repeat deaths; firing ends protection. Offline **Esc** pause now stops simulation, including the free-roam world.
 
-Online free roam supports **up to six human pilots plus twelve AI raiders** in the same world. In Online / Lobby / Marketplace, join the server, ready up, and have the leader click **Launch Free Roam**. Additional pilots can join an active free-roam session without interrupting its players. Two three-ship teams remain in this prototype; empty pilot slots use AI and F1–F3 switching cannot take another human's vessel. Warp and service move/repair only your controlled online ship. The server handles movement, damage, travel, service and respawning. Each server-confirmed player kill of a hostile ship grants a permanent hull and discovery rewards, saved immediately; leaving unlocks your inventory for trading. Online scanning is not added in this build; local exploration and online inventories remain separate.
+Online free roam supports **up to six human pilots plus twenty-one AI patrol ships** in the same world. In Online / Lobby / Marketplace, join the server, ready up, and have the leader click **Launch Free Roam**. Additional pilots can join an active free-roam session without interrupting its players. Two three-ship teams remain in this prototype; empty pilot slots use AI and F1–F3 switching cannot take another human's vessel. Warp and service move/repair only your controlled online ship. The server handles movement, damage, travel, service and respawning. Each server-confirmed player kill of a hostile ship grants a permanent hull and discovery rewards, saved immediately; leaving unlocks your inventory for trading. Online landmark surveys are session records with no inventory payout. Loot-bearing signal scans remain local; local exploration and online inventories stay separate.
 
 One server process runs either Fleet Royale or a continuous free-roam session. With no human pilots left, the free-roam session closes and its lobby becomes available again. World positions and encounter waves are session state, while your collected ships, fittings and records persist.
 
@@ -345,3 +359,7 @@ This is a playable prototype using primitive meshes, simple ray-based obstacle a
 Passed **380 Godot checks** (312 existing, 39 friendship-form and 29 army checks) and **21 backend tests**. Two actual authenticated clients verified army deployment, shared troop state, AI combat/destruction and a 30-second world capture on both clients. The deterministic server fixture positions opposing squads and gives one side extra endurance; normal army AI performs combat and capture. The existing two-client free-roam integration also passed, including late joining, companion attacks, PvE/PvP, respawn, persistence and trading. The exported Linux server passed the two-client Fleet Royale integration. All five native entry points (free roam, sanctuary and three planets) started successfully. Actual OpenGL army and growth-form captures were inspected. The model ZIP contains 38 GLBs and 38 self-contained scenes; package checksums were verified.
 
 These checks do not replace manual playtesting. Windows GUI execution and Internet/VPS deployment remain untested on this Linux machine. Some abrupt headless test exits emit ObjectDB cleanup warnings; no failed checks or GDScript errors occurred in the regression suite.
+
+### v0.13 validation
+
+The expanded-world suite covers seven-region population, collidable obstacles, real ion damage, frontier warp, surveys, signal identity, raid timing/targets, NPC-only deployment, AI/global troop budgets, client authority, war snapshots and a complete surface landing/return retaining the same session. The complete regression suite passed 411 Godot checks. Two real-client tests passed for replicated army combat/capture and the faction raid timeline, and for late joining, frontier travel, repairs, real companion attacks, PvE/PvP, respawn and persistence. Windows GUI execution and Internet deployment remain untested.

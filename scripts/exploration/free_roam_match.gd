@@ -3,8 +3,12 @@ extends BattleMatch
 signal encounter_won(attacker, victim, event_id)
 signal travel_requested(index)
 signal army_requested(action, argument)
+signal landing_requested(index)
 signal dock_requested
 
+var war: WorldWar
+var war_status: Label
+var surveyed: Dictionary = {}
 var army: CreatureArmy
 var army_status: Label
 var army_species: OptionButton
@@ -63,7 +67,7 @@ func _ready() -> void:
   ship.set_meta("spawn_protection", 8.0)
  fleet.switch_to(0)
  fleet.issue_command("follow")
- for region in range(4):
+ for region in range(FreeRoamWorld.CENTERS.size()):
   _create_encounter(region)
  if network_role == "offline":
   _create_signals()
@@ -84,6 +88,8 @@ func _ready() -> void:
  army = CreatureArmy.new()
  army.battle = self
  add_child(army)
+ war = WorldWar.new()
+ war.battle = self
  _build_roam_ui()
  if network_role == "server":
   hud.visible = false
@@ -95,12 +101,12 @@ func _create_encounter(region: int) -> void:
  var members: Array[CombatShip] = []
  for slot in range(3):
   var ship := CombatShip.new()
-  ship.team = region + (1 if network_role == "offline" else 2)
+  ship.team = FreeRoamWorld.FACTIONS[region]
   ship.fleet_slot = slot
   ship.stats = CollectionCatalog.SHIP_TYPES.values()[(region + slot) % 5].duplicate(true)
-  ship.stats.crew_id = ["crew_nyx", "crew_kael", "crew_orith", "crew_threx"][region]
+  ship.stats.crew_id = ["crew_nyx", "crew_kael", "crew_orith", "crew_threx"][region % 4]
   ship.crew_name = CollectionCatalog.find(ship.stats.crew_id).display_name
-  ship.callsign = ["Vesper Raiders", "Kharon Marauders", "Auralith Corsairs", "Ember Hunters"][region] + " %d" % (slot + 1)
+  ship.callsign = ["Crimson Patrol", "Crimson Marauders", "Pelagian Wardens", "Eldritch Hunters"][region % 4] + " %d" % (slot + 1)
   ship.position = FreeRoamWorld.CENTERS[region] + Vector3(700 + slot * 35, slot * 20, -300)
   add_child(ship)
   ship.targeting.selection_range = 1400
@@ -127,7 +133,7 @@ func _create_encounter(region: int) -> void:
  ships.append(trader)
 
 func _create_signals() -> void:
- for region in range(4):
+ for region in range(FreeRoamWorld.CENTERS.size()):
   for slot in range(3):
    var signal_node := Node3D.new()
    signal_node.position = FreeRoamWorld.CENTERS[region] + [Vector3(-500, 120, -200), Vector3(0, -180, -800), Vector3(650, 150, 600)][slot]
@@ -156,14 +162,25 @@ func _build_roam_ui() -> void:
  log_label.text = "Fly freely between regions. M: chart / warp. G: station service or scan.\nTab: target ships. Battles do not end the world; destroyed ships redeploy."
  column.add_child(log_label)
  map_panel = PanelContainer.new()
- map_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
- map_panel.position = Vector2(340, 140)
+ map_panel.theme = CartoonStyle.ui_theme()
+ var chart_style := StyleBoxFlat.new()
+ chart_style.bg_color = Color(.02, .028, .065, .98)
+ chart_style.border_color = Color(.2, .55, .8)
+ chart_style.set_border_width_all(1)
+ chart_style.set_corner_radius_all(10)
+ chart_style.content_margin_left = 10
+ chart_style.content_margin_right = 10
+ chart_style.content_margin_top = 10
+ chart_style.content_margin_bottom = 10
+ map_panel.add_theme_stylebox_override("panel", chart_style)
+ map_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+ map_panel.position = (get_viewport().get_visible_rect().size - Vector2(600, 560)) / 2
  map_panel.size = Vector2(600, 560)
  layer.add_child(map_panel)
  var choices := VBoxContainer.new()
  choices.add_theme_constant_override("separation", 12)
  var chart_scroll := ScrollContainer.new()
- chart_scroll.custom_minimum_size = Vector2(600, 560)
+ chart_scroll.custom_minimum_size = Vector2(580, 540)
  map_panel.add_child(chart_scroll)
  choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  chart_scroll.add_child(choices)
@@ -171,14 +188,33 @@ func _build_roam_ui() -> void:
  title.text = "FREE-ROAM STAR CHART / CONNECTED SPACE"
  title.add_theme_font_size_override("font_size", 22)
  choices.add_child(title)
- for index in range(4):
-  var button := Button.new()
-  button.text = "WARP TO STATION / " + FreeRoamWorld.NAMES[index]
-  button.custom_minimum_size.y = 45
-  button.pressed.connect(func():
-   if network_role == "client": travel_requested.emit(index)
-   else: travel_fleet(index))
-  choices.add_child(button)
+ var chart := GalaxyChart.new()
+ chart.battle = self
+ chart.course_requested.connect(func(region):
+  if network_role == "client": travel_requested.emit(region)
+  else: travel_fleet(region))
+ choices.add_child(chart)
+ var destinations := OptionButton.new()
+ for index in range(FreeRoamWorld.CENTERS.size()):
+  destinations.add_item(FreeRoamWorld.NAMES[index] + " / " + FreeRoamWorld.DESCRIPTIONS[index])
+ choices.add_child(destinations)
+ var warp := Button.new()
+ warp.text = "WARP TO SELECTED STATION / OR CLICK A MAP DOT"
+ warp.pressed.connect(func():
+  if network_role == "client": travel_requested.emit(destinations.selected)
+  else: travel_fleet(destinations.selected))
+ choices.add_child(warp)
+ war_status = Label.new()
+ war_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ war_status.custom_minimum_size.x = 550
+ choices.add_child(war_status)
+ for index in range(3):
+  var land := Button.new()
+  land.text = "LAND BOT / " + PlanetCatalog.WORLDS[index].display_name
+  land.disabled = network_role != "offline"
+  land.tooltip_text = "Solo: capture this outpost and approach within 650m outside combat. Return to the same space session after exploring."
+  land.pressed.connect(func(): landing_requested.emit(index))
+  choices.add_child(land)
  var note := Label.new()
  note.text = "You can also fly directly between stations. Warp and service require\nno hostiles within 650m and no recent damage. Warp preserves health."
  choices.add_child(note)
@@ -217,6 +253,9 @@ func _physics_process(delta: float) -> void:
  if network_role != "client":
   elapsed += delta
   update_auras()
+  war.tick(delta)
+  for vessel in ships:
+   if vessel.alive and world.hazard_at(vessel.position): vessel.health.damage(delta * 5, null)
   for ship in ships:
    var protection := maxf(0, float(ship.get_meta("spawn_protection", 0)) - delta)
    ship.set_meta("spawn_protection", protection)
@@ -252,14 +291,16 @@ func _update_roam_ui(delta: float) -> void:
   army_status.text = "ARMY %d/10 / SERVER %d/50\n" % [army.owned_count(owner), army.units.size()]
   for outpost in army.worlds:
    army_status.text += "%s: Team %d / %d%%\n" % [outpost.name, outpost.owner + 1, int(outpost.progress / CreatureArmy.CAPTURE_SECONDS * 100)]
+ if is_instance_valid(war_status): war_status.text = war.briefing()
  var region := FreeRoamWorld.nearest_region(ship.position)
  if region != current_region:
   current_region = region
   if profile != null:
-   var definition: SectorDefinition = ExplorationMatch.SECTORS[region]
-   profile.record_discovery(definition.id + ".sector", definition.display_name)
+   profile.record_discovery("open.region.%d" % region, FreeRoamWorld.NAMES[region])
  var nearby: Dictionary = army.worlds[army.nearest_world(ship.position)]
  info.text = "%s / FREE SPACE / %dm TO STATION\nARMIES %d/50 / %s / TEAM %d / %dm / M: ARMY ORDERS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), army.units.size(), nearby.name, nearby.owner + 1, int(ship.position.distance_to(nearby.position))]
+ info.text += "\n" + war.briefing().split("\n")[0]
+ info.text += " / %s %dm" % [world.landmarks[region].name, int(ship.position.distance_to(world.landmarks[region].position))]
  if not ship.alive:
   prompt.text = "SHIP LOST / REDEPLOYING AT NEAREST STATION"
   return
@@ -268,13 +309,19 @@ func _update_roam_ui(delta: float) -> void:
   if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
    service_ship(ship, true)
  else:
-  prompt.text = "M / CHART AND WARP · FLY ANYWHERE · TAB / TARGET NEARBY SHIPS"
+  prompt.text = "M / CHART, WAR & LANDING · TAB / TARGET · G / SURVEY LANDMARK"
+  if world.hazard_at(ship.position): prompt.text = "ION STORM / TAKING DAMAGE / LEAVE THE GLOWING CLOUD"
+  if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+   var result := survey_landmark(1, ship)
+   if not result.is_empty(): log_label.text = result
   if profile != null:
    _scan_nearby(delta)
 
 func safe_to_service(ship: CombatShip) -> bool:
- if not ship.alive or ship.health.regen_delay > 0:
+ if not ship.alive or ship.health.regen_delay > 0 or world.hazard_at(ship.position):
   return false
+ for unit in army.units.values():
+  if unit.team != ship.team and unit.position.distance_to(ship.position) < 350: return false
  for enemy in ships:
   if enemy.alive and enemy.team != ship.team and enemy.position.distance_to(ship.position) < 650:
    return false
@@ -298,7 +345,7 @@ func service_ship(ship: CombatShip, whole_fleet: bool = false) -> bool:
  return true
 
 func travel_ship(ship: CombatShip, region: int) -> bool:
- if region < 0 or region >= 4 or not safe_to_service(ship):
+ if region < 0 or region >= FreeRoamWorld.CENTERS.size() or not safe_to_service(ship):
   log_label.text = "Warp denied: disengage from nearby enemies and wait for damage to stop."
   return false
  ship.position = FreeRoamWorld.CENTERS[region] + Vector3(ship.fleet_slot * 35, 0, 160)
@@ -323,8 +370,8 @@ func travel_fleet(region: int) -> bool:
 func _scan_nearby(delta: float) -> void:
  var selected := -1
  for index in range(beacons.size()):
-  var definition: SectorDefinition = ExplorationMatch.SECTORS[index / 3]
-  if not profile.exploration_records.has("%s.signal.%d" % [definition.id, index % 3]) and pilot.ship.position.distance_to(beacons[index].position) < 35:
+  var definition: SectorDefinition = ExplorationMatch.SECTORS[(index / 3) % 4]
+  if not profile.exploration_records.has(signal_record(index)) and pilot.ship.position.distance_to(beacons[index].position) < 35:
    selected = index
    break
  if selected < 0:
@@ -340,9 +387,9 @@ func _scan_nearby(delta: float) -> void:
 
 func discover_signal(index: int) -> bool:
  if profile == null or index < 0 or index >= beacons.size(): return false
- var definition: SectorDefinition = ExplorationMatch.SECTORS[index / 3]
+ var definition: SectorDefinition = ExplorationMatch.SECTORS[(index / 3) % 4]
  var id := definition.rewards[index % 3]
- if not profile.record_discovery("%s.signal.%d" % [definition.id, index % 3], CollectionCatalog.find(id).display_name, id): return false
+ if not profile.record_discovery(signal_record(index), CollectionCatalog.find(id).display_name, id): return false
  log_label.text = "DISCOVERY / " + CollectionCatalog.find(id).display_name + " / Saved to your collection"
  return true
 
@@ -417,3 +464,24 @@ func army_action(owner: int, ship: CombatShip, action: String, argument: int = 0
  if action == "deploy": return army.deploy(owner, ship, argument)
  if army.command(owner, ship, action): return "Army order / " + action
  return "Order denied / approach a world outpost within 1600m and use a living ship."
+
+func signal_record(index: int) -> String:
+ if index < 12:
+  return "%s.signal.%d" % [ExplorationMatch.SECTORS[index / 3].id, index % 3]
+ return "open.region.%d.signal.%d" % [index / 3, index % 3]
+
+func survey_landmark(owner: int, ship: CombatShip) -> String:
+ if network_role == "client" or not ship.alive: return ""
+ for landmark in world.landmarks:
+  if ship.position.distance_to(landmark.position) > 100: continue
+  var record := "%d.%d" % [owner, landmark.region]
+  if surveyed.has(record): return "Landmark already surveyed this session."
+  surveyed[record] = true
+  if profile != null: profile.record_discovery("open.landmark.%d" % landmark.region, landmark.name)
+  return "SURVEY COMPLETE / " + landmark.name
+ return ""
+
+func can_land(index: int) -> bool:
+ if network_role != "offline" or index < 0 or index >= army.worlds.size() or not is_instance_valid(pilot.ship): return false
+ var ship := pilot.ship
+ return ship.alive and army.worlds[index].owner == ship.team and ship.position.distance_to(army.worlds[index].position) < 650 and safe_to_service(ship)

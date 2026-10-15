@@ -1,6 +1,7 @@
 class_name PlanetExpedition
 extends Node3D
 signal return_requested
+var return_label := "RETURN TO PLANET SELECTOR"
 var profile: PlayerProfile
 var definition: PlanetDefinition
 var bot_definition: CollectibleDefinition
