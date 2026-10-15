@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_lunaflutter"
+display_name = "Lunaflutter — Moon Moth"
+description = "A cheerful moon moth in pearl armor with luminous petal wings and crystal antennae. Dream Drift sends slow, gently homing violet sparks toward nearby enemies."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Moon Moth"
+modifiers = {"shield_regen": 1.1}
+color = Color(0.82, 0.22, 1, 1)
+accent = Color(1, 0.73, 0.9, 1)
+visual_style = "lunaflutter"
+research_cost = 140

@@ -41,7 +41,7 @@ func run() -> void:
   for key in entry.modifiers:
    if not key in CollectionCatalog.MODIFIABLE_STATS or float(entry.modifiers[key]) <= 0:
     catalog_valid = false
- check(catalog_valid and ids.size() == 37, "Catalog has 37 unique, valid Resource definitions")
+ check(catalog_valid and ids.size() == 39, "Catalog has 39 unique, valid Resource definitions")
  var path := new_path("roundtrip")
  var profile := PlayerProfile.new(path)
  profile.load_profile()
@@ -143,7 +143,7 @@ func run() -> void:
  main.show_hangar()
  await frames()
  var hangar: HangarScreen = main.menu.get_child(0)
- check(hangar.inventory_list.item_count == 37 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
+ check(hangar.inventory_list.item_count == 39 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
  check(get_nodes_in_group("ships").is_empty(), "Preview ships do not enter the combat target group")
  for index in range(3):
   hangar.selected_ship = index
@@ -163,7 +163,7 @@ func run() -> void:
  check(main.profile.loadouts[2].engine == "engine_sprint" and main.profile.loadouts[2].variant == "variant_standard", "Fitting dropdown callback changes its own slot on the selected ship")
  hangar.filter.select(2)
  hangar._refresh_collection()
- check(hangar.inventory_list.item_count == 12, "Collection crew filter lists astronauts and aliens")
+ check(hangar.inventory_list.item_count == 13, "Collection crew filter lists astronauts and aliens")
  hangar.chosen_definition = "crew_nyx_prism"
  hangar._refresh_detail()
  await frames()

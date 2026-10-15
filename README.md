@@ -4,7 +4,7 @@ A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting a
 
 ## Download and play without Godot
 
-The v0.7 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.7.0)** and choose:
+The v0.8 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.8.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -46,13 +46,17 @@ One server process runs either Fleet Royale or a continuous free-roam session. W
 
 ## Cute cartoon ships and alien companions
 
+![Lunaflutter and the matching Moon Moth scout rendered in Godot](docs/images/lunaflutter-space-art.webp)
+
+**Lunaflutter — Moon Moth** adds four layered pink/lavender 3D wings with animated hinges, faceted crystal antennae, crescent eyes and purple engines. Research the crew for **140 salvage** and equip it in Crew to use **Dream Drift**, slow violet homing sparks (5 damage every 1.6 seconds). Research **Lunaflutter Scout** for **200 salvage** and equip it in the Interceptor’s Variant slot for the matching winged ship. Its appearance leaves combat statistics unchanged. These are new Uncommon crew and Rare appearance entries; Legendary/Mythic ticket odds stay unchanged.
+
 ![Pixlet, a scout ship and procedural space scenery rendered in Godot](docs/images/pixlet-space-art.webp)
 
-Ships and companions now use pearl armor, warm gold trim, glossy navy faceplates, cyan eyes, swept fins and rounded engine pods inspired by the supplied Pixlet reference. Each ship class keeps its own silhouette and gameplay. Pixlet is a new researchable Pebble scout companion that orbits and attacks with Scout Spark. The environment has a procedural blue nebula sky, painted planets with atmosphere rims, cratered 3D asteroids and matching service stations. All geometry is original and generated in Godot; no external art packages are required.
+Ships and companions now use pearl armor, warm gold trim, glossy navy faceplates, cyan eyes, swept fins and rounded engine pods inspired by the supplied Pixlet and Lunaflutter references. Each ship class keeps its own silhouette and gameplay. Pixlet is a new researchable Pebble scout companion that orbits and attacks with Scout Spark. The environment has a procedural blue nebula sky, painted planets with atmosphere rims, cratered 3D asteroids and matching service stations. All geometry is original and generated in Godot; no external art packages are required.
 
 ![Free-roam flight with Pixlet and a pearl docking station](docs/images/pearl-space-flight.webp)
 
-Download **Galactic-Dominion-3D-Models.zip** from the release for seven reusable models: Pixlet, five ship classes and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
+Download **Galactic-Dominion-3D-Models.zip** from the release for nine reusable models: Pixlet, Lunaflutter, the Lunaflutter Scout appearance, five standard ship classes and the station. Each includes a portable `.glb` for Blender/Godot and a self-contained Godot `.tscn`. They are static meshes; blinking, orbiting and combat are animated by the game scripts. Godot outline shaders are preserved in scenes, while GLB uses standard materials. Rebuild the models with `godot --headless --path . --script res://tools/export_models.gd`.
 
 **Equip an alien in a ship's Crew slot** in Fleet Hangar or Online Fleet. Its 3D companion orbits the ship, bobs and blinks, chooses a nearby enemy within 320 metres, and fires real projectiles. A selected enemy takes priority. Shots obey cooldowns, avoid allies, apply shields/hull damage and credit the host ship. Alien attacks are automatic on player and AI ships; online clients only animate companions and render server-owned projectiles. Companions stop attacking when their ship is destroyed and return when it redeploys. Astronauts retain their crew bonuses without spawning an alien companion.
 
@@ -105,16 +109,16 @@ From the main menu open **FLEET HANGAR / COLLECTION**. Use the fleet buttons or 
 
 Each ship has six slots: engine, shield, weapon, utility, crew and variant. The hangar displays the resulting hull, shields, regeneration, speed, turning, boost capacity, laser/missile output and ability recharge. Loadouts affect your next deployed battle. Component schematics can be fitted to multiple ships; a named crew member can serve aboard only one ship. To transfer a crew member, first set their current ship's crew to **Unassigned**.
 
-There are **37 catalog entries**:
+There are **39 catalog entries**:
 
 - 14 component schematics: four standard and ten alternative fittings, with bonuses and trade-offs.
-- 12 crew collectibles: six human astronaut appearances and six alien appearances from five species (Vesperi, Kharon, Auralith, Drakari and Pebble).
-- 6 ship liveries: the standard fleet livery and five class-specific rare variants.
+- 13 crew collectibles: six human astronaut appearances and seven alien appearances from six species (Vesperi, Kharon, Auralith, Drakari, Pebble and Moon Moth).
+- 7 ship liveries: the standard fleet livery and six class-specific appearances.
 - 5 collectible hulls: all five classes can be won and traded. The three starter classes also remain available as fleet issue.
 
 A new commander starts with four standard component schematics, three astronauts and the standard fleet livery: **8 discovered entries**. Open **Collection & Commander** to filter items, inspect portraits and bonuses, edit your commander name, review lifetime combat totals, or research undiscovered standard equipment and crew with salvage.
 
-Complete a battle to gain free discovery rolls and salvage. Victory gives **one permanent random ship hull, 2 collectible rolls and 60 salvage**; defeat or draw gives **1 roll and 30 salvage**. A duplicate adds **15 salvage** and increases that entry's recovery count. Abandoning a match grants no reward. Research provides a predictable route to non-cosmetic equipment and standard crew; appearance variants can only be discovered in battle salvage.
+Complete a battle to gain free discovery rolls and salvage. Victory gives **one permanent random ship hull, 2 collectible rolls and 60 salvage**; defeat or draw gives **1 roll and 30 salvage**. A duplicate adds **15 salvage** and increases that entry's recovery count. Abandoning a match grants no reward. Research provides a predictable route to non-cosmetic equipment and standard crew; the Lunaflutter Scout appearance can also be researched, while Legendary and Mythic appearances are discovered in battle salvage.
 
 Per-roll rarity chances: **Mythic 1/16,384 (0.0061%), Legendary 1/4,096 (0.0244%), Rare 819/16,384 (~5%), Uncommon 3,932/16,384 (~24%), Common 11,628/16,384 (~71%)**. These tiers are disjoint. The selected tier picks uniformly among its entries. Legendary and Mythic items are appearance variants; variant crew have the same combat bonus as their standard counterpart. Rare ship variants add distinctive hull colors, fins, trim, rings or energy ribbons without a power bonus.
 
@@ -195,7 +199,7 @@ The spherical zone starts at 600 metres, begins shrinking after 30 seconds, and 
 - `scripts/exploration`: Resource-defined sectors, scans, patrol encounters, chart navigation and discovery records.
 - `scripts/online`: HTTP account client, ENet lobby, authoritative simulation, bounded inputs and snapshot presentation.
 - `server`: Python/SQLite account, profile, escrow/offer/market and combat reward service, plus a cross-platform launcher.
-- `resources/collectibles`: 37 reusable `.tres` collectible definitions.
+- `resources/collectibles`: 39 reusable `.tres` collectible definitions.
 - `resources/ships`: reusable Interceptor, Skirmisher, Guardian, Bomber and Support `.tres` definitions.
 
 Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation. The online server simulates all ships; clients present snapshots. Prediction and lag compensation are future work.
@@ -239,6 +243,6 @@ If your sandbox does not allow Godot to write its user directories, set `XDG_DAT
 
 This is a playable prototype using primitive meshes, simple ray-based obstacle avoidance and synthesized placeholder sound effects. The modes have automated combat/network checks and inspected scripted renderer captures; manual interactive playtests and real Internet/VPS deployment have not been completed. The online server handles one arena or free-roam session per process, with basic quick-join rather than a worldwide matchmaking directory. Prediction, lag compensation, reconnecting into an ongoing Fleet Royale match, moderation, account recovery, large population scaling and a production economy remain future work. The self-hosted API needs an HTTPS reverse proxy for Internet accounts. No external service was published.
 
-### v0.7 art validation
+### v0.8 art validation
 
-Ran 190 Godot checks across combat, progression, exploration, free roam, companions, presentation, connection preferences and the new reference-art/model tests, plus 21 backend tests. All passed. Exported seven GLB/scene model pairs and inspected actual OpenGL captures of the model showcase and free-roam flight. Windows GUI execution remains untested on this Linux machine.
+Ran 207 Godot checks across combat, progression, exploration, free roam, companions, presentation, connection preferences and the new reference-art/model tests, plus 21 backend tests. All passed. Exported nine GLB/scene model pairs and inspected an actual OpenGL capture of Lunaflutter and its matching ship. The earlier free-roam capture remains available above. Windows GUI execution remains untested on this Linux machine.

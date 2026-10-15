@@ -32,6 +32,9 @@ func show_stats(stats: ShipStats) -> void:
  if is_instance_valid(ship):
   scene.remove_child(ship)
   ship.queue_free()
+ var env := scene.get_child(0) as WorldEnvironment
+ var lunar := stats.variant_style == "moon_moth" or stats.crew_id == "crew_lunaflutter"
+ env.environment.sky.sky_material.set_shader_parameter("moon_palette",1.0 if lunar else 0.0)
  ship = CombatShip.new()
  ship.stats = stats
  ship.set_physics_process(false)

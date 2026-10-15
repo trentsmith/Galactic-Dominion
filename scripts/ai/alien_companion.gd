@@ -16,6 +16,9 @@ func _ready() -> void:
  add_child(visual)
  # Rare appearances use their species' normal combat behavior.
  match definition.species:
+  "Moon Moth":
+   attack_damage = 5
+   attack_interval = 1.6
   "Kharon":
    attack_damage = 10
    attack_interval = 2.1
@@ -66,7 +69,11 @@ func fire_at(target: CombatShip) -> bool:
  shot.spec.damage = attack_damage
  shot.spec.speed = 170
  shot.spec.lifetime = 2.5
- shot.spec.tracking = definition.species == "Drakari"
+ shot.spec.tracking = definition.species in ["Drakari","Moon Moth"]
+ if definition.species == "Moon Moth":
+  shot.spec.speed = 125
+  shot.spec.lifetime = 3.2
+  shot.spec.turn_rate = 1.8
  shot.team = ship.team
  shot.shooter = ship
  shot.target = target

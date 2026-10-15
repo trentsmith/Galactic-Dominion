@@ -126,6 +126,7 @@ static func tube(parent: Node3D, path: Curve3D, at: Vector3, radius: float, colo
   node.quaternion = Quaternion(Vector3.UP,direction)
 
 static func companion(parent: Node3D, definition: CollectibleDefinition) -> Array[Node3D]:
+ if definition.visual_style == "lunaflutter": return moon_moth(parent)
  var accent := CYAN
  if definition.rarity in ["legendary","mythic"]: accent = definition.rarity_color()
  ball(parent,Vector3.ZERO,Vector3(1.20,1.15,1.02),PEARL,"PearlHelmet")
@@ -152,6 +153,8 @@ static func companion(parent: Node3D, definition: CollectibleDefinition) -> Arra
 static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  var accent := CYAN if team == 0 else Color(1,0.34,0.24)
  if stats.variant_style != "standard": accent = stats.color.lightened(0.25)
+ var lunar := stats.variant_style == "moon_moth"
+ if lunar: accent = Color(0.92,0.30,1)
  var heavy := stats.ability in ["aegis","barrage"]
  var body := CapsuleMesh.new()
  body.radius = 1.45 if heavy else 1.12
@@ -159,13 +162,14 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  mesh(parent,body,Vector3.ZERO,PEARL,"PearlFuselage").rotation.x = PI/2
  ball(parent,Vector3(0,0.12,1.05),Vector3(1.12,0.95,1.6),BLUE,"BlueRearArmor")
  ball(parent,Vector3(0,0.65,-2.20),Vector3(1.05,0.95,0.94),GOLD,"GoldCanopySeal")
- var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),NAVY,"PilotCanopy")
+ var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),Color(0.07,0.006,0.16) if lunar else NAVY,"PilotCanopy")
  var cockpit_material := visor.material_override as StandardMaterial3D
  cockpit_material.roughness = 0.08
  for side in [-1,1]:
   ball(parent,Vector3(side*0.36,0.80,-3.23),Vector3(0.13,0.22,0.055),accent,"CanopyEye",true)
   var span := 1.15 if heavy else 0.95
-  fin(parent,Vector3(side*0.82,0.3,0.60),Vector3(span,1.25 if stats.ability=="speed" else 1.0,1),side*-0.90,accent)
+  if not lunar:
+   fin(parent,Vector3(side*0.82,0.3,0.60),Vector3(span,1.25 if stats.ability=="speed" else 1.0,1),side*-0.90,accent)
   pod(parent,Vector3(side*(2.0 if heavy else 1.65),-0.24,0.78),0.92 if heavy else 0.74,accent)
   ring(parent,Vector3(side*0.82,-0.25,-2.75),0.16,0.04,GOLD,"NoseSensorSeal")
   ball(parent,Vector3(side*0.82,-0.25,-2.80),Vector3.ONE*0.10,accent,"NoseSensor",true)
@@ -182,6 +186,9 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  elif stats.ability == "repair":
   ring(parent,Vector3(0,1.05,0.8),0.55,0.08,GOLD,"RepairBeaconRing").rotation = Vector3.ZERO
   ball(parent,Vector3(0,1.16,0.8),Vector3(0.32,0.18,0.32),Color(0.45,1,0.78),"RepairBeacon",true)
+ if lunar:
+  moon_wings(parent,1.45,Vector3(0,0.35,0.6))
+  moon_antennae(parent,1.10,Vector3(0,0.75,-1.6))
  ring(parent,Vector3(0,0,2.52),0.65,0.10,GOLD,"AftEngineCollar")
  var engine := SphereMesh.new()
  engine.radius = 0.47
@@ -213,3 +220,115 @@ static func station(parent: Node3D, accent: Color = CYAN) -> void:
  for side in [-1,1]:
   fin(parent,Vector3(side*2.35,1.5,0.2),Vector3(0.8,1.2,1),side*-0.55,accent)
   ball(parent,Vector3(side*2.85,-0.55,0.4),Vector3(0.45,1.0,0.6),PEARL,"StationModule")
+
+# Lunaflutter is built from layered, closed 3D wings and faceted crystal meshes.
+static func moon_wing(parent: Node3D, at: Vector3, dimensions: Vector3, lean: float, side: int) -> Node3D:
+ var root := Node3D.new()
+ root.name = "MoonWing"
+ root.position = at
+ root.scale = dimensions
+ root.rotation.z = lean
+ root.set_meta("rest_rotation",root.rotation)
+ root.set_meta("wing_side",side)
+ parent.add_child(root,true)
+ var shape := petal_mesh()
+ mesh(root,shape,Vector3.ZERO,GOLD,"GoldWingRim")
+ mesh(root,shape,Vector3(0,0.035,-0.065),PEARL,"PearlWingRim").scale = Vector3(0.96,0.96,0.92)
+ mesh(root,shape,Vector3(0,0.09,-0.14),Color(0.67,0.23,0.92),"VioletWingMembrane").scale = Vector3(0.87,0.90,0.84)
+ mesh(root,shape,Vector3(0,0.24,-0.25),Color(1,0.70,0.89),"RoseWingPanel").scale = Vector3(0.66,0.68,0.65)
+ mesh(root,shape,Vector3(0,0.40,-0.34),Color(1,0.94,0.73),"MoonWingInlay").scale = Vector3(0.37,0.48,0.45)
+ for part in root.get_children():
+  var material := part.material_override as StandardMaterial3D
+  material.cull_mode = BaseMaterial3D.CULL_DISABLED
+  material.next_pass = null
+ for direction in [-1,1]:
+  var vein := Curve3D.new()
+  vein.bake_interval = 0.18
+  vein.add_point(Vector3(0,0.18,-0.43))
+  vein.add_point(Vector3(direction*0.21,0.95,-0.42))
+  vein.add_point(Vector3(direction*0.16,1.85,-0.33))
+  tube(root,vein,Vector3.ZERO,0.012,Color(0.90,0.74,1),true)
+ for index in range(7):
+  var y := 0.48+index*0.22
+  var x := sin(index*2.4)*0.29
+  ball(root,Vector3(x,y,-0.42),Vector3.ONE*0.026,Color(1,0.86,1),"WingStarlight",true)
+ return root
+
+static func moon_wings(parent: Node3D, size: float = 1.0, offset: Vector3 = Vector3.ZERO) -> void:
+ for side in [-1,1]:
+  moon_wing(parent,offset+Vector3(side*0.73,0.36,0.58)*size,Vector3(1.78,1.08,0.8)*size,side*-1.05,side)
+  moon_wing(parent,offset+Vector3(side*0.75,-0.33,0.70)*size,Vector3(1.45,0.72,0.8)*size,side*-2.12,side)
+  ball(parent,offset+Vector3(side*1.08,0.15,0.18)*size,Vector3(0.24,0.35,0.21)*size,GOLD,"MoonWingHinge")
+
+static func moon_crystal(parent: Node3D, at: Vector3, size: float) -> Node3D:
+ var root := Node3D.new()
+ root.name = "AntennaGem"
+ root.position = at
+ root.scale = Vector3.ONE*size
+ parent.add_child(root,true)
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ var belt := [Vector3(-0.22,0,0),Vector3(0,0,-0.18),Vector3(0.22,0,0),Vector3(0,0,0.18)]
+ for index in range(4):
+  for upper in [true,false]:
+   surface.set_color(Color(1,0.75,1) if index%2==0 else Color(0.55,0.20,0.88))
+   var a: Vector3 = belt[index]
+   var b: Vector3 = belt[(index+1)%4]
+   for v in [Vector3(0,0.46 if upper else -0.34,0),a if upper else b,b if upper else a]: surface.add_vertex(v)
+ surface.generate_normals()
+ var gem := mesh(root,surface.commit(),Vector3.ZERO,Color.WHITE,"FacetedLunarCrystal")
+ var material := gem.material_override as StandardMaterial3D
+ material.vertex_color_use_as_albedo = true
+ material.cull_mode = BaseMaterial3D.CULL_DISABLED
+ material.next_pass = null
+ ball(root,Vector3(0,0.08,-0.14),Vector3(0.045,0.22,0.025),Color(1,0.75,1),"CrystalGlow",true)
+ return root
+
+static func moon_antennae(parent: Node3D, size: float = 1.0, offset: Vector3 = Vector3.ZERO) -> void:
+ for side in [-1,1]:
+  var antenna := Node3D.new()
+  antenna.name = "CrystalAntenna"
+  antenna.position = offset
+  antenna.scale = Vector3.ONE*size
+  parent.add_child(antenna,true)
+  var curve := Curve3D.new()
+  curve.bake_interval = 0.15
+  curve.add_point(Vector3(side*0.58,0.74,0))
+  curve.add_point(Vector3(side*0.78,1.40,0.10))
+  curve.add_point(Vector3(side*1.18,2.06,0.22))
+  tube(antenna,curve,Vector3.ZERO,0.075,PEARL,false)
+  var crystal := moon_crystal(antenna,Vector3(side*1.22,2.23,0.22),0.78)
+  crystal.rotation.z = side*0.50
+  ring(antenna,Vector3(side*0.59,0.78,-0.03),0.12,0.035,GOLD,"AntennaGoldSocket")
+
+static func moon_moth(parent: Node3D) -> Array[Node3D]:
+ var violet := Color(0.94,0.34,1)
+ moon_wings(parent)
+ moon_antennae(parent)
+ ball(parent,Vector3.ZERO,Vector3(1.20,1.16,1.04),PEARL,"LunarPearlHelmet")
+ var eyes := face(parent,Vector3(0,0.08,-0.55),0.96,violet)
+ var visor := parent.find_child("GlossyVisor",true,false) as MeshInstance3D
+ (visor.material_override as StandardMaterial3D).albedo_color = Color(0.065,0.004,0.15)
+ for eye in eyes:
+  eye.get_parent().remove_child(eye)
+  eye.free()
+ eyes.clear()
+ var screen := parent.find_child("FaceScreen",true,false) as Node3D
+ for side in [-1,1]:
+  var happy := Node3D.new()
+  happy.name = "HappyCrescentEye"
+  happy.position = Vector3(side*0.37,0.12,-0.60)
+  happy.set_meta("open_scale_y",1.0)
+  screen.add_child(happy,true)
+  var curve := Curve3D.new()
+  curve.bake_interval = 0.035
+  for index in range(13):
+   var t := float(index)/12
+   curve.add_point(Vector3(lerpf(-0.17,0.17,t),sin(t*PI)*0.18,0))
+  tube(happy,curve,Vector3.ZERO,0.045,violet,true)
+  eyes.append(happy)
+ pod(parent,Vector3(-1.12,-0.20,0.03),0.78,violet).rotation.z = -0.30
+ for side in [-1,1]:pod(parent,Vector3(side*0.74,-1.02,0.10),0.76,violet).rotation.z=side*0.30
+ ring(parent,Vector3(0,-0.72,-0.85),0.21,0.05,GOLD,"DreamCoreSeal")
+ ball(parent,Vector3(0,-0.72,-0.87),Vector3(0.14,0.14,0.04),violet,"DreamCore",true)
+ return eyes

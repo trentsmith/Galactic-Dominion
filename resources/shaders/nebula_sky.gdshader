@@ -1,5 +1,6 @@
 shader_type sky;
 uniform float nebula_seed = 8.1;
+uniform float moon_palette : hint_range(0.0,1.0) = 0.0;
 float hash(vec3 p) { p=fract(p*0.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z); }
 float noise3(vec3 p) {
  vec3 i=floor(p);vec3 f=fract(p);f=f*f*(3.0-2.0*f);
@@ -27,5 +28,6 @@ void sky() {
   float rays=0.00035/(abs(b.x*b.y)+0.00035)*exp(-length(b)*12.0);
   color+=vec3(0.38,0.77,1.0)*(core+rays*0.65);
  }
+ color=mix(color,vec3(color.b*0.78,color.g*0.55,color.b),moon_palette);
  COLOR=color;
 }

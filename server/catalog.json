@@ -53,6 +53,20 @@
   },
   {
     "starter": false,
+    "research_cost": 140,
+    "species": "Moon Moth",
+    "ship_class": "",
+    "modifiers": {
+      "shield_regen": 1.1
+    },
+    "id": "crew_lunaflutter",
+    "display_name": "Lunaflutter \u2014 Moon Moth",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
     "research_cost": 100,
     "species": "Human",
     "ship_class": "",
@@ -396,6 +410,18 @@
     "display_name": "Celestial Guardian",
     "kind": "variant",
     "rarity": "legendary",
+    "slot": "variant"
+  },
+  {
+    "starter": false,
+    "research_cost": 200,
+    "species": "",
+    "ship_class": "Interceptor",
+    "modifiers": {},
+    "id": "variant_lunaflutter",
+    "display_name": "Lunaflutter Scout",
+    "kind": "variant",
+    "rarity": "rare",
     "slot": "variant"
   },
   {

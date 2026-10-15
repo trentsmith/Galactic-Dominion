@@ -24,6 +24,17 @@ func run() -> void:
  pixlet.name = "PixletPebbleScout"
  SpaceModelFactory.companion(pixlet,CollectionCatalog.find("crew_pixlet"))
  save_model(pixlet,"pixlet_pebble_scout")
+ var luna := Node3D.new()
+ luna.name = "LunaflutterMoonMoth"
+ SpaceModelFactory.companion(luna,CollectionCatalog.find("crew_lunaflutter"))
+ save_model(luna,"lunaflutter_moon_moth")
+ var scout := Node3D.new()
+ scout.name = "LunaflutterScout"
+ var lunar_stats: ShipStats = CollectionCatalog.SHIP_TYPES.interceptor.duplicate()
+ lunar_stats.variant_style = "moon_moth"
+ lunar_stats.color = Color(0.82,0.22,1)
+ SpaceModelFactory.ship(scout,lunar_stats)
+ save_model(scout,"ship_lunaflutter_scout")
  for id in CollectionCatalog.SHIP_TYPES:
   var ship := Node3D.new()
   ship.name = str(id).capitalize()

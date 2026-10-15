@@ -1,5 +1,12 @@
 # Changes
 
+## 0.8.0 — Lunaflutter Moon Moth
+
+- Added Lunaflutter’s layered 3D moth wings, crystal-tipped antennae, crescent eyes, purple engines and animated wing joints.
+- Added researchable Moon Moth crew with Dream Drift homing sparks and a separate cosmetic Interceptor appearance. Existing save IDs, ship stats and Legendary/Mythic ticket odds are retained.
+- Added both models to the portable GLB/Godot scene pack (nine model pairs total) and matching collection portraits and purple hangar skies.
+- Passed 207 Godot checks and 21 backend tests; rendered and inspected both new models with the actual OpenGL renderer.
+
 ## 0.7.0 — Pixlet & Pearl Space Art
 
 - Added original Pixlet companion and five redesigned ship classes with pearl armor, gold trim, cyan faces, sculpted fins and engine pods.

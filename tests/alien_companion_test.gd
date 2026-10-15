@@ -73,6 +73,26 @@ func run() -> void:
  rare.set_physics_process(false)
  check(rare.attack_damage == companion.attack_damage and rare.attack_interval == companion.attack_interval,"Legendary appearances do not give a stronger companion attack")
  rare.queue_free()
+ var luna := AlienCompanion.new()
+ luna.ship = ship
+ luna.definition = CollectionCatalog.find("crew_lunaflutter")
+ ship.add_child(luna)
+ luna.set_physics_process(false)
+ target.position = ship.position + Vector3(0,0,-40)
+ check(luna.attack_damage == 5 and is_equal_approx(luna.attack_interval,1.6), "Dream Drift has its own balanced attack cadence")
+ check(luna.fire_at(target), "Lunaflutter fires Dream Drift at an enemy")
+ var dream: SpaceProjectile
+ for node in battle.get_children():
+  if node is SpaceProjectile and node.shooter == ship: dream = node
+ check(is_instance_valid(dream) and dream.spec.tracking and dream.spec.speed == 125 and dream.spec.turn_rate == 1.8, "Dream Drift creates a slow gently tracking projectile")
+ var lunar_hull_before := target.health.hull
+ for index in range(40): await physics_frame
+ check(target.health.hull < lunar_hull_before, "Dream Drift reaches and damages a real enemy")
+ battle.network_role = "client"
+ luna.attack_cooldown = 0
+ check(not luna.fire_at(target), "Moon Moth clients cannot generate authoritative damage")
+ battle.network_role = "local"
+ luna.queue_free()
  ship.health.protection = 1
  ship.health.damage(100000,null)
  companion._process(0.1)

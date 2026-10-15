@@ -30,15 +30,25 @@ func _draw() -> void:
     draw_circle(Vector2(0, -12), 16, Color(0.2, 0.1, 0.05))
   else:
    var cyan := definition.rarity_color() if definition.rarity in ["legendary","mythic"] else Color(0.05,0.87,1)
+   var lunar := style == "lunaflutter"
+   if lunar:
+    cyan = Color(0.94,0.34,1)
+    for side in [-1,1]:
+     draw_colored_polygon(PackedVector2Array([Vector2(side*20,-5),Vector2(side*64,-56),Vector2(side*72,-15),Vector2(side*38,16)]),Color(0.87,0.50,1))
+     draw_colored_polygon(PackedVector2Array([Vector2(side*24,10),Vector2(side*65,22),Vector2(side*54,49),Vector2(side*17,32)]),Color(1,0.71,0.90))
    for side in [-1,1]:
     var outline := PackedVector2Array([Vector2(side*15,-27),Vector2(side*47,-67),Vector2(side*42,-30),Vector2(side*25,-12)])
     draw_colored_polygon(outline,Color(1,0.65,0.12))
+    if lunar:
+     var tip := Vector2(side*47,-67)
+     draw_colored_polygon(PackedVector2Array([tip+Vector2(0,-9),tip+Vector2(6,0),tip+Vector2(0,9),tip+Vector2(-6,0)]),cyan)
     draw_colored_polygon(PackedVector2Array([Vector2(side*21,-29),Vector2(side*42,-60),Vector2(side*35,-29)]),Color(0.02,0.27,0.5))
    draw_circle(Vector2(0,0),41,Color(0.94,0.96,1))
    draw_circle(Vector2(0,0),36,Color(1,0.65,0.12))
-   draw_circle(Vector2(0,0),32,Color(0.005,0.025,0.09))
+   draw_circle(Vector2(0,0),32,Color(0.065,0.004,0.15) if lunar else Color(0.005,0.025,0.09))
    for side in [-1,1]:
-    draw_circle(Vector2(side*13,-4),7,cyan)
+    if lunar:draw_arc(Vector2(side*13,0),7,PI,TAU,16,cyan,3)
+    else:draw_circle(Vector2(side*13,-4),7,cyan)
     draw_circle(Vector2(side*41,16),13,Color(0.94,0.96,1))
     draw_circle(Vector2(side*41,16),9,Color(1,0.65,0.12))
     draw_circle(Vector2(side*41,16),6,cyan)
