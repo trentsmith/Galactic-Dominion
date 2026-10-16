@@ -176,6 +176,7 @@ func _destroy(attacker: CombatShip) -> void:
  collision_layer = 0
  collision_mask = 0
  velocity = Vector3.ZERO
+ movement.slow_remaining = 0
  eliminated.emit(self, attacker)
 
 # Reuse the existing ship and signal connections after a free-roam destruction.
@@ -187,6 +188,7 @@ func redeploy(at: Vector3, protection_seconds: float = 8.0) -> void:
  position = at
  rotation = Vector3.ZERO
  velocity = Vector3.ZERO
+ movement.slow_remaining = 0
  health.dead = false
  health.configure(stats)
  health.damage_received = 0

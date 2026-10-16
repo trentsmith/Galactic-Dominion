@@ -86,14 +86,14 @@ func _peer_connected(id: int) -> void:
 
 func _connected() -> void:
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.15.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.16.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.15.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.16.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -455,7 +455,7 @@ func _physics_process(delta: float) -> void:
    var bullets: Array = []
    for child in arena.get_children():
     if child is SpaceProjectile:
-     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color})
+     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color, "style": child.spec.impact_style})
    for id in members:
     if _connected_peer(id):
      if arena is FreeRoamMatch and army_snapshot_clock >= 0.2:
@@ -546,6 +546,7 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   mesh.material_override = material
   arena.add_child(mesh)
   mesh.position = bullet.position
+  FleetCompanionArt.attack(mesh,str(bullet.get("style","")))
 
 func _server_finished(winner: int, reason: String) -> void:
  if match_mode == "free_roam":

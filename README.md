@@ -1,10 +1,10 @@
-# Galactic Dominion — A New Command Deck
+# Galactic Dominion — Orbitot and Glimbloom
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.15 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.15.0)** and choose:
+The v0.16 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.16.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,17 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Orbitot and Glimbloom
+
+![Actual Godot render of both new companions](docs/images/orbitot-glimbloom.webp)
+
+Research either companion for **180 salvage** in the Hangar, then equip it in a ship's **Crew** slot. Both are uncommon crew; Legendary/Mythic variant odds are unchanged. Existing saves work without migration. Online accounts research and equip against the matching server catalog.
+
+- **Orbitot / Gravity Loop:** pearl/gold shell, six rotating satellites, two tilted orbital rails, a ringed-planet crown and cyan face. Tracking rings deal 5 damage every 2.2 seconds and reduce the target's maximum thrust speed by 35% for 1.5 seconds. Repeated hits refresh, never stack; shields absorb damage normally.
+- **Glimbloom / Prism Pulse:** six articulated iridescent crystal petals, five orbiting shards, a forehead prism and a pink face. Pulses deal 8 direct damage every 2.4 seconds, plus 4 to other enemies within 14 m of impact. Obstacles block splash; allies are safe.
+
+Both orbit their equipped ship and attack automatically. The server owns damage and slow effects online; clients animate the models and display replicated signature projectiles. Their new static GLB and editable Godot scenes bring the downloadable model pack to **40 model pairs**. No skeleton or offline animation clips are included; blinking, flutter and orbital motion run in GDScript.
 
 ## A new command deck
 
@@ -242,7 +253,7 @@ From the main menu open **FLEET HANGAR / COLLECTION**. Use the fleet buttons or 
 
 Each ship has six slots: engine, shield, weapon, utility, crew and variant. The hangar displays the resulting hull, shields, regeneration, speed, turning, boost capacity, laser/missile output and ability recharge. Loadouts affect your next deployed battle. Component schematics can be fitted to multiple ships; a named crew member can serve aboard only one ship. To transfer a crew member, first set their current ship's crew to **Unassigned**.
 
-There are **41 catalog entries**:
+There are **43 catalog entries**:
 
 - 14 component schematics: four standard and ten alternative fittings, with bonuses and trade-offs.
 - 14 crew collectibles: six human astronaut appearances and eight alien appearances from seven species (Vesperi, Kharon, Auralith, Drakari, Pebble, Moon Moth and Comet Pup).
@@ -393,3 +404,9 @@ Passed 426 Godot checks: the existing 411 plus 15 checks for editable custom mes
 ### v0.15 validation
 
 Passed 444 Godot checks, including 18 new command-deck checks for the actual navigation buttons, isolated fleet preview, keyboard focus, viewport bounds, controls popup, peaceful/normal flight launch, pause/resume, preview cleanup, planet selection, sanctuary, hangar, online hub, Fleet Royale and settings. The new menu was rendered and visually reviewed with native OpenGL. Backend and multiplayer checks run with the matching release packages. Windows GUI execution remains untested on this Linux machine.
+
+### v0.16 validation
+
+Passed **484 Godot checks** across 17 suites (40 new companion checks plus 444 existing checks), and **21 backend tests**. New checks cover both actual 3D models/portable GLBs, runtime orbital animation, crew research/fitting/save-reload, real projectile impacts, cooldown/range/friendly restrictions, bounded/expiring slows, protection against spawn-protected status effects and splash blocked by geometry. The progression tests now expect 43 catalog entries and 16 crew.
+
+Actual two-client authenticated Free Roam runs were performed separately with Orbitot and Glimbloom equipped: the server confirmed their effects and kills, and clients confirmed their signature projectile geometry was replicated. Multiplayer tests also check late join, movement, warp, station repair, death/respawn, saved rewards, trading and protected service endpoints. A disconnect HUD guard prevents reads from a closed ENet peer. A native OpenGL render of both companions was inspected. Windows GUI execution remains untested on this Linux machine.

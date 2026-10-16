@@ -1,14 +1,13 @@
-Galactic Dominion v0.15 redesigns the **main menu and pause screen** as a calmer, more polished command deck.
+Galactic Dominion v0.16 adds **Orbitot** and **Glimbloom**, two original 3D fleet companions inspired by the supplied art references.
 
-- Animated 3D preview of your actual configured ship, with an orbital planet and Pixlet companion.
-- Clear Explore the Galaxy action, direct Peaceful Flight and Online Play access, and compact cards for battles, planet expeditions, sanctuary, hangar, discovery missions and online trading.
-- Consistent dark surfaces, soft mint accents, clearer typography, quieter borders and keyboard focus states.
-- Separate Settings / Flight Controls / Quit footer. The new controls panel explains flight, exploration and peaceful mode without covering the main menu.
-- Dedicated pause/resume layout; online players are told that their session continues while menus are open.
-- Shorter flight information preserves destination distances, raid timing and creature counts while reducing text over the scene.
+- Orbitot: pearl/gold armor, cyan face, two tilted orbital rails with six moving satellites and a ringed-planet crown. **Gravity Loop** fires tracking rings that deal 5 damage and slow maximum thrust speed by 35% for 1.5 seconds. The slow refreshes without stacking.
+- Glimbloom: six faceted iridescent petals, a forehead prism and five orbiting crystals. **Prism Pulse** deals 8 direct damage plus 4 to nearby enemies within 14 m; obstacles block splash and allies are safe.
+- Research either for **180 salvage** in the Hangar, then equip it in a ship's **Crew** slot. Both are uncommon. Existing saves and Legendary/Mythic rarity odds are preserved.
+- Server-controlled damage and effects online, with replicated signature projectile meshes.
+- **40 GLB + 40 self-contained Godot model scenes** in the separate model ZIP. Runtime orbital/wing/eye animations use GDScript; GLBs are static editable meshes.
 
-**Play:** extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. On the welcome screen choose Explore the Galaxy for normal Free Roam, Peaceful Flight for calm solo exploration, or one of the activity cards. H still hides/restores the flight HUD; M opens the chart.
+**Play:** extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Choose Hangar to research and equip your companion, then Explore the Galaxy or Fleet Royale. Peaceful Flight is available for relaxed solo exploration.
 
-**Host:** extract Galactic-Dominion-Server-Windows.zip and run Start-Server-Windows.bat. Every online client and the host must update to v0.15. The package includes its engine and Python runtime; players need neither installed. Linux builds, the existing 38-model pack and checksums are included.
+**Host:** extract Galactic-Dominion-Server-Windows.zip and run Start-Server-Windows.bat. Update all clients and the host to v0.16. The Windows host package includes portable Python. Linux builds and SHA256 checksums are also included.
 
-The local 444-check Godot regression includes 18 new functional menu checks. A native OpenGL menu render was inspected. Windows GUI execution remains untested on the Linux development machine. The seven-region map, session-based faction war, creature limits, existing art and solo surface exploration keep their previous scope. No gameplay balance or save-schema change is introduced.
+Validation details are recorded in README.md. Actual native OpenGL reference renders were inspected. Windows GUI execution remains untested on the Linux development machine. This remains a six-player self-hosted alpha; online surface expeditions and a global public hosting service are not implemented.

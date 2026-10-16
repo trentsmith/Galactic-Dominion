@@ -7,6 +7,7 @@ var stage := 0
 var original_a := -1
 var original_b := -1
 var injected_at := 0.0
+var gravity_seen := false
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
  main = load("res://scenes/main.tscn").instantiate()
@@ -24,6 +25,11 @@ func _process(delta: float) -> bool:
   print("ROAM_WORLD_READY")
  for index in range(roam.ships.size()):
   if session.slot_owners[index] == 0: roam.ships[index].set_physics_process(false)
+ # Keep travel setup independent of random patrol shots/companion fire.
+ if stage<2:
+  for index in range(mini(6,roam.ships.size())):
+   roam.ships[index].health.regen_delay=0
+   if is_instance_valid(roam.ships[index].companion):roam.ships[index].companion.set_physics_process(false)
  if stage == 1 and session.members.size() == 2:
   var ids := session.members.keys()
   original_a = session._controlled_index(ids[0])
@@ -42,11 +48,22 @@ func _process(delta: float) -> bool:
   npc.health.protection = 1
   npc.health.shield = 0
   npc.health.hull = 6
+  if OS.get_environment("GD_TEST_COMPANION")=="crew_glimbloom":
+   roam.ships[7].position = npc.position+Vector3(8,0,0)
+   roam.ships[7].health.shield=0
+   roam.ships[7].health.hull=20
+   roam.ships[7].health.protection=1
   attacker.set_meta("spawn_protection",0.0)
   attacker.targeting.select(npc)
   attacker.companion.attack_cooldown = 0
+  attacker.companion.set_physics_process(true)
   stage = 3
+ if stage==3 and roam.ships[6].movement.slow_remaining>0:gravity_seen=true
  if stage == 3 and not roam.ships[6].alive:
+  if OS.get_environment("GD_TEST_COMPANION")=="crew_orbitot" and not gravity_seen:
+   push_error("Gravity Loop did not slow its target");quit(1);return false
+  if OS.get_environment("GD_TEST_COMPANION")=="crew_glimbloom" and roam.ships[7].health.hull>=20:
+   push_error("Prism Pulse did not splash its neighbor");quit(1);return false
   var attacker: CombatShip = roam.ships[original_a]
   if attacker.companion.attacks < 1:
    push_error("Companion did not fire");quit(1);return false

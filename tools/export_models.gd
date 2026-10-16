@@ -20,6 +20,11 @@ func save_model(model: Node3D, basename: String) -> void:
  print("MODEL_EXPORTED "+basename)
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://art/models"))
+ for id in ["orbitot","glimbloom"]:
+  var companion := Node3D.new()
+  companion.name = id.capitalize()+"FleetCompanion"
+  SpaceModelFactory.companion(companion,CollectionCatalog.find("crew_"+id))
+  save_model(companion,id+"_fleet_companion")
  var pixlet := Node3D.new()
  pixlet.name = "PixletPebbleScout"
  SpaceModelFactory.companion(pixlet,CollectionCatalog.find("crew_pixlet"))

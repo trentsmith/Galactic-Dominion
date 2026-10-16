@@ -16,6 +16,12 @@ func _ready() -> void:
  add_child(visual)
  # Rare appearances use their species' normal combat behavior.
  match definition.species:
+  "Orbital Scout":
+   attack_damage = 5
+   attack_interval = 2.2
+  "Prism Bloom":
+   attack_damage = 8
+   attack_interval = 2.4
   "Comet Pup":
    attack_damage = 9
    attack_interval = 2.0
@@ -67,7 +73,7 @@ func choose_target() -> CombatShip:
 
 func fire_at(target: CombatShip) -> bool:
  if not ship.is_physics_processing() or (ship.get_parent() is BattleMatch and ship.get_parent().network_role == "client"): return false
- if attack_cooldown > 0 or not ship.alive or not is_instance_valid(target) or not target.alive or target.team == ship.team or ship.global_position.distance_to(target.global_position) > attack_range: return false
+ if attack_cooldown > 0 or not ship.alive or not is_instance_valid(target) or not target.alive or float(ship.get_meta("spawn_protection",0)) > 0 or target.team == ship.team or ship.global_position.distance_to(target.global_position) > attack_range: return false
  var shot := SpaceProjectile.new()
  shot.spec = WeaponSpec.new()
  shot.spec.damage = attack_damage
@@ -81,6 +87,15 @@ func fire_at(target: CombatShip) -> bool:
  if definition.species == "Comet Pup":
   shot.spec.speed = 230
   shot.spec.lifetime = 1.5
+ if definition.species == "Orbital Scout":
+  shot.spec.tracking = true
+  shot.spec.speed = 145
+  shot.spec.impact_style = "gravity_loop"
+  shot.spec.slow_duration = 1.5
+ if definition.species == "Prism Bloom":
+  shot.spec.speed = 190
+  shot.spec.impact_style = "prism_pulse"
+  shot.spec.splash_radius = 14
  shot.team = ship.team
  shot.shooter = ship
  shot.target = target

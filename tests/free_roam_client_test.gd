@@ -13,6 +13,7 @@ var original_slot := -1
 var appeared := false
 var companion_shot_seen := false
 var completing := false
+var signature_seen := false
 var role := ""
 var notices: PackedStringArray = []
 func _initialize() -> void: call_deferred("run")
@@ -58,7 +59,10 @@ func _process(delta: float) -> bool:
  if original_slot >= 0 and not roam.ships[original_slot].alive: was_dead = true
  if roam.ships.size() == 27 and roam.ships[3].stats.ability == "barrage": appeared = true
  for child in roam.get_children():
-  if child.has_meta("network_projectile") and child.get_meta("companion",false): companion_shot_seen = true
+  if child.has_meta("network_projectile") and child.get_meta("companion",false):
+   companion_shot_seen = true
+   var crew := OS.get_environment("GD_TEST_COMPANION")
+   if (crew=="crew_orbitot" and child.find_child("GravityLoop",true,false)!=null) or (crew=="crew_glimbloom" and child.find_child("AntennaGem",true,false)!=null):signature_seen=true
  if not completing and elapsed > (26 if role == "Roam_A" else 28) and was_dead and roam.ships[original_slot].alive:
   completing = true
   complete()
@@ -66,6 +70,8 @@ func _process(delta: float) -> bool:
 func complete() -> void:
  var reply: Dictionary = await main.online_api.refresh()
  var account_ok: bool = reply.has("data") and (main.online_api.account.wins == 2 if role == "Roam_A" else main.online_api.account.wins == 0)
+ if OS.get_environment("GD_TEST_COMPANION") in ["crew_orbitot","crew_glimbloom"] and role=="Roam_A" and not signature_seen:
+  push_error("New companion signature visual not replicated");quit(1);return
  var world_ok: bool = not main.network.arena.finished and not main.network.arena.zone.visible
  if account_ok and world_ok and moved and warped and was_dead and appeared and (companion_shot_seen if role == "Roam_A" else true):
   print("ROAM_CLIENT_PASS: %s / movement, travel, late-join hull, PvE/PvP destruction, station respawn and permanent rewards" % role)

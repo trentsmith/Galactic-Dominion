@@ -1,3 +1,10 @@
+## v0.16.0 — Orbitot and Glimbloom
+
+- Added two reference-inspired 3D fleet companions: orbital satellites/ringed crown and faceted crystal petals/orbiting shards.
+- Added researchable persistent crew, Gravity Loop tracking/slow and Prism Pulse enemy-only, obstacle-blocked splash.
+- Server-authoritative effects and replicated signature projectiles; no change to rare-variant odds or save schema.
+- Two additional portable GLBs and bundled Godot scenes, bringing the model pack to 40 pairs.
+
 ## v0.15.0 — A new command deck
 
 - Redesigned main menu and pause screen with an animated 3D fleet preview, clear primary action and compact activity cards.

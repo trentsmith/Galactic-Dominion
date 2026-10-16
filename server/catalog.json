@@ -39,6 +39,20 @@
   },
   {
     "starter": false,
+    "research_cost": 180,
+    "species": "Prism Bloom",
+    "ship_class": "",
+    "modifiers": {
+      "shield_regen": 1.1
+    },
+    "id": "crew_glimbloom",
+    "display_name": "Glimbloom \u2014 Fleet Companion",
+    "kind": "crew",
+    "rarity": "uncommon",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
     "research_cost": 100,
     "species": "Human",
     "ship_class": "",
@@ -131,6 +145,20 @@
     "display_name": "Nyx \u00b7 Prismborn",
     "kind": "crew",
     "rarity": "legendary",
+    "slot": "crew"
+  },
+  {
+    "starter": false,
+    "research_cost": 180,
+    "species": "Orbital Scout",
+    "ship_class": "",
+    "modifiers": {
+      "boost_regen": 1.1
+    },
+    "id": "crew_orbitot",
+    "display_name": "Orbitot \u2014 Fleet Companion",
+    "kind": "crew",
+    "rarity": "uncommon",
     "slot": "crew"
   },
   {

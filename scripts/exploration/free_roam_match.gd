@@ -304,6 +304,7 @@ func _physics_process(delta: float) -> void:
 
 func _update_roam_ui(delta: float) -> void:
  if network_role == "server" or not is_instance_valid(pilot.ship): return
+ if network_role == "client" and (multiplayer.multiplayer_peer == null or multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED): return
  var ship := pilot.ship
  if is_instance_valid(army_status):
   var owner := 1 if network_role == "offline" else multiplayer.get_unique_id()

@@ -127,6 +127,8 @@ static func tube(parent: Node3D, path: Curve3D, at: Vector3, radius: float, colo
   node.quaternion = Quaternion(Vector3.UP,direction)
 
 static func companion(parent: Node3D, definition: CollectibleDefinition) -> Array[Node3D]:
+ if definition.visual_style == "orbitot": return FleetCompanionArt.orbitot(parent)
+ if definition.visual_style == "glimbloom": return FleetCompanionArt.glimbloom(parent)
  if definition.visual_style == "lunaflutter": return moon_moth(parent)
  if definition.visual_style == "cinderbit": return comet_pup(parent)
  var accent := CYAN

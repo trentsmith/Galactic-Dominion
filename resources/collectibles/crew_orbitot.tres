@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_orbitot"
+display_name = "Orbitot — Fleet Companion"
+description = "A pearl-and-gold scout surrounded by orbiting satellites. Gravity Loop launches a tracking ring that slows an enemy for 1.5 seconds; repeated hits refresh rather than stack."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Orbital Scout"
+modifiers = {"boost_regen": 1.1}
+color = Color(0.05, 0.85, 1, 1)
+accent = Color(1, 0.8, 0.9, 1)
+visual_style = "orbitot"
+research_cost = 180

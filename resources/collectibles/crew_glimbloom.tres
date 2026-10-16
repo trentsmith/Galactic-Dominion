@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "crew_glimbloom"
+display_name = "Glimbloom — Fleet Companion"
+description = "A cheerful crystalline companion with six iridescent petals and orbiting gems. Prism Pulse hits its target and deals half damage to nearby enemies within 14 meters, without passing through obstacles."
+kind = "crew"
+rarity = "uncommon"
+slot = "crew"
+species = "Prism Bloom"
+modifiers = {"shield_regen": 1.1}
+color = Color(1, 0.32, 0.88, 1)
+accent = Color(1, 0.8, 0.9, 1)
+visual_style = "glimbloom"
+research_cost = 180
