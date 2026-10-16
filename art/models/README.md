@@ -15,3 +15,5 @@ The v0.14 pack regenerates the same 38 model pairs with the new authored hull pr
 Orbitot/Glimbloom geometry and their signature projectile meshes live in `scripts/visuals/fleet_companion_art.gd`. Runtime `AlienVisual` animates separate satellite/crown/crystal pivots and crystal petals. The v0.16 pack contains 40 GLBs and 40 bundled Godot scenes.
 
 The v0.17 pack contains **83 model pairs**. It covers 45 non-standard skin/hull combinations, five standard hulls, five companion models, 27 fauna/forms and one station. Orbitot/Glimbloom have separate ship and companion models. The existing `ship_lunaflutter_scout` and `ship_cinderbit_scout` are their Interceptor variants; every other skin uses `ship_<livery>_<class>`. Cosmetic skins retain the selected class geometry and gameplay attachment names.
+
+The v0.18 model pack regenerates all 83 pairs with sculpted decks, layered hull panels, inset flight glass, cooling vents and tapered exhausts. `ship_art_details.gd` contains the shared authored geometry. Planet/rock/sky materials are runtime Godot shaders rather than textures included in the ship GLBs.

@@ -165,33 +165,13 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  var hull_color := PEARL if reference_skin else stats.color.lightened(0.30)
  var panel_color := BLUE if reference_skin else stats.color.darkened(0.35)
  var heavy := stats.ability in ["aegis","barrage"]
- var w := 1.52 if heavy else 1.12
- ArtGeometry.part(parent,[Vector4(.08,.12,-2.85,-.15),Vector4(w*.55,.48,-2.4,-.08),Vector4(w,.82,-1.5,0),Vector4(w*1.04,.9,0,0),Vector4(w*.85,.7,1.5,0),Vector4(w*.48,.46,2.5,0),Vector4(.08,.08,2.8,0)],hull_color,"PearlFuselage")
+ ShipArtDetails.hull(parent,stats,hull_color,panel_color,accent)
  for side in [-1,1]:
-  var rail:=ArtGeometry.part(parent,[Vector4(.03,.04,-2.0,0),Vector4(.18,.12,-1.3,0),Vector4(.24,.14,.5,0),Vector4(.08,.06,1.9,0)],GOLD,"SweptArmorRail")
-  rail.position=Vector3(side*w*.82,.15,0)
-  var plate:=ArtGeometry.part(parent,[Vector4(.02,.02,-1.3,0),Vector4(.35,.14,-.6,0),Vector4(.48,.2,.8,0),Vector4(.08,.04,1.9,0)],panel_color,"InsetShoulderPanel")
-  plate.position=Vector3(side*w*.74,.65,0)
-  ArtGeometry.sweep(parent,[Vector3(side*.8,.6,-1.2),Vector3(side*1.3,.45,.1),Vector3(side*1.5,.25,1.4)],[.035,.04,.015],accent,"NavigationLightRail")
- ball(parent,Vector3(0,0.12,1.05),Vector3(1.12,0.95,1.6),panel_color,"BlueRearArmor")
- ball(parent,Vector3(0,0.65,-2.20),Vector3(1.05,0.95,0.94),GOLD,"GoldCanopySeal")
- var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),Color(0.07,0.006,0.16) if lunar else Color(0.10,0.008,0.018) if comet else NAVY,"PilotCanopy")
- var cockpit_material := visor.material_override as StandardMaterial3D
- cockpit_material.roughness = 0.08
- for side in [-1,1]:
-  ball(parent,Vector3(side*0.36,0.80,-3.23),Vector3(0.13,0.22,0.055),accent,"CanopyEye",true)
-  var span := 1.15 if heavy else 0.95
   if not lunar and not comet:
-   var wing := fin(parent,Vector3(side*.9,.18,.25),Vector3(span,1.25 if stats.ability=="speed" else 1.0,.65),0,accent)
-   wing.quaternion = Basis(Vector3(0,0,-side),Vector3(side,0,0),Vector3.DOWN).get_rotation_quaternion()
+   ShipArtDetails.wing(parent,side,heavy,panel_color,accent)
   pod(parent,Vector3(side*(2.0 if heavy else 1.65),-0.24,0.78),0.92 if heavy else 0.74,accent)
   ring(parent,Vector3(side*0.82,-0.25,-2.75),0.16,0.04,GOLD,"NoseSensorSeal")
   ball(parent,Vector3(side*0.82,-0.25,-2.80),Vector3.ONE*0.10,accent,"NoseSensor",true)
- ball(parent,Vector3(-0.30,1.32,-2.84),Vector3(0.21,0.07,0.10),Color(0.8,0.98,1),"CanopyGlint",true).rotation.z = -0.4
- var nose := CapsuleMesh.new()
- nose.radius = 0.32
- nose.height = 1.0
- mesh(parent,nose,Vector3(0,-0.28,-2.55),GOLD,"GoldNoseGuard").rotation.x = PI/2
  if stats.ability == "aegis":
   ring(parent,Vector3(0,0,0.9),2.05,0.10,GOLD,"GuardianArmorRing")
  elif stats.ability == "barrage":
@@ -211,11 +191,7 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
   ball(parent,Vector3(0,0.33,-3.35),Vector3(0.18,0.12,0.10),Color(0.02,0.005,0.012),"PupNose")
   comet_tail(parent,Vector3(0,0.2,2.5),0.95)
  FleetCompanionArt.ship_livery(parent,stats.variant_style,heavy,stats.color)
- ring(parent,Vector3(0,0,2.52),0.65,0.10,GOLD,"AftEngineCollar")
- var engine := SphereMesh.new()
- engine.radius = 0.47
- engine.height = 0.94
- mesh(parent,engine,Vector3(0,0,2.85),accent,"MainEngine",true)
+ ShipArtDetails.exhaust(parent,accent)
  var muzzle := SphereMesh.new()
  muzzle.radius = 0.35
  muzzle.height = 0.7

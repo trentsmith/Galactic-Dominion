@@ -1,3 +1,11 @@
+## v0.18.0 — Celestial space and sculpted ships
+
+- Layered nebula sky and warm/cool stellar colors; natural ocean/coast terrain, separate slowly drifting cloud shells, soft atmosphere and fine ring bands.
+- More irregular cratered asteroids, mineral surface shading and detailed wreck conduits/engine chambers.
+- Sculpted low-profile ships, layered armor, inset glass, vents, seams, authored wings and tapered exhausts across every class/skin.
+- Front-facing, antialiased Hangar previews with warm/cool lighting; fixed preview physics disabling after scene entry.
+- Regenerated all 83 GLB/Godot model pairs; preserve existing combat, class and collection behavior.
+
 ## v0.17.0 — Every hull, every livery
 
 - All existing skins now fit all five ship classes, retaining existing ownership and collectible rarity.

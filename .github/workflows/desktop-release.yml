@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-17-universal-liveries]
+    branches: [phase-18-sculpted-fleet]
   workflow_dispatch:
 permissions:
   contents: write
@@ -60,6 +60,7 @@ jobs:
           godot --headless --path . --script res://tests/command_deck_test.gd
           godot --headless --path . --script res://tests/fleet_companions_test.gd
           godot --headless --path . --script res://tests/universal_liveries_test.gd
+          godot --headless --path . --script res://tests/celestial_art_test.gd
           python3 tests/test_army_network.py
           GD_TEST_COMPANION=crew_orbitot GD_TEST_VARIANT=variant_orbitot GD_TEST_HULL=skirmisher python3 tests/test_free_roam_network.py
           GD_TEST_COMPANION=crew_glimbloom GD_TEST_VARIANT=variant_glimbloom GD_TEST_HULL=guardian python3 tests/test_free_roam_network.py
@@ -73,8 +74,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.17.0
+          tag=v0.18.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.17 — Every Hull, Every Livery' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.18 — Celestial Space and Sculpted Ships' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

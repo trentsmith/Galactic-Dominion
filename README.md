@@ -1,10 +1,10 @@
-# Galactic Dominion — Every Hull, Every Livery
+# Galactic Dominion — Celestial Space
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.17 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.17.0)** and choose:
+The v0.18 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.18.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,16 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Celestial space and sculpted ships
+
+Space now has a layered teal/indigo nebula sky, warmer/cooler stars, detailed coastlines and oceans, independent drifting cloud shells, restrained blue atmospheric rims and finely banded planetary rings. Asteroids have irregular cratered silhouettes and rough mineral shading; wrecks have exposed conduits, dark engine bells and layered broken armor. These materials update the existing seven-region free-roam world and Fleet Royale arena.
+
+Ships have sculpted rear decks, layered armor, recessed cooling vents, low glass cockpits, inlaid seams, shaped wing panels and tapered ion exhausts. All five classes and every skin use the new shared geometry. Hangar previews start from the front with warm key/cool rim lighting and antialiasing. The 83-model pack is regenerated with the revised ship meshes.
+
+![Actual native Godot render of the updated space art](docs/images/celestial-space.webp)
+
+For relaxed sightseeing, choose **Peaceful Flight**, then press **H** to hide the HUD. The normal combat modes retain their rules and obstacles. Existing saves, collectibles and skin compatibility remain intact.
 
 ## Every hull, every livery
 
@@ -426,3 +436,9 @@ Actual two-client authenticated Free Roam runs were performed separately with Or
 Passed **608 Godot checks across 18 suites** and **22 backend tests**. The new 124-check suite exercises every livery on all five classes, all discovered crew on each class, retained base stats/abilities, real meshes and gameplay attachments, hull changes, independent skin/crew choice, orbital animation, save/reload and actual Hangar selection callbacks. The backend test verifies all crew and livery combinations against actual stored online accounts while retaining ownership restrictions.
 
 Actual authenticated two-client Free Roam sessions passed with an **Orbitot Skirmisher** and a **Glimbloom Guardian**, verifying replicated hull/skin identity as well as companion attack signatures, effects, rewards and respawn. A native OpenGL showcase of both skins on all five hulls was inspected. Windows GUI execution remains untested on this Linux development machine.
+
+### v0.18 validation
+
+Passed **638 Godot checks across 19 suites** and **22 backend tests**. The new 30-check art suite covers authored ship decks, glass, cooling vents, tapered exhausts, independent cloud/atmosphere shells, ring materials, retained distance budgets, deterministic asteroid variation, wreck details and isolated antialiased front-facing Hangar previews. The existing all-class livery and combat/progression suites still pass.
+
+Actual native Godot/OpenGL renders of the updated space assets and all five skinned hulls were inspected. Separate authenticated two-client Free Roam tests exercise an Orbitot Skirmisher and a Glimbloom Guardian. The controlled test fixture now leaves a snapshot interval after warp before injecting combat so both clients can observe arrival. Windows GUI execution remains untested on the Linux development machine.

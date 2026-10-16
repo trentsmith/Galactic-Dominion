@@ -8,6 +8,7 @@ var original_a := -1
 var original_b := -1
 var injected_at := 0.0
 var gravity_seen := false
+var travel_observed_at := 0.0
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
  main = load("res://scenes/main.tscn").instantiate()
@@ -40,8 +41,10 @@ func _process(delta: float) -> bool:
    roam.ships[original_a].health.regen_delay = 0
    roam.ships[original_a].health.hull -= 10
    stage = 2
+   travel_observed_at=elapsed
    print("ROAM_DROP_IN_AND_WARP_PASS")
- if stage == 2 and roam.ships[original_a].health.hull == roam.ships[original_a].health.max_hull:
+ # Leave enough snapshots for both clients to observe arrival before staged combat.
+ if stage == 2 and elapsed-travel_observed_at>1.0 and roam.ships[original_a].health.hull == roam.ships[original_a].health.max_hull:
   var attacker: CombatShip = roam.ships[original_a]
   var npc: CombatShip = roam.ships[6]
   npc.position = attacker.position + Vector3(10,2,-40)

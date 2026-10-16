@@ -3,6 +3,8 @@ extends RefCounted
 const SKY_SHADER = preload("res://resources/shaders/nebula_sky.gdshader")
 const PLANET_SHADER = preload("res://resources/shaders/painted_planet.gdshader")
 const ATMOSPHERE = preload("res://resources/shaders/atmosphere.gdshader")
+const CLOUDS = preload("res://resources/shaders/planet_clouds.gdshader")
+const RINGS = preload("res://resources/shaders/planet_ring.gdshader")
 const ROCK_SHADER = preload("res://resources/shaders/painted_rock.gdshader")
 
 static func environment(seed_value: float = 8.1) -> WorldEnvironment:
@@ -18,8 +20,8 @@ static func environment(seed_value: float = 8.1) -> WorldEnvironment:
  sky.sky_material = material
  env.sky = sky
  env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
- env.ambient_light_color = Color(0.51,0.59,0.78)
- env.ambient_light_energy = 0.42
+ env.ambient_light_color = Color(0.40,0.51,0.68)
+ env.ambient_light_energy = 0.34
  env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
  node.environment = env
  return node
@@ -32,40 +34,51 @@ static func planet(parent: Node3D, at: Vector3, radius: float, tint: Color, seed
  var sphere := SphereMesh.new()
  sphere.radius = radius
  sphere.height = radius*2
- sphere.radial_segments = 64
- sphere.rings = 32
+ sphere.radial_segments = 96
+ sphere.rings = 48
  var globe := MeshInstance3D.new()
  globe.name = "TerrainGlobe"
  globe.visibility_range_end = radius*10
  globe.mesh = sphere
  var surface := ShaderMaterial.new()
  surface.shader = PLANET_SHADER
- surface.set_shader_parameter("ocean",Color(0.006,0.025,0.065))
+ surface.set_shader_parameter("ocean",Color(0.012,0.070,0.17))
  surface.set_shader_parameter("land",tint.lightened(0.05))
  surface.set_shader_parameter("cloud_color",Color(.78,.86,.95).lerp(tint,.12))
  surface.set_shader_parameter("terrain_seed",seed_value)
  globe.material_override = surface
  root.add_child(globe)
+ var clouds := MeshInstance3D.new()
+ clouds.name="CloudLayer"
+ clouds.mesh=sphere
+ clouds.scale=Vector3.ONE*1.012
+ clouds.visibility_range_end=radius*10
+ clouds.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ var cloud_mat := ShaderMaterial.new()
+ cloud_mat.shader=CLOUDS
+ cloud_mat.set_shader_parameter("cloud_seed",seed_value)
+ clouds.material_override=cloud_mat
+ root.add_child(clouds)
  var atmosphere := MeshInstance3D.new()
  atmosphere.name = "AtmosphereRim"
+ atmosphere.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  atmosphere.visibility_range_end = radius*10
  atmosphere.mesh = sphere
  atmosphere.scale = Vector3.ONE*1.035
  var rim := ShaderMaterial.new()
  rim.shader = ATMOSPHERE
- rim.set_shader_parameter("glow_color",tint.lightened(0.3))
+ rim.set_shader_parameter("glow_color",Color(.14,.43,.78).lerp(tint.lightened(.3),.25))
  atmosphere.material_override = rim
  root.add_child(atmosphere)
  if with_ring:
   var ring := MeshInstance3D.new()
   ring.name = "PlanetaryRing"
+  ring.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   ring.visibility_range_end = radius*10
   ring.mesh = ArtGeometry.annulus(radius*1.22,radius*1.82)
-  var ring_material:=CartoonStyle.material(Color(.68,.61,.51).lerp(tint,.15))
-  ring_material.vertex_color_use_as_albedo=true
-  ring_material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
-  ring_material.cull_mode=BaseMaterial3D.CULL_DISABLED
-  ring_material.next_pass=null
+  var ring_material:=ShaderMaterial.new()
+  ring_material.shader=RINGS
+  ring_material.set_shader_parameter("ring_tint",Color(.68,.61,.51).lerp(tint,.15))
   ring.material_override=ring_material
   root.add_child(ring)
   ring.rotation = Vector3(0.32,0,0.23)
@@ -75,8 +88,8 @@ static func asteroid_mesh(seed_value: int) -> ArrayMesh:
  var base := SphereMesh.new()
  base.radius = 1
  base.height = 2
- base.radial_segments = 20
- base.rings = 12
+ base.radial_segments = 28
+ base.rings = 18
  var arrays := base.get_mesh_arrays()
  var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
  var noise := FastNoiseLite.new()
@@ -88,7 +101,7 @@ static func asteroid_mesh(seed_value: int) -> ArrayMesh:
  for index in range(5):craters.append(Vector3(rng.randf_range(-1,1),rng.randf_range(-1,1),rng.randf_range(-1,1)).normalized())
  for index in range(vertices.size()):
   var normal := vertices[index].normalized()
-  var radius := 0.84+noise.get_noise_3dv(normal*.65)*0.46+noise.get_noise_3dv(normal*2.1)*0.07
+  var radius := 0.73+noise.get_noise_3dv(normal*.55)*0.58+noise.get_noise_3dv(normal*1.4)*0.10
   for crater in craters:
    var distance := normal.distance_to(crater)
    radius -= exp(-distance*distance/0.025)*0.14

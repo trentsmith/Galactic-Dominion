@@ -12,7 +12,8 @@ func _ready() -> void:
  var sun := DirectionalLight3D.new()
  sun.rotation_degrees = Vector3(-35, -30, 0)
  sun.light_color = Color(1, 0.91, 0.78)
- sun.light_energy = 1.15
+ sun.light_energy = 1.25
+ sun.shadow_enabled = true
  add_child(sun)
  # One MultiMesh draw call for the deterministic star field.
  var stars := MultiMeshInstance3D.new()
@@ -24,14 +25,18 @@ func _ready() -> void:
  star_mesh.radial_segments = 4
  star_mesh.rings = 2
  multimesh.mesh = star_mesh
+ multimesh.use_colors = true
  multimesh.instance_count = 1200
  for index in range(1200):
   var direction := Vector3(rng.randf_range(-1, 1), rng.randf_range(-1, 1), rng.randf_range(-1, 1)).normalized()
-  multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY, direction * rng.randf_range(star_radius, star_radius + 600)))
+  var size := .35+float((index*73)%100)/100.0
+  multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY.scaled(Vector3.ONE*size), direction * rng.randf_range(star_radius, star_radius + 600)))
+  multimesh.set_instance_color(index,Color(.57,.73,1).lerp(Color(1,.84,.65),float((index*31)%100)/100.0))
  stars.multimesh = multimesh
  var star_material := StandardMaterial3D.new()
  star_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
- star_material.albedo_color = Color(1, 0.91, 0.72)
+ star_material.albedo_color = Color.WHITE
+ star_material.vertex_color_use_as_albedo = true
  stars.material_override = star_material
  add_child(stars)
  if open_space: return
