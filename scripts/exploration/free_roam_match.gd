@@ -317,9 +317,7 @@ func _update_roam_ui(delta: float) -> void:
   if profile != null:
    profile.record_discovery("open.region.%d" % region, FreeRoamWorld.NAMES[region])
  var nearby: Dictionary = army.worlds[army.nearest_world(ship.position)]
- info.text = "%s / FREE SPACE / %dm TO STATION\nARMIES %d/50 / %s / TEAM %d / %dm / M: ARMY ORDERS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), army.units.size(), nearby.name, nearby.owner + 1, int(ship.position.distance_to(nearby.position))]
- info.text += "\n" + ("PEACEFUL EXPLORATION" if peaceful else war.briefing().split("\n")[0])
- info.text += " / %s %dm" % [world.landmarks[region].name, int(ship.position.distance_to(world.landmarks[region].position))]
+ info.text = "%s  /  %dm TO STATION\n%s  /  %dm\n%s  /  %d CREATURES ACTIVE" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), nearby.name, int(ship.position.distance_to(nearby.position)), "PEACEFUL FLIGHT" if peaceful else "NEXT RAID %ds" % maxi(0, ceili(war.countdown)), army.units.size()]
  if not ship.alive:
   prompt.text = "SHIP LOST / REDEPLOYING AT NEAREST STATION"
   return
@@ -328,7 +326,7 @@ func _update_roam_ui(delta: float) -> void:
   if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
    service_ship(ship, true)
  else:
-  prompt.text = "M / CHART, WAR & LANDING · TAB / TARGET · G / SURVEY LANDMARK"
+  prompt.text = "M  Star chart · G  Survey · H  Scenic view"
   if not peaceful and world.hazard_at(ship.position): prompt.text = "ION STORM / TAKING DAMAGE / LEAVE THE GLOWING CLOUD"
   if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
    var result := survey_landmark(1, ship)

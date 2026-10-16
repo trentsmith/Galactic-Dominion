@@ -40,10 +40,10 @@ static func ui_theme() -> Theme:
  theme.default_font_size = 16
  for state in ["normal", "hover", "pressed", "focus", "disabled"]:
   var panel := StyleBoxFlat.new()
-  panel.bg_color = Color(0.11, 0.16, 0.3) if state == "normal" else Color(0.19, 0.29, 0.46) if state == "hover" else Color(0.12, 0.32, 0.4) if state == "pressed" else Color(0.07, 0.1, 0.19)
-  panel.border_color = Color(0.58, 0.85, 0.98) if state in ["hover", "focus"] else Color(0.27, 0.39, 0.59)
-  panel.set_border_width_all(2)
-  panel.set_corner_radius_all(12)
+  panel.bg_color = Color(.055,.085,.11) if state == "normal" else Color(.10,.17,.20) if state == "hover" else Color(.08,.23,.24) if state == "pressed" else Color(.035,.055,.075)
+  panel.border_color = Color(.64,.87,.80) if state in ["hover", "focus"] else Color(.19,.30,.35)
+  panel.set_border_width_all(1)
+  panel.set_corner_radius_all(8)
   panel.content_margin_left = 16
   panel.content_margin_right = 16
   panel.content_margin_top = 8

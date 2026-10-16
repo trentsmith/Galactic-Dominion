@@ -1,10 +1,10 @@
-# Galactic Dominion — Starlight Visuals & Peaceful Flight
+# Galactic Dominion — A New Command Deck
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.14 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.14.0)** and choose:
+The v0.15 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.15.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -29,9 +29,17 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
 
+## A new command deck
+
+The v0.15 welcome screen has an animated 3D preview of your configured ship, an orbital planet and a Pixlet companion. A clear **Explore the Galaxy** action starts Free Roam; **Peaceful Flight** launches a calm solo session directly. The remaining modes use compact cards with descriptions, while Settings, Flight Controls and Quit sit in a separate footer. The same deck adapts to pause/resume, with an explicit reminder that online flight continues while menus are open.
+
+The interface uses a consistent dark palette with soft mint accents, clearer typography, quieter borders and visible keyboard focus. Flight details are shorter, retaining nearby destination distances, raid timing and creature counts. Online trading, profiles and all existing game modes remain connected.
+
+![Actual in-game command deck](docs/images/command-deck.webp)
+
 ## Starlight visuals and peaceful exploration
 
-v0.14 replaces plain wreck boxes with layered hulls, ribs and broken armor; shapes spacecraft with tapered hull profiles and horizontal swept wings; and builds stations as modular orbital harbours. Nine wildlife species have sculpted bodies, curved limbs and expressive faces. Their Kindred/Radiant details still grow from the same residents. Tree canopies use instanced shaped leaves, with branching coral and curved flowers/ferns on the surfaces.
+v0.15 replaces plain wreck boxes with layered hulls, ribs and broken armor; shapes spacecraft with tapered hull profiles and horizontal swept wings; and builds stations as modular orbital harbours. Nine wildlife species have sculpted bodies, curved limbs and expressive faces. Their Kindred/Radiant details still grow from the same residents. Tree canopies use instanced shaped leaves, with branching coral and curved flowers/ferns on the surfaces.
 
 Space has a quieter nebula sky, natural planet colors, layered annular rings, irregular rocks, softer ion mist and distance culling for tiny distant props/planets. Ceramic armor, dark glass and gold metal use different surface responses. Surface lighting casts shadows; the HUD uses subtler panels and narrower flight text.
 
@@ -381,3 +389,7 @@ The expanded-world suite covers seven-region population, collidable obstacles, r
 ### v0.14 validation
 
 Passed 426 Godot checks: the existing 411 plus 15 checks for editable custom meshes, correct branch winding/normals, real annular rings, instanced foliage, detailed wrecks, peaceful-mode faction/damage/raid rules, scenic HUD toggling and retention of hostile normal Free Roam. Both actual two-client army and free-roam integrations passed. All three surface renders and space/character captures were reviewed using native OpenGL. The release rebuilds all 38 model pairs. Windows GUI execution remains untested on this Linux machine.
+
+### v0.15 validation
+
+Passed 444 Godot checks, including 18 new command-deck checks for the actual navigation buttons, isolated fleet preview, keyboard focus, viewport bounds, controls popup, peaceful/normal flight launch, pause/resume, preview cleanup, planet selection, sanctuary, hangar, online hub, Fleet Royale and settings. The new menu was rendered and visually reviewed with native OpenGL. Backend and multiplayer checks run with the matching release packages. Windows GUI execution remains untested on this Linux machine.

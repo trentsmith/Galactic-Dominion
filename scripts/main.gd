@@ -112,81 +112,10 @@ func show_menu(paused: bool = false) -> void:
  menu = CanvasLayer.new()
  menu.layer = 10
  add_child(menu)
- var backdrop := ColorRect.new()
- backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- backdrop.color = Color(0.015, 0.025, 0.065, 0.95)
- menu.add_child(backdrop)
- var center := CenterContainer.new()
- center.theme = CartoonStyle.ui_theme()
- center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- menu.add_child(center)
- var row := HBoxContainer.new()
- row.add_theme_constant_override("separation", 95)
- center.add_child(row)
- var column := VBoxContainer.new()
- column.custom_minimum_size = Vector2(400, 0)
- column.add_theme_constant_override("separation", 10)
- row.add_child(column)
- var eyebrow := Label.new()
- eyebrow.text = "G D   /   FLIGHT PROGRAM 01"
- eyebrow.add_theme_color_override("font_color", Color(0.2, 0.85, 1))
- column.add_child(eyebrow)
- var title := Label.new()
- title.text = "GALACTIC
-DOMINION"
- title.add_theme_font_size_override("font_size", 48)
- column.add_child(title)
- var subtitle := Label.new()
- subtitle.text = "OPEN SPACE  •  YOUR LITTLE SPACE CREW
-Explore, collect companions, and fly together."
- subtitle.add_theme_color_override("font_color", Color(0.6, 0.7, 0.85))
- column.add_child(subtitle)
- _button(column, "RESUME FLIGHT" if paused else "PLAY  /  DEPLOY FLEET", resume if paused else start_battle)
- if not paused:
-  _button(column, "FREE ROAM / OPEN SPACE", start_free_roam)
-  _button(column, "PLANET EXPEDITIONS / LITTLE BOTS", show_planets)
-  _button(column, "MY PLANET / CREATURE SANCTUARY", show_sanctuary)
-  _button(column, "GALACTIC EXPLORATION", func(): start_exploration(0))
-  _button(column, "ONLINE / LOBBY / MARKETPLACE", show_online)
-  _button(column, "FLEET HANGAR / COLLECTION", show_hangar)
-  var progress := Label.new()
-  progress.text = "%s · %d / %d discoveries · %d salvage" % [profile.commander_name, profile.owned_count(), CollectionCatalog.DEFINITIONS.size(), profile.salvage]
-  progress.add_theme_font_size_override("font_size", 13)
-  progress.add_theme_color_override("font_color", Color(0.55, 0.8, 0.9))
-  column.add_child(progress)
-  if not profile.notice.is_empty() or not profile.save_error.is_empty():
-   var status := Label.new()
-   status.text = profile.save_error if not profile.save_error.is_empty() else profile.notice
-   status.custom_minimum_size.x = 400
-   status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-   status.add_theme_font_size_override("font_size", 12)
-   column.add_child(status)
- _button(column, "SETTINGS", func(): show_settings(paused))
- if paused:
-  _button(column, "RETURN TO MAIN MENU", return_to_menu)
- _button(column, "QUIT", func(): get_tree().quit())
- var help := Label.new()
- help.text = "PILOT BRIEFING
-
-W / S    Forward / reverse
-A / D    Strafe    •    Space / Ctrl    Vertical
-Mouse    Steer    •    Q / E    Roll
-Shift    Boost    •    R    Class ability
-
-Left click    Laser
-Tab    Cycle target
-Right click    Missile (requires target lock)
-
-F1 / F2 / F3    Switch ships
-1    Follow    •    2    Attack target
-3    Defend    •    4    Regroup    •    5    Retreat
-Esc    Pause
-
-Keep the enemy in the central reticle to lock.
-The safe zone contracts after 30 seconds."
- help.add_theme_font_size_override("font_size", 17)
- help.add_theme_color_override("font_color", Color(0.65, 0.76, 0.9))
- row.add_child(help)
+ var deck := CommandDeck.new()
+ deck.host = self
+ deck.paused = paused
+ menu.add_child(deck)
 
 func _button(parent: Control, text: String, callback: Callable) -> void:
  var button := Button.new()

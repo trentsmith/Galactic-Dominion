@@ -1,3 +1,10 @@
+## v0.15.0 — A new command deck
+
+- Redesigned main menu and pause screen with an animated 3D fleet preview, clear primary action and compact activity cards.
+- Direct peaceful flight, separate utility navigation, contextual controls and explicit online pause messaging.
+- Consistent mint/dark interface theme, keyboard focus and shorter flight information.
+- Existing gameplay and save schema retained.
+
 ## v0.14.0 — Starlight visuals and peaceful flight
 
 - Authored spacecraft profiles, swept wings, modular harbours and detailed wrecks.
