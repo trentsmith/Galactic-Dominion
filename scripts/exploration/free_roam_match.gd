@@ -6,6 +6,8 @@ signal army_requested(action, argument)
 signal landing_requested(index)
 signal dock_requested
 
+var peaceful := false
+var scenic_hud := false
 var war: WorldWar
 var war_status: Label
 var surveyed: Dictionary = {}
@@ -101,7 +103,7 @@ func _create_encounter(region: int) -> void:
  var members: Array[CombatShip] = []
  for slot in range(3):
   var ship := CombatShip.new()
-  ship.team = FreeRoamWorld.FACTIONS[region]
+  ship.team = 0 if peaceful else FreeRoamWorld.FACTIONS[region]
   ship.fleet_slot = slot
   ship.stats = CollectionCatalog.SHIP_TYPES.values()[(region + slot) % 5].duplicate(true)
   ship.stats.crew_id = ["crew_nyx", "crew_kael", "crew_orith", "crew_threx"][region % 4]
@@ -154,12 +156,19 @@ func _build_roam_ui() -> void:
  column.mouse_filter = Control.MOUSE_FILTER_IGNORE
  layer.add_child(column)
  info = Label.new()
- info.add_theme_font_size_override("font_size", 18)
+ info.add_theme_font_size_override("font_size", 14)
+ info.custom_minimum_size.x = 400
+ info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  column.add_child(info)
  prompt = Label.new()
+ prompt.custom_minimum_size.x = 400
+ prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  column.add_child(prompt)
  log_label = Label.new()
- log_label.text = "Fly freely between regions. M: chart / warp. G: station service or scan.\nTab: target ships. Battles do not end the world; destroyed ships redeploy."
+ log_label.text = "M / Star chart · H / Hide HUD for a scenic flight"
+ log_label.custom_minimum_size.x = 400
+ log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ log_label.add_theme_color_override("font_color", Color(.55,.64,.75))
  column.add_child(log_label)
  map_panel = PanelContainer.new()
  map_panel.theme = CartoonStyle.ui_theme()
@@ -188,6 +197,11 @@ func _build_roam_ui() -> void:
  title.text = "FREE-ROAM STAR CHART / CONNECTED SPACE"
  title.add_theme_font_size_override("font_size", 22)
  choices.add_child(title)
+ if network_role == "offline":
+  var quiet := Button.new()
+  quiet.text = "RESTART WITH FACTION WAR" if peaceful else "RESTART IN PEACEFUL EXPLORATION"
+  quiet.pressed.connect(func():get_parent().start_free_roam(not peaceful))
+  choices.add_child(quiet)
  var chart := GalaxyChart.new()
  chart.battle = self
  chart.course_requested.connect(func(region):
@@ -243,6 +257,11 @@ func toggle_chart() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
  if network_role == "server": return
+ if event.is_action_pressed("scenic_hud"):
+  scenic_hud = not scenic_hud
+  hud.visible = not scenic_hud
+  info.get_parent().visible = not scenic_hud
+  for label in find_children("", "Label3D", true, false): label.visible = not scenic_hud
  if event.is_action_pressed("sector_map"):
   toggle_chart()
  if event.is_action_pressed("scan") and network_role == "client":
@@ -253,9 +272,9 @@ func _physics_process(delta: float) -> void:
  if network_role != "client":
   elapsed += delta
   update_auras()
-  war.tick(delta)
+  if not peaceful: war.tick(delta)
   for vessel in ships:
-   if vessel.alive and world.hazard_at(vessel.position): vessel.health.damage(delta * 5, null)
+   if not peaceful and vessel.alive and world.hazard_at(vessel.position): vessel.health.damage(delta * 5, null)
   for ship in ships:
    var protection := maxf(0, float(ship.get_meta("spawn_protection", 0)) - delta)
    ship.set_meta("spawn_protection", protection)
@@ -291,7 +310,7 @@ func _update_roam_ui(delta: float) -> void:
   army_status.text = "ARMY %d/10 / SERVER %d/50\n" % [army.owned_count(owner), army.units.size()]
   for outpost in army.worlds:
    army_status.text += "%s: Team %d / %d%%\n" % [outpost.name, outpost.owner + 1, int(outpost.progress / CreatureArmy.CAPTURE_SECONDS * 100)]
- if is_instance_valid(war_status): war_status.text = war.briefing()
+ if is_instance_valid(war_status): war_status.text = "PEACEFUL EXPLORATION / No raids or environmental damage" if peaceful else war.briefing()
  var region := FreeRoamWorld.nearest_region(ship.position)
  if region != current_region:
   current_region = region
@@ -299,7 +318,7 @@ func _update_roam_ui(delta: float) -> void:
    profile.record_discovery("open.region.%d" % region, FreeRoamWorld.NAMES[region])
  var nearby: Dictionary = army.worlds[army.nearest_world(ship.position)]
  info.text = "%s / FREE SPACE / %dm TO STATION\nARMIES %d/50 / %s / TEAM %d / %dm / M: ARMY ORDERS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), army.units.size(), nearby.name, nearby.owner + 1, int(ship.position.distance_to(nearby.position))]
- info.text += "\n" + war.briefing().split("\n")[0]
+ info.text += "\n" + ("PEACEFUL EXPLORATION" if peaceful else war.briefing().split("\n")[0])
  info.text += " / %s %dm" % [world.landmarks[region].name, int(ship.position.distance_to(world.landmarks[region].position))]
  if not ship.alive:
   prompt.text = "SHIP LOST / REDEPLOYING AT NEAREST STATION"
@@ -310,7 +329,7 @@ func _update_roam_ui(delta: float) -> void:
    service_ship(ship, true)
  else:
   prompt.text = "M / CHART, WAR & LANDING · TAB / TARGET · G / SURVEY LANDMARK"
-  if world.hazard_at(ship.position): prompt.text = "ION STORM / TAKING DAMAGE / LEAVE THE GLOWING CLOUD"
+  if not peaceful and world.hazard_at(ship.position): prompt.text = "ION STORM / TAKING DAMAGE / LEAVE THE GLOWING CLOUD"
   if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
    var result := survey_landmark(1, ship)
    if not result.is_empty(): log_label.text = result
@@ -318,7 +337,7 @@ func _update_roam_ui(delta: float) -> void:
    _scan_nearby(delta)
 
 func safe_to_service(ship: CombatShip) -> bool:
- if not ship.alive or ship.health.regen_delay > 0 or world.hazard_at(ship.position):
+ if not ship.alive or ship.health.regen_delay > 0 or (not peaceful and world.hazard_at(ship.position)):
   return false
  for unit in army.units.values():
   if unit.team != ship.team and unit.position.distance_to(ship.position) < 350: return false

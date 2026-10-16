@@ -11,10 +11,12 @@ func _ready() -> void:
  var background:=WorldEnvironment.new()
  var env:=Environment.new();env.background_mode=Environment.BG_COLOR;env.background_color=definition.sky_color
  env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
- env.ambient_light_color=definition.glow_color.lightened(.6);env.ambient_light_energy=.5
+ env.ambient_light_color=definition.glow_color.lightened(.6);env.ambient_light_energy=.60
+ env.tonemap_mode=Environment.TONE_MAPPER_FILMIC
  env.fog_enabled=true;env.fog_light_color=definition.sky_color.lightened(.08);env.fog_density=.008 if not definition.aquatic else .018
  background.environment=env;add_child(background)
- var sun:=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-40,-30,0);sun.light_energy=.9
+ var sun:=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-40,-30,0);sun.light_energy=1.15
+ sun.shadow_enabled=true;sun.directional_shadow_max_distance=180
  sun.light_color=Color(.75,.85,1) if definition.biome!="vampire" else Color(1,.55,.6)
  add_child(sun)
  _terrain()
@@ -35,7 +37,8 @@ func _ready() -> void:
   var at:=Vector3(rng.randf_range(-100,100),0,rng.randf_range(-100,100))
   if Vector2(at.x,at.z).length()<18:continue
   at.y=height_at(at.x,at.z)
-  var stone:=SurfaceArt.ball(self,at+Vector3.UP*.7,Vector3(1.4,.9,1.2),definition.ground_color.lightened(.12))
+  var stone:=SpaceModelFactory.mesh(self,SpaceEnvironmentArt.asteroid_mesh(index+definition.seed_value),at+Vector3.UP*.7,definition.ground_color.lightened(.12),"WeatheredStone")
+  stone.scale=Vector3(1.6,1,1.3)
   _obstacle(stone.position,1.2,1.6)
  _landmarks()
 func _terrain() -> void:
@@ -67,17 +70,16 @@ func _landmarks() -> void:
  SpaceModelFactory.ship(landing,CollectionCatalog.SHIP_TYPES.interceptor);add_child(landing)
  var sign:=Label3D.new();sign.text="LANDING SHIP / SAFE REFUGE\nE: EXTRACT";sign.position=Vector3(0,7,0);sign.font_size=38;sign.pixel_size=.012;add_child(sign)
  if definition.biome=="vampire":
-  SurfaceArt.ball(self,Vector3(35,27,-94),Vector3.ONE*10,Color(1,.12,.20),true)
+  SpaceEnvironmentArt.planet(self,Vector3(35,27,-94),10,Color(.45,.08,.12),77)
   for i in range(4):
-   var cone:=CylinderMesh.new();cone.top_radius=1;cone.bottom_radius=14;cone.height=28;cone.radial_segments=9
-   SpaceModelFactory.mesh(self,cone,Vector3(-70+i*45,8,-100),Color(.11,.06,.09),"VolcanicRidge")
+   var ridge:=SpaceModelFactory.mesh(self,SpaceEnvironmentArt.asteroid_mesh(77+i),Vector3(-70+i*45,4,-100),Color(.11,.06,.09),"VolcanicRidge")
+   ridge.scale=Vector3(20,22,15)
    SurfaceArt.ball(self,Vector3(-70+i*45,22,-100),Vector3(2.5,1,2.5),Color(1,.18,.03),true)
   for side in [-1,1]:
    for i in range(3):
     var at:=Vector3(side*(35+i*9),0,-60-i*10);at.y=height_at(at.x,at.z)
     SurfaceArt.post(self,at+Vector3.UP*6,1.2,12,Color(.12,.07,.16))
-    var fortress:=BoxMesh.new();fortress.size=Vector3(5,5,5)
-    SpaceModelFactory.mesh(self,fortress,at+Vector3.UP*8,Color(.18,.07,.10),"DominionFortress")
+    SceneryArt.tower(self,at+Vector3.UP*4,Color(.18,.07,.10),definition.glow_color)
     SurfaceArt.ball(self,at+Vector3.UP*9+Vector3(0,0,-2.6),Vector3(.5,1,.2),definition.glow_color,true)
  elif definition.aquatic:
   for index in range(12):

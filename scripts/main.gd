@@ -317,7 +317,7 @@ func show_online() -> void:
  hub.back_requested.connect(show_menu)
  menu.add_child(hub)
 
-func start_free_roam() -> void:
+func start_free_roam(peaceful: bool = false) -> void:
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -326,6 +326,7 @@ func start_free_roam() -> void:
   battle.get_parent().remove_child(battle)
   battle.queue_free()
  battle = FreeRoamMatch.new()
+ battle.peaceful = peaceful
  battle.profile = profile
  add_child(battle)
  battle.landing_requested.connect(land_from_roam)

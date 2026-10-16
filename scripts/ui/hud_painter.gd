@@ -18,10 +18,10 @@ func text(at: Vector2, content: String, color: Color = Color.WHITE, font_size: i
 
 func panel(rect: Rect2) -> void:
  var style := StyleBoxFlat.new()
- style.bg_color = Color(0.055, 0.07, 0.17, 0.91)
- style.border_color = Color(0.32, 0.43, 0.65, 0.8)
- style.set_border_width_all(2)
- style.set_corner_radius_all(14)
+ style.bg_color = Color(0.025, 0.035, 0.055, 0.82)
+ style.border_color = Color(0.26, 0.4, 0.48, 0.5)
+ style.set_border_width_all(1)
+ style.set_corner_radius_all(8)
  draw_style_box(style, rect)
 
 func bar(at: Vector2, label: String, value: float, maximum: float, color: Color) -> void:

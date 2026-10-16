@@ -20,7 +20,7 @@ signal changed
 func _ready() -> void:
  for index in range(3):
   var center: Vector3 = FreeRoamWorld.CENTERS[REGIONS[index]] + Vector3(0, 0, -1100)
-  worlds.append({"name": PlanetCatalog.WORLDS[index].display_name, "position": center, "owner": index + 2, "challenger": -1, "progress": 0.0, "captures": 0})
+  worlds.append({"name": PlanetCatalog.WORLDS[index].display_name, "position": center, "owner": 0 if battle.peaceful else index + 2, "challenger": -1, "progress": 0.0, "captures": 0})
   SpaceEnvironmentArt.planet(self, center + Vector3(0, -170, 0), 110, PlanetCatalog.WORLDS[index].glow_color, 41.0 + index, index == 2)
   battle.world._solid_sphere(center + Vector3(0, -170, 0), 110)
   var label := Label3D.new()
@@ -32,7 +32,7 @@ func _ready() -> void:
   labels.append(label)
   if battle.network_role != "client":
    for slot in range(6):
-    spawn(SPECIES[index * 3 + slot % 3], index + 2, -index - 1, center + Vector3(cos(slot * TAU / 6) * 110, 0, sin(slot * TAU / 6) * 110), index)
+    spawn(SPECIES[index * 3 + slot % 3], 0 if battle.peaceful else index + 2, -index - 1, center + Vector3(cos(slot * TAU / 6) * 110, 0, sin(slot * TAU / 6) * 110), index)
  _update_labels()
 
 func spawn(species: String, team: int, owner: int, at: Vector3, world: int = -1) -> int:
@@ -188,6 +188,7 @@ func apply_snapshot(data: Dictionary) -> void:
   for index in range(3): worlds[index] = incoming[index].duplicate(true)
 
 func _sync_visuals(delta: float) -> void:
+ if battle.network_role == "server": return
  for id in visuals.keys():
   if not units.has(id):
    visuals[id].queue_free()
@@ -211,7 +212,9 @@ func _sync_visuals(delta: float) -> void:
    actor.add_child(badge)
    visuals[id] = actor
   var actor: Node3D = visuals[id]
+  actor.visible = actor.global_position.distance_to(battle.camera.global_position) < 1800
   actor.position = actor.position.lerp(unit.position, minf(1, delta * 15))
+  actor.get_node("Badge").visible = not battle.scenic_hud
   actor.get_node("Badge").text = str(maxi(0, int(unit.hp)))
   actor.get_node("Badge").modulate = Color(.3, .85, 1) if unit.team == 0 else Color(1, .45, .5)
   if unit.flash > 0:

@@ -5,9 +5,10 @@ const OUTLINE = preload("res://resources/shaders/cartoon_outline.gdshader")
 static func material(color: Color, glow: bool = false) -> StandardMaterial3D:
  var result := StandardMaterial3D.new()
  result.albedo_color = color
- result.roughness = 0.32
- result.metallic = 0.12 if color.r > 0.75 and color.g > 0.3 and color.b < 0.35 else 0.28
- result.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+ result.roughness = 0.30
+ result.metallic = 0.65 if color.r > 0.75 and color.g > 0.3 and color.b < 0.35 else 0.06
+ result.metallic_specular = 0.45
+ result.diffuse_mode = BaseMaterial3D.DIFFUSE_BURLEY
  result.specular_mode = BaseMaterial3D.SPECULAR_SCHLICK_GGX
  if glow:
   result.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED

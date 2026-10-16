@@ -1,5 +1,6 @@
 class_name SpaceArena
 extends Node3D
+var open_space := false
 var star_radius := 1700.0
 var arena_seed := 81023
 var planet_tint := Color(0.12, 0.25, 0.48)
@@ -33,6 +34,7 @@ func _ready() -> void:
  star_material.albedo_color = Color(1, 0.91, 0.72)
  stars.material_override = star_material
  add_child(stars)
+ if open_space: return
  SpaceEnvironmentArt.planet(self,Vector3(-1100,-450,-1600),430,Color(0.04,0.25,0.75),float(arena_seed),true)
  for index in range(34):
   var position := Vector3(rng.randf_range(-420, 420), rng.randf_range(-160, 160), rng.randf_range(-320, 320))
@@ -40,15 +42,11 @@ func _ready() -> void:
    position.y += 90
   _asteroid(position, rng.randf_range(6, 22), rng)
  for index in range(22):
-  var debris := MeshInstance3D.new()
-  var box := BoxMesh.new()
-  box.size = Vector3(rng.randf_range(1, 5), 0.7, rng.randf_range(2, 8))
-  debris.mesh = box
+  var debris := Node3D.new()
   debris.position = Vector3(rng.randf_range(-360, 360), rng.randf_range(-140, 140), rng.randf_range(-300, 300))
   debris.rotation = Vector3(rng.randf() * PI, rng.randf() * PI, rng.randf() * PI)
-  var mat := CartoonStyle.material(SpaceModelFactory.PEARL.darkened(0.4))
-  debris.material_override = mat
   add_child(debris)
+  SceneryArt.wreck(debris,Vector3(rng.randf_range(2,5),1,rng.randf_range(4,9)))
 
 func _asteroid(position: Vector3, radius: float, rng: RandomNumberGenerator) -> void:
  var body := StaticBody3D.new()
@@ -56,8 +54,9 @@ func _asteroid(position: Vector3, radius: float, rng: RandomNumberGenerator) -> 
  body.collision_mask = 1
  body.position = position
  var visual := MeshInstance3D.new()
+ visual.visibility_range_end = 2400
  visual.mesh = SpaceEnvironmentArt.asteroid_mesh(rng.randi())
- visual.scale = Vector3(radius,radius*rng.randf_range(0.75,1.15),radius)
+ visual.scale = Vector3(radius*rng.randf_range(.7,1.2),radius*rng.randf_range(.55,1.1),radius*rng.randf_range(.65,1.25))
  var material := ShaderMaterial.new()
  material.shader = SpaceEnvironmentArt.ROCK_SHADER
  visual.material_override = material

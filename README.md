@@ -1,10 +1,10 @@
-# Galactic Dominion — Open World Faction War
+# Galactic Dominion — Starlight Visuals & Peaceful Flight
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.13 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.13.0)** and choose:
+The v0.14 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.14.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,20 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Starlight visuals and peaceful exploration
+
+v0.14 replaces plain wreck boxes with layered hulls, ribs and broken armor; shapes spacecraft with tapered hull profiles and horizontal swept wings; and builds stations as modular orbital harbours. Nine wildlife species have sculpted bodies, curved limbs and expressive faces. Their Kindred/Radiant details still grow from the same residents. Tree canopies use instanced shaped leaves, with branching coral and curved flowers/ferns on the surfaces.
+
+Space has a quieter nebula sky, natural planet colors, layered annular rings, irregular rocks, softer ion mist and distance culling for tiny distant props/planets. Ceramic armor, dark glass and gold metal use different surface responses. Surface lighting casts shadows; the HUD uses subtler panels and narrower flight text.
+
+For a calm solo trip, choose **Free Roam**, press **M**, then **Restart in Peaceful Exploration**. This resets the current flight into a friendly session with no faction raids or ion damage; saved local progress stays intact. World outposts are friendly for solo surface visits. The chart can restart normal faction war. Online play retains its existing combat rules.
+
+Press **H** in Free Roam to hide/restore the HUD and floating labels. It changes presentation only; combat continues unless you chose peaceful exploration. M still opens the chart. Neither viewing option uploads local progress to the online inventory.
+
+![Actual in-game scenic flight](docs/images/starlight-flight.webp)
+
+![Sculpted wildlife rendered in Godot](docs/images/starlight-creatures.webp)
 
 ## Open world faction war
 
@@ -363,3 +377,7 @@ These checks do not replace manual playtesting. Windows GUI execution and Intern
 ### v0.13 validation
 
 The expanded-world suite covers seven-region population, collidable obstacles, real ion damage, frontier warp, surveys, signal identity, raid timing/targets, NPC-only deployment, AI/global troop budgets, client authority, war snapshots and a complete surface landing/return retaining the same session. The complete regression suite passed 411 Godot checks. Two real-client tests passed for replicated army combat/capture and the faction raid timeline, and for late joining, frontier travel, repairs, real companion attacks, PvE/PvP, respawn and persistence. Windows GUI execution and Internet deployment remain untested.
+
+### v0.14 validation
+
+Passed 426 Godot checks: the existing 411 plus 15 checks for editable custom meshes, correct branch winding/normals, real annular rings, instanced foliage, detailed wrecks, peaceful-mode faction/damage/raid rules, scenic HUD toggling and retention of hostile normal Free Roam. Both actual two-client army and free-roam integrations passed. All three surface renders and space/character captures were reviewed using native OpenGL. The release rebuilds all 38 model pairs. Windows GUI execution remains untested on this Linux machine.

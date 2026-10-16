@@ -15,6 +15,7 @@ var stations: Array[Node3D] = []
 func _ready() -> void:
  var backdrop := SpaceArena.new()
  backdrop.star_radius = 20000
+ backdrop.open_space = true
  add_child(backdrop)
  var rng := RandomNumberGenerator.new()
  rng.seed = 54012
@@ -27,6 +28,7 @@ func _ready() -> void:
   var model := Node3D.new()
   model.name = "StationAssembly"
   model.scale = Vector3.ONE*23
+  model.rotation = Vector3(.18,.55,.15)
   station.add_child(model)
   SpaceModelFactory.station(model,COLORS[index])
   var label := Label3D.new()
@@ -36,9 +38,9 @@ func _ready() -> void:
   label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
   label.no_depth_test = true
   station.add_child(label)
-  if index > 0:
-   SpaceEnvironmentArt.planet(self,CENTERS[index]+Vector3(-1000,-600,-1400),330,COLORS[index],float(index)*7.0,index==2)
-   _solid_sphere(CENTERS[index] + Vector3(-1000, -600, -1400), 330)
+  var tint: Color = [Color(.12,.30,.24),Color(.42,.28,.15),Color(.23,.24,.39),Color(.42,.12,.09),Color(.08,.30,.30),Color(.34,.10,.11),Color(.28,.18,.40)][index]
+  SpaceEnvironmentArt.planet(self,CENTERS[index]+Vector3(-1000,-600,-1400),330,tint,float(index)*7.0,index==0 or index==2)
+  _solid_sphere(CENTERS[index] + Vector3(-1000, -600, -1400), 330)
   for asteroid in range(18):
    var offset := Vector3(rng.randf_range(-1200, 1200), rng.randf_range(-400, 400), rng.randf_range(-1200, 1200))
    if offset.length() < 300:
@@ -88,9 +90,7 @@ func _frontier(region: int, rng: RandomNumberGenerator) -> void:
   body.position = at + offset
   body.rotation = Vector3(rng.randf(), rng.randf(), rng.randf()) * PI
   var size := Vector3(rng.randf_range(12, 35), 8, rng.randf_range(18, 50))
-  var mesh := BoxMesh.new()
-  mesh.size = size
-  _visual(body, mesh, Vector3.ZERO, SpaceModelFactory.PEARL.darkened(.55))
+  SceneryArt.wreck(body, size)
   var shape := BoxShape3D.new()
   shape.size = size
   var collision := CollisionShape3D.new()
@@ -101,10 +101,11 @@ func _frontier(region: int, rng: RandomNumberGenerator) -> void:
  var cloud_at := center + Vector3(420, 80, -720)
  hazards.append({"position": cloud_at, "radius": 110.0})
  var cloud := CartoonStyle.ball(self, cloud_at, Vector3.ONE * 110, COLORS[region], true)
- var material := cloud.material_override as StandardMaterial3D
- material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
- material.albedo_color.a = .16
- material.cull_mode = BaseMaterial3D.CULL_DISABLED
+ var material := ShaderMaterial.new()
+ material.shader = preload("res://resources/shaders/ion_cloud.gdshader")
+ material.set_shader_parameter("tint", COLORS[region])
+ cloud.material_override = material
+ cloud.scale *= Vector3(1.8,.65,1.2)
  var warning := Label3D.new()
  warning.text = "ION STORM / SHIELD & HULL DAMAGE"
  warning.position = cloud_at + Vector3(0, 130, 0)

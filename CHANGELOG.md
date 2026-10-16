@@ -1,3 +1,11 @@
+## v0.14.0 — Starlight visuals and peaceful flight
+
+- Authored spacecraft profiles, swept wings, modular harbours and detailed wrecks.
+- Sculpted wildlife with expressive eyes, tapered limbs, antlers, membranes and fins; instanced foliage and improved surface props.
+- More natural planet materials and layered rings, quieter nebulae, irregular rocks, soft ion mist and restrained distant-object visibility.
+- Optional peaceful solo exploration with friendly fleets, no raids and harmless ion scenery; H toggles the scenic HUD in Free Roam.
+- Existing online wars and creature limits remain; the model pack regenerates all 38 pairs.
+
 ## v0.13.0 — Open world faction war
 
 - Seven connected space regions and clickable star chart, with three new frontier landmarks and shared station travel.

@@ -11,6 +11,7 @@ static func mesh(parent: Node3D, shape: Mesh, at: Vector3, color: Color, name_te
  var node := MeshInstance3D.new()
  node.name = name_text if not name_text.is_empty() else "ArmorPart"
  node.mesh = shape
+ node.visibility_range_end = 2400
  node.position = at
  node.material_override = CartoonStyle.material(color, glow)
  parent.add_child(node,true)
@@ -159,10 +160,14 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  if lunar: accent = Color(0.92,0.30,1)
  if comet: accent = Color(1,0.65,0.06)
  var heavy := stats.ability in ["aegis","barrage"]
- var body := CapsuleMesh.new()
- body.radius = 1.45 if heavy else 1.12
- body.height = 4.6 if stats.ability == "aegis" else 5.8
- mesh(parent,body,Vector3.ZERO,PEARL,"PearlFuselage").rotation.x = PI/2
+ var w := 1.52 if heavy else 1.12
+ ArtGeometry.part(parent,[Vector4(.08,.12,-2.85,-.15),Vector4(w*.55,.48,-2.4,-.08),Vector4(w,.82,-1.5,0),Vector4(w*1.04,.9,0,0),Vector4(w*.85,.7,1.5,0),Vector4(w*.48,.46,2.5,0),Vector4(.08,.08,2.8,0)],PEARL,"PearlFuselage")
+ for side in [-1,1]:
+  var rail:=ArtGeometry.part(parent,[Vector4(.03,.04,-2.0,0),Vector4(.18,.12,-1.3,0),Vector4(.24,.14,.5,0),Vector4(.08,.06,1.9,0)],GOLD,"SweptArmorRail")
+  rail.position=Vector3(side*w*.82,.15,0)
+  var plate:=ArtGeometry.part(parent,[Vector4(.02,.02,-1.3,0),Vector4(.35,.14,-.6,0),Vector4(.48,.2,.8,0),Vector4(.08,.04,1.9,0)],BLUE,"InsetShoulderPanel")
+  plate.position=Vector3(side*w*.74,.65,0)
+  ArtGeometry.sweep(parent,[Vector3(side*.8,.6,-1.2),Vector3(side*1.3,.45,.1),Vector3(side*1.5,.25,1.4)],[.035,.04,.015],accent,"NavigationLightRail")
  ball(parent,Vector3(0,0.12,1.05),Vector3(1.12,0.95,1.6),BLUE,"BlueRearArmor")
  ball(parent,Vector3(0,0.65,-2.20),Vector3(1.05,0.95,0.94),GOLD,"GoldCanopySeal")
  var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),Color(0.07,0.006,0.16) if lunar else Color(0.10,0.008,0.018) if comet else NAVY,"PilotCanopy")
@@ -172,7 +177,8 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
   ball(parent,Vector3(side*0.36,0.80,-3.23),Vector3(0.13,0.22,0.055),accent,"CanopyEye",true)
   var span := 1.15 if heavy else 0.95
   if not lunar and not comet:
-   fin(parent,Vector3(side*0.82,0.3,0.60),Vector3(span,1.25 if stats.ability=="speed" else 1.0,1),side*-0.90,accent)
+   var wing := fin(parent,Vector3(side*.9,.18,.25),Vector3(span,1.25 if stats.ability=="speed" else 1.0,.65),0,accent)
+   wing.quaternion = Basis(Vector3(0,0,-side),Vector3(side,0,0),Vector3.DOWN).get_rotation_quaternion()
   pod(parent,Vector3(side*(2.0 if heavy else 1.65),-0.24,0.78),0.92 if heavy else 0.74,accent)
   ring(parent,Vector3(side*0.82,-0.25,-2.75),0.16,0.04,GOLD,"NoseSensorSeal")
   ball(parent,Vector3(side*0.82,-0.25,-2.80),Vector3.ONE*0.10,accent,"NoseSensor",true)
@@ -218,18 +224,23 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  barrier.visible = false
 
 static func station(parent: Node3D, accent: Color = CYAN) -> void:
- # Build at model scale; the world scales this reusable assembly up.
- ring(parent,Vector3.ZERO,2.5,0.36,PEARL,"PearlDockingRing")
- ring(parent,Vector3(0,0,-0.15),2.17,0.10,GOLD,"GoldDockingLip")
- ring(parent,Vector3(0,0,-0.26),2.05,0.035,accent,"DockingGuidance",true)
- for index in range(6):
-  var angle := TAU*index/6
-  var at := Vector3(cos(angle)*2.54,sin(angle)*2.54,0)
-  ball(parent,at,Vector3(0.4,0.4,0.6),BLUE,"RingArmorJoint")
-  pod(parent,at+Vector3(0,0,-0.20),0.47,accent)
- for side in [-1,1]:
-  fin(parent,Vector3(side*2.35,1.5,0.2),Vector3(0.8,1.2,1),side*-0.55,accent)
-  ball(parent,Vector3(side*2.85,-0.55,0.4),Vector3(0.45,1.0,0.6),PEARL,"StationModule")
+ # A layered orbital harbour: shielded core, curved arms and recessed hangars.
+ ArtGeometry.part(parent,[Vector4(.05,.05,-1.2,0),Vector4(.85,.85,-.7,0),Vector4(1.2,1.2,0,0),Vector4(1.0,1,1.2,0),Vector4(.4,.4,2,0),Vector4(.05,.05,2.4,0)],PEARL,"HarbourReactorHull")
+ ring(parent,Vector3(0,0,-.65),.82,.07,GOLD,"ReactorCollar")
+ ball(parent,Vector3(0,0,-.75),Vector3(.6,.6,.25),NAVY,"ReactorGlass")
+ ring(parent,Vector3(0,0,-.96),.43,.045,accent,"ReactorPulse",true)
+ for i in range(3):
+  var arm:=Node3D.new();arm.rotation.z=TAU*i/3;parent.add_child(arm)
+  ArtGeometry.sweep(arm,[Vector3(.9,0,.4),Vector3(1.6,.1,.3),Vector3(2.6,.4,0),Vector3(3.3,.6,-.7)],[.3,.28,.22,.13],PEARL,"CurvedDockArm")
+  var berth:=ArtGeometry.part(arm,[Vector4(.12,.1,-2.1,0),Vector4(.65,.45,-1.6,0),Vector4(.75,.55,-.2,0),Vector4(.5,.35,1.1,0),Vector4(.08,.08,1.4,0)],BLUE,"HarbourBerth")
+  berth.position=Vector3(3.2,.6,0)
+  ring(arm,Vector3(3.2,.6,-1.65),.46,.075,GOLD,"HangarLip").scale.y=.7
+  ball(arm,Vector3(3.2,.6,-1.72),Vector3(.38,.25,.07),NAVY,"HangarOpening")
+  for x in [-1,1]:
+   ball(arm,Vector3(3.2+x*.32,.68,-1.81),Vector3(.045,.025,.02),accent,"ApproachLight",true)
+  fin(arm,Vector3(2.9,.75,.6),Vector3(.4,.7,.5),-.4,accent)
+ ring(parent,Vector3(0,0,.5),2.15,.06,GOLD,"HarbourTruss")
+ ring(parent,Vector3(0,0,.58),2.2,.025,accent,"HarbourGuidance",true)
 
 # Lunaflutter is built from layered, closed 3D wings and faceted crystal meshes.
 static func moon_wing(parent: Node3D, at: Vector3, dimensions: Vector3, lean: float, side: int) -> Node3D:
