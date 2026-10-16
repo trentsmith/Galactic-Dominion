@@ -1,6 +1,10 @@
 class_name PlanetExpedition
 extends Node3D
 signal return_requested
+signal sanctuary_requested
+var landing_stats: ShipStats
+var hunt_species := ""
+var hunt_beacon: Label3D
 var return_label := "RETURN TO PLANET SELECTOR"
 var profile: PlayerProfile
 var definition: PlanetDefinition
@@ -25,7 +29,9 @@ func _ready() -> void:
  process_mode=Node.PROCESS_MODE_PAUSABLE
  if definition==null:definition=PlanetCatalog.WORLDS[0]
  if bot_definition==null:bot_definition=CollectionCatalog.find("crew_pixlet")
- world=SurfaceWorld.new();world.definition=definition;add_child(world)
+ world=SurfaceWorld.new();world.definition=definition;world.landing_stats=landing_stats;add_child(world)
+ hunt_species=definition.fauna[0].id
+ hunt_beacon=Label3D.new();hunt_beacon.name="HuntBeacon";hunt_beacon.text="TRACKED CREATURE";hunt_beacon.billboard=BaseMaterial3D.BILLBOARD_ENABLED;hunt_beacon.no_depth_test=true;hunt_beacon.font_size=24;hunt_beacon.pixel_size=.012;hunt_beacon.modulate=Color(.5,1,.8);add_child(hunt_beacon)
  bot=SurfaceBot.new();bot.definition=bot_definition;bot.expedition=self;bot.position=Vector3(0,1.5,6);add_child(bot)
  var rng:=RandomNumberGenerator.new();rng.seed=definition.seed_value
  for species in range(definition.fauna.size()):
@@ -44,6 +50,11 @@ func _ready() -> void:
  print("GALACTIC_PLANET_READY planet=%s fauna=%d bot=%s" % [definition.id,fauna.size(),bot_definition.id])
 func _physics_process(delta: float) -> void:
  if finished:return
+ var tracked:=tracked_animal()
+ hunt_beacon.visible=is_instance_valid(tracked)
+ if is_instance_valid(tracked):hunt_beacon.global_position=tracked.global_position+Vector3.UP*4
+ if Input.is_action_just_pressed("surface_next_hunt"):cycle_hunt()
+ if Input.is_action_just_pressed("surface_next_bot"):cycle_bot()
  elapsed+=delta
  if Input.mouse_mode==Input.MOUSE_MODE_CAPTURED and Input.is_action_pressed("scan"):
   scan_nearest(delta)
@@ -59,6 +70,8 @@ func record_id(node: Node3D) -> String:
 func surveyed(node: Node3D) -> bool:
  return profile.exploration_records.has(record_id(node)) or pending.has(record_id(node))
 func nearest_specimen(unrecorded: bool=true) -> Node3D:
+ var tracked:=tracked_animal()
+ if unrecorded and is_instance_valid(tracked) and not surveyed(tracked) and bot.position.distance_to(tracked.position)<=12:return tracked
  var nearest: Node3D
  var distance:=INF
  for node in specimens:
@@ -93,11 +106,23 @@ func survey_count() -> int:
  return total
 func extract() -> bool:
  if finished or not bot.alive or bot.position.distance_to(Vector3(0,1.5,0))>10:return false
+ var before_sanctuary:=profile.sanctuary.duplicate(true)
+ var before_records:=profile.exploration_records.duplicate(true)
+ var before_inventory:=profile.inventory.duplicate(true)
+ var before_salvage:=profile.salvage
  SanctuaryState.intake(profile.sanctuary,cargo_animals,cargo_seeds)
- profile.save_profile()
- for id in pending:profile.record_discovery(id,pending[id])
+ for id in pending:
+  if not profile.exploration_records.has(id):
+   profile.exploration_records[id]={"name":pending[id],"discovered_at":int(Time.get_unix_time_from_system())};profile.salvage+=25
  var complete_id:="surface.%s.complete" % definition.id
- if survey_count()>=6:profile.record_discovery(complete_id,definition.display_name+" / Complete Survey",definition.survey_reward)
+ if survey_count()>=6 and not profile.exploration_records.has(complete_id):
+  profile.exploration_records[complete_id]={"name":definition.display_name+" / Complete Survey","discovered_at":int(Time.get_unix_time_from_system())}
+  profile.salvage+=25;profile.acquire(definition.survey_reward,"Galactic exploration")
+ if not profile.save_profile():
+  profile.sanctuary=before_sanctuary;profile.exploration_records=before_records;profile.inventory=before_inventory;profile.salvage=before_salvage
+  status_message="DELIVERY NOT SAVED / "+profile.save_error+" / cargo retained; retry E"
+  return false
+ profile.changed.emit()
  finish(true)
  return true
 func finish(success: bool) -> void:
@@ -112,6 +137,7 @@ func toggle_pause() -> void:
  var paused:=not get_tree().paused
  get_tree().paused=paused
  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE if paused else Input.MOUSE_MODE_CAPTURED
+ hud.refresh_choices()
  hud.pause_panel.visible=paused
 
 func gravity_multiplier() -> float:
@@ -129,6 +155,8 @@ func capture_nearest() -> bool:
   if not is_instance_valid(animal) or not animal.alive:continue
   var next:=bot.position.distance_to(animal.position)
   if next<distance and clear_line(bot.position,animal.position):distance=next;candidate=animal
+ var tracked:=tracked_animal()
+ if is_instance_valid(tracked) and bot.position.distance_to(tracked.position)<8 and clear_line(bot.position,tracked.position):candidate=tracked
  if not is_instance_valid(candidate):status_message="APPROACH A LIVING ANIMAL WITHIN 8m";return false
  if not surveyed(candidate):status_message="SCAN THIS SPECIES WITH G BEFORE CAPTURE";return false
  if candidate.definition.damage>0 and candidate.health>candidate.definition.health*.5:
@@ -137,6 +165,7 @@ func capture_nearest() -> bool:
  if not profile.save_profile():
   profile.sanctuary.materials.capture_pod+=1;status_message=profile.save_error;return false
  cargo_animals.append(candidate.definition.id)
+ SpaceEffects.burst(self,candidate.global_position,Color(.3,1,.7),1.2)
  candidate.alive=false;candidate.visible=false;candidate.collision_layer=0;candidate.respawn_timer=30;candidate.velocity=Vector3.ZERO
  status_message="IN TRANSPORT: %s / extract to bring it home" % candidate.definition.display_name
  return true
@@ -152,3 +181,51 @@ func gather_nearest() -> bool:
  var id:="%s.%s" % [definition.id,str(candidate.get_meta("scan_id")).trim_prefix("flora.")]
  if cargo_seeds.has(id):status_message="ONE SEED PER FLORA TYPE PER EXPEDITION";return false
  cargo_seeds.append(id);status_message="SEED COLLECTED / extract to plant it in your sanctuary";return true
+
+func at_landing_ship() -> bool:
+ return is_instance_valid(bot) and bot.alive and bot.position.distance_to(Vector3(0,1.5,0))<10
+
+func available_bot_choices() -> Array[CollectibleDefinition]:
+ var choices:=PlanetCatalog.available_bots(profile)
+ if choices.is_empty():choices.append(CollectionCatalog.find("crew_pixlet"))
+ return choices
+
+func switch_bot(id: String) -> bool:
+ if finished or not at_landing_ship():
+  status_message="BOT SWITCH / return to the landing ship first";return false
+ var chosen: CollectibleDefinition
+ for item in available_bot_choices():
+  if item.id==id:chosen=item
+ if chosen==null:return false
+ bot_definition=chosen;bot.switch_definition(chosen)
+ status_message="ACTIVE BOT / "+chosen.display_name+" / hull, energy and cargo preserved"
+ return true
+
+func cycle_bot() -> void:
+ var choices:=available_bot_choices()
+ for index in range(choices.size()):
+  if choices[index].id==bot_definition.id:
+   switch_bot(choices[(index+1)%choices.size()].id);return
+ switch_bot(choices[0].id)
+
+func select_hunt(id: String) -> bool:
+ for species in definition.fauna:
+  if species.id==id:
+   hunt_species=id;scan_progress=0;scan_target=null
+   status_message="TRACKING / "+species.display_name+" / scan, capture, return to ship"
+   return true
+ return false
+
+func cycle_hunt() -> void:
+ for index in range(definition.fauna.size()):
+  if definition.fauna[index].id==hunt_species:
+   select_hunt(definition.fauna[(index+1)%definition.fauna.size()].id);return
+
+func tracked_animal() -> SurfaceFauna:
+ var best: SurfaceFauna
+ var distance:=INF
+ for animal in fauna:
+  if not is_instance_valid(animal) or not animal.alive or animal.definition.id!=hunt_species:continue
+  var next:=bot.position.distance_squared_to(animal.position)
+  if next<distance:distance=next;best=animal
+ return best

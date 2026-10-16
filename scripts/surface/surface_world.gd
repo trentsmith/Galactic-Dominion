@@ -1,6 +1,7 @@
 class_name SurfaceWorld
 extends Node3D
 var definition: PlanetDefinition
+var landing_stats: ShipStats
 var rng:=RandomNumberGenerator.new()
 var flora_nodes: Array[Node3D]=[]
 const RADIUS:=110.0
@@ -66,9 +67,12 @@ func _obstacle(at: Vector3,radius: float,height: float) -> void:
 func _landmarks() -> void:
  # Landing refuge: wildlife stays outside this ring.
  SpaceModelFactory.ring(self,Vector3(0,.15,0),10,.08,Color(.3,.9,1),"LandingSafeRing",true).rotation=Vector3.ZERO
- var landing:=Node3D.new();landing.position=Vector3(0,3,0);landing.scale=Vector3.ONE*.9
- SpaceModelFactory.ship(landing,CollectionCatalog.SHIP_TYPES.interceptor);add_child(landing)
- var sign:=Label3D.new();sign.text="LANDING SHIP / SAFE REFUGE\nE: EXTRACT";sign.position=Vector3(0,7,0);sign.font_size=38;sign.pixel_size=.012;add_child(sign)
+ var landing:=Node3D.new();landing.name="LandedShip";landing.position=Vector3(0,2.4,0);landing.scale=Vector3.ONE*.9
+ SpaceModelFactory.ship(landing,landing_stats if landing_stats!=null else CollectionCatalog.SHIP_TYPES.interceptor);add_child(landing)
+ landing.set_meta("ship_class",landing_stats.class_name_text if landing_stats!=null else "Interceptor")
+ for side in [-1,1]:
+  for z in [-1.0,1.0]:SurfaceArt.post(self,Vector3(side*1.0,1.0,z),.09,2.0,Color(.3,.36,.4))
+ var sign:=Label3D.new();sign.text="LANDING SHIP / SAFE REFUGE\nE: DELIVER CAPTURES · B: CHANGE BOT";sign.position=Vector3(0,7,0);sign.font_size=38;sign.pixel_size=.012;add_child(sign)
  if definition.biome=="vampire":
   SpaceEnvironmentArt.planet(self,Vector3(35,27,-94),10,Color(.45,.08,.12),77)
   for i in range(4):

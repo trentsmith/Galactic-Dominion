@@ -95,3 +95,8 @@ func read_controls() -> Dictionary:
 
 func aim_direction() -> Vector3:
  return Basis(Vector3.UP,yaw)*Vector3(0,-sin(pitch),-cos(pitch))
+
+func switch_definition(chosen: CollectibleDefinition) -> void:
+ definition=chosen
+ if is_instance_valid(visual):remove_child(visual);visual.queue_free()
+ visual=AlienVisual.new();visual.definition=chosen;visual.scale=Vector3.ONE*.57;visual.rotation.y=yaw;add_child(visual)

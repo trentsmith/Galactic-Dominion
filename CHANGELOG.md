@@ -1,3 +1,12 @@
+## v0.19.0 — Land, hunt and bring them home
+
+- Orbital explorer selection, L landing from controlled planets/outposts and the actual piloted hull/skin at the landing site.
+- Safe-refuge bot switching with B and pause-menu bot selection, preserving health and cargo.
+- T species tracking, an in-world guide, target health/capture requirements and pause-menu hunt selection.
+- Transactional capture/seed delivery with save-failure retry and duplicate protection.
+- Direct sanctuary visits after extraction, returning to the same parked space session afterward.
+- Existing online combat remains available; the surface/capture loop is single-player.
+
 ## v0.18.0 — Celestial space and sculpted ships
 
 - Layered nebula sky and warm/cool stellar colors; natural ocean/coast terrain, separate slowly drifting cloud shells, soft atmosphere and fine ring bands.

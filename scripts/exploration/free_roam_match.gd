@@ -4,6 +4,7 @@ signal encounter_won(attacker, victim, event_id)
 signal travel_requested(index)
 signal army_requested(action, argument)
 signal landing_requested(index)
+var landing_bot_id := ""
 signal dock_requested
 
 var peaceful := false
@@ -222,11 +223,22 @@ func _build_roam_ui() -> void:
  war_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  war_status.custom_minimum_size.x = 550
  choices.add_child(war_status)
+ var bot_picker := OptionButton.new()
+ bot_picker.name="LandingBotPicker"
+ var available: Array[CollectibleDefinition]=[]
+ if profile!=null:available=PlanetCatalog.available_bots(profile)
+ if available.is_empty():available.append(CollectionCatalog.find("crew_pixlet"))
+ for item in available:
+  bot_picker.add_item("EXPLORER / "+item.display_name)
+  bot_picker.set_item_metadata(bot_picker.item_count-1,item.id)
+ landing_bot_id=str(available[0].id)
+ bot_picker.item_selected.connect(func(i):landing_bot_id=str(bot_picker.get_item_metadata(i)))
+ choices.add_child(bot_picker)
  for index in range(3):
   var land := Button.new()
-  land.text = "LAND BOT / " + PlanetCatalog.WORLDS[index].display_name
+  land.text = "LAND SHIP + DEPLOY BOT / " + PlanetCatalog.WORLDS[index].display_name
   land.disabled = network_role != "offline"
-  land.tooltip_text = "Solo: capture this outpost and approach within 650m outside combat. Return to the same space session after exploring."
+  land.tooltip_text = "Solo: own this world and approach its outpost within 650m or the planet within 520m of its surface, outside combat. Your fitted ship lands with the chosen bot."
   land.pressed.connect(func(): landing_requested.emit(index))
   choices.add_child(land)
  var note := Label.new()
@@ -256,6 +268,12 @@ func toggle_chart() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if map_panel.visible else Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:
+ if event.is_action_pressed("surface_land"):
+  for index in range(3):
+   if can_land(index):
+    get_viewport().set_input_as_handled();landing_requested.emit(index);return
+  log_label.text="LANDING / approach an owned world outside combat; choose Peaceful Flight for free exploration"
+  return
  if network_role == "server": return
  if event.is_action_pressed("scenic_hud"):
   scenic_hud = not scenic_hud
@@ -312,6 +330,10 @@ func _update_roam_ui(delta: float) -> void:
   for outpost in army.worlds:
    army_status.text += "%s: Team %d / %d%%\n" % [outpost.name, outpost.owner + 1, int(outpost.progress / CreatureArmy.CAPTURE_SECONDS * 100)]
  if is_instance_valid(war_status): war_status.text = "PEACEFUL EXPLORATION / No raids or environmental damage" if peaceful else war.briefing()
+ for index in range(3):
+  if can_land(index):
+   log_label.text="L: LAND SHIP / "+PlanetCatalog.WORLDS[index].display_name+" / choose explorer in the landing bot picker"
+   break
  var region := FreeRoamWorld.nearest_region(ship.position)
  if region != current_region:
   current_region = region
@@ -502,4 +524,7 @@ func survey_landmark(owner: int, ship: CombatShip) -> String:
 func can_land(index: int) -> bool:
  if network_role != "offline" or index < 0 or index >= army.worlds.size() or not is_instance_valid(pilot.ship): return false
  var ship := pilot.ship
- return ship.alive and army.worlds[index].owner == ship.team and ship.position.distance_to(army.worlds[index].position) < 650 and safe_to_service(ship)
+ var region: int=[0,2,3][index]
+ var planet_at: Vector3=FreeRoamWorld.CENTERS[region]+Vector3(-1000,-600,-1400)
+ var near_planet:=ship.position.distance_to(planet_at)<850
+ return ship.alive and army.worlds[index].owner == ship.team and (ship.position.distance_to(army.worlds[index].position)<650 or near_planet) and safe_to_service(ship)

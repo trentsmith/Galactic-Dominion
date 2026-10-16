@@ -86,14 +86,14 @@ func _peer_connected(id: int) -> void:
 
 func _connected() -> void:
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.18.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.19.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.18.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.19.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return

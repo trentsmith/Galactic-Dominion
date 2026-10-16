@@ -1,10 +1,10 @@
-# Galactic Dominion — Celestial Space
+# Galactic Dominion — Land, Hunt and Bring Them Home
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.18 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.18.0)** and choose:
+The v0.19 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.19.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,16 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Land, hunt and bring them home
+
+1. Choose **Peaceful Flight** for relaxed solo exploration, or capture a world during normal Free Roam. Approach one of the three explorable planets or its owned outpost outside combat. Choose your explorer in the **Landing Bot Picker**, then press **L** or **Land Ship + Deploy Bot**. Your currently piloted hull and skin appear at the surface landing ship.
+2. Press **T** to cycle the active creature species. The hunt display and world-space marker guide you to the nearest living match and show its health and capture requirements. Pause with **Esc** for direct bot/hunt dropdowns.
+3. Hold **G** within 12 m to scan, then press **C** within 8 m to capture. Dangerous fauna must first be weakened to half health with the defensive pulse (**left mouse**). Captures consume pods; a new sanctuary starts with three. Craft more in its Workshop using ore and bloom.
+4. Return to the landing ship and press **E** to deliver up to four captured animals and collected seeds. Until delivery, cargo can be lost if the bot is destroyed or you leave. Save failures retain cargo for retry; repeated extraction cannot duplicate residents.
+5. Choose **Visit Sanctuary / Meet Your Captures** on the result screen. Your animals join the existing care, production and friendship systems. Leaving the sanctuary restores the same suspended space fleet and war session when the trip began in Free Roam.
+
+**B** switches among your owned exploring bots **at the landing refuge**. It preserves current hull, shield, stamina and cargo. A loaner Pixlet is available if you own no alien bot. Skins do not affect capture rules. This loop is **single-player**; online surface expeditions and upload of local animals to online inventories remain disabled.
 
 ## Celestial space and sculpted ships
 
@@ -442,3 +452,7 @@ Actual authenticated two-client Free Roam sessions passed with an **Orbitot Skir
 Passed **638 Godot checks across 19 suites** and **22 backend tests**. The new 30-check art suite covers authored ship decks, glass, cooling vents, tapered exhausts, independent cloud/atmosphere shells, ring materials, retained distance budgets, deterministic asteroid variation, wreck details and isolated antialiased front-facing Hangar previews. The existing all-class livery and combat/progression suites still pass.
 
 Actual native Godot/OpenGL renders of the updated space assets and all five skinned hulls were inspected. Separate authenticated two-client Free Roam tests exercise an Orbitot Skirmisher and a Glimbloom Guardian. The controlled test fixture now leaves a snapshot interval after warp before injecting combat so both clients can observe arrival. Windows GUI execution remains untested on the Linux development machine.
+
+### v0.19 validation
+
+Passed **665 Godot checks across 20 suites** and **22 backend tests**. The new 27-check round-trip test exercises the real orbital bot picker and L action, actual fitted ship at the landing site, bot selection/ownership and health preservation, hunt cycling/selection/marker, scan/capture, cargo preservation, failed-save rollback/retry, duplicate protection, persisted resident delivery and a real sanctuary visit returning to the same orbital scene. Existing surface/capture-loss and world-war regressions remain passing. A native OpenGL surface HUD render was inspected. Windows GUI execution remains untested on this Linux machine.

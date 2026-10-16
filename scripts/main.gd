@@ -295,7 +295,7 @@ func start_planet(index: int,bot_id: String="") -> void:
   chosen=available[0] if not available.is_empty() else CollectionCatalog.find("crew_pixlet")
  surface=PlanetExpedition.new();surface.profile=profile;surface.definition=PlanetCatalog.WORLDS[clampi(index,0,2)]
  surface.bot_definition=chosen;surface.sensitivity=sensitivity;surface.inverted=inverted
- surface.return_requested.connect(show_planets);add_child(surface)
+ surface.return_requested.connect(show_planets);surface.sanctuary_requested.connect(visit_captured_creatures);surface.landing_stats=profile.configured_stats(0);add_child(surface)
 
 func show_sanctuary() -> void:
  network.disconnect_session();get_tree().paused=false;_clear_surface()
@@ -305,8 +305,11 @@ func show_sanctuary() -> void:
 
 func land_from_roam(index: int) -> bool:
  if not battle is FreeRoamMatch or not battle.can_land(index):
-  if battle is FreeRoamMatch: battle.log_label.text = "Landing denied / capture the world, approach within 650m and leave combat. Solo mode only."
+  if battle is FreeRoamMatch: battle.log_label.text = "Landing denied / own the world, approach its planet or outpost, and leave combat. Try Peaceful Flight for relaxed landings. Solo mode only."
   return false
+ get_tree().paused=false
+ var chosen_bot:=CollectionCatalog.find(battle.landing_bot_id)
+ var landed_stats: ShipStats=battle.pilot.ship.stats.duplicate(true)
  parked_roam = battle
  remove_child(parked_roam)
  battle = null
@@ -315,11 +318,13 @@ func land_from_roam(index: int) -> bool:
  surface = PlanetExpedition.new()
  surface.profile = profile
  surface.definition = PlanetCatalog.WORLDS[index]
- surface.bot_definition = available[0] if not available.is_empty() else CollectionCatalog.find("crew_pixlet")
+ surface.bot_definition = chosen_bot if chosen_bot!=null and chosen_bot in available else available[0] if not available.is_empty() else CollectionCatalog.find("crew_pixlet")
+ surface.landing_stats=landed_stats
  surface.sensitivity = sensitivity
  surface.inverted = inverted
  surface.return_label = "RETURN TO ORBIT"
  surface.return_requested.connect(return_from_planet)
+ surface.sanctuary_requested.connect(visit_captured_creatures)
  add_child(surface)
  return true
 
@@ -339,3 +344,17 @@ func return_from_planet() -> void:
  battle.map_panel.visible = false
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
  battle.log_label.text = "Returned to orbit / the same fleet, war and armies await."
+
+func visit_captured_creatures() -> void:
+ if not is_instance_valid(surface) or not surface.finished:return
+ get_tree().paused=false
+ remove_child(surface);surface.queue_free();surface=null
+ sanctuary_scene=SanctuaryGarden.new();sanctuary_scene.profile=profile
+ sanctuary_scene.back_requested.connect(return_from_sanctuary_trip)
+ add_child(sanctuary_scene)
+
+func return_from_sanctuary_trip() -> void:
+ if is_instance_valid(sanctuary_scene):remove_child(sanctuary_scene);sanctuary_scene.queue_free()
+ sanctuary_scene=null
+ if is_instance_valid(parked_roam):return_from_planet()
+ else:show_planets()

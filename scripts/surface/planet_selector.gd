@@ -14,7 +14,7 @@ func _ready() -> void:
  var scroll:=ScrollContainer.new();margin.add_child(scroll)
  var column:=VBoxContainer.new();column.add_theme_constant_override("separation",14);scroll.add_child(column);column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  var title:=Label.new();title.text="PLANET EXPEDITIONS / LITTLE BOT SURVEYS";title.add_theme_font_size_override("font_size",30);column.add_child(title)
- var tip:=Label.new();tip.text="Single-player surface expeditions. Scan wildlife and flora, survive, and return to your ship.\nOwned collectibles survive deployment loss. Unextracted surveys do not.";column.add_child(tip)
+ var tip:=Label.new();tip.text="Single-player: choose your bot, then track species with T. Hold G to scan; C captures within 8m.\nWeaken dangerous fauna first. Return to the ship and press E to deliver animals to your sanctuary.";column.add_child(tip)
  bots=OptionButton.new();column.add_child(bots)
  var owned:=PlanetCatalog.available_bots(profile)
  if owned.is_empty():
