@@ -3,12 +3,12 @@
 [resource]
 script = ExtResource("1")
 id = "variant_lunaflutter"
-display_name = "Lunaflutter Scout"
-description = "A Moon Moth Interceptor appearance with four rose-and-lavender wings, crystal-tipped antennae and violet engine cores. Cosmetic only; normal Interceptor handling and damage."
+display_name = "Lunaflutter Livery"
+description = "Lunaflutter Livery for every ship class. Cosmetic only: preserves the selected hull, handling, weapons and class ability."
 kind = "variant"
 rarity = "rare"
 slot = "variant"
-ship_class = "Interceptor"
+ship_class = ""
 modifiers = {}
 color = Color(0.82, 0.22, 1, 1)
 visual_style = "moon_moth"

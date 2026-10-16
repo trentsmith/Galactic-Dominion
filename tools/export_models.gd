@@ -56,6 +56,17 @@ func run() -> void:
   ship.name = str(id).capitalize()
   SpaceModelFactory.ship(ship,CollectionCatalog.SHIP_TYPES[id])
   save_model(ship,"ship_"+str(id))
+ for variant in CollectionCatalog.DEFINITIONS:
+  if variant.kind!="variant" or variant.visual_style=="standard":continue
+  for id in CollectionCatalog.SHIP_TYPES:
+   # Preserve the original filenames for these two Interceptor exports.
+   if id=="interceptor" and variant.id in ["variant_lunaflutter","variant_cinderbit"]:continue
+   var model := Node3D.new()
+   model.name=variant.display_name.replace(" ","")+str(id).capitalize()
+   var fitted: ShipStats=CollectionCatalog.SHIP_TYPES[id].duplicate(true)
+   fitted.variant_style=variant.visual_style;fitted.color=variant.color
+   SpaceModelFactory.ship(model,fitted)
+   save_model(model,"ship_"+variant.id.trim_prefix("variant_")+"_"+str(id))
  for planet in PlanetCatalog.WORLDS:
   for species in planet.fauna:
    var animal := Node3D.new()

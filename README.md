@@ -1,10 +1,10 @@
-# Galactic Dominion — Orbitot and Glimbloom
+# Galactic Dominion — Every Hull, Every Livery
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.16 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.16.0)** and choose:
+The v0.17 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.17.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -28,6 +28,16 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
+
+## Every hull, every livery
+
+All **10 livery selections** work on **Interceptor, Skirmisher, Guardian, Bomber and Support**. Orbitot and Glimbloom now have separate ship skins: research each livery for **200 salvage**, then choose it in the **Variant** dropdown. Their companion crew remain separate selections for **180 salvage** each; skin choice does not grant an attack or replace the equipped crew.
+
+Existing Lunaflutter, Cinderbit, Aurora, Ember, Celestial, Starlight and Voidglass unlocks automatically work on all five classes. Their item IDs, ownership, rarity, research cost and trading rules remain intact. Changing hull retains a compatible selected skin. Class statistics, weapons and ability remain those of the chosen hull.
+
+![Actual Godot render of Orbitot and Glimbloom on all five hulls](docs/images/universal-liveries.webp)
+
+The model ZIP includes **83 GLB + 83 bundled Godot scenes**, including all 45 non-standard skin/hull combinations. The original Lunaflutter/Cinderbit Interceptor filenames remain as `ship_lunaflutter_scout` / `ship_cinderbit_scout`; other skin/hull filenames use `ship_<livery>_<class>`.
 
 ## Orbitot and Glimbloom
 
@@ -253,16 +263,16 @@ From the main menu open **FLEET HANGAR / COLLECTION**. Use the fleet buttons or 
 
 Each ship has six slots: engine, shield, weapon, utility, crew and variant. The hangar displays the resulting hull, shields, regeneration, speed, turning, boost capacity, laser/missile output and ability recharge. Loadouts affect your next deployed battle. Component schematics can be fitted to multiple ships; a named crew member can serve aboard only one ship. To transfer a crew member, first set their current ship's crew to **Unassigned**.
 
-There are **43 catalog entries**:
+There are **45 catalog entries**:
 
 - 14 component schematics: four standard and ten alternative fittings, with bonuses and trade-offs.
-- 14 crew collectibles: six human astronaut appearances and eight alien appearances from seven species (Vesperi, Kharon, Auralith, Drakari, Pebble, Moon Moth and Comet Pup).
-- 8 ship liveries: the standard fleet livery and seven class-specific appearances.
+- 16 crew collectibles: human astronauts and alien companions, including Orbitot and Glimbloom. Every crew member fits every class; a named individual still serves aboard only one fleet ship at a time.
+- 10 universal ship liveries: Vanguard, Aurora, Ember, Celestial, Cinderbit, Lunaflutter, Starlight, Voidglass, Orbitot and Glimbloom. Each fits all five hull classes.
 - 5 collectible hulls: all five classes can be won and traded. The three starter classes also remain available as fleet issue.
 
 A new commander starts with four standard component schematics, three astronauts and the standard fleet livery: **8 discovered entries**. Open **Collection & Commander** to filter items, inspect portraits and bonuses, edit your commander name, review lifetime combat totals, or research undiscovered standard equipment and crew with salvage.
 
-Complete a battle to gain free discovery rolls and salvage. Victory gives **one permanent random ship hull, 2 collectible rolls and 60 salvage**; defeat or draw gives **1 roll and 30 salvage**. A duplicate adds **15 salvage** and increases that entry's recovery count. Abandoning a match grants no reward. Research provides a predictable route to non-cosmetic equipment and standard crew; the Lunaflutter Scout and Cinderbit Scout appearances can also be researched, while Legendary and Mythic appearances are discovered in battle salvage.
+Complete a battle to gain free discovery rolls and salvage. Victory gives **one permanent random ship hull, 2 collectible rolls and 60 salvage**; defeat or draw gives **1 roll and 30 salvage**. A duplicate adds **15 salvage** and increases that entry's recovery count. Abandoning a match grants no reward. Research provides a predictable route to non-cosmetic equipment and standard crew; the Lunaflutter, Cinderbit, Orbitot and Glimbloom liveries can also be researched, while Legendary and Mythic appearances are discovered in battle salvage.
 
 Per-roll rarity chances: **Mythic 1/16,384 (0.0061%), Legendary 1/4,096 (0.0244%), Rare 819/16,384 (~5%), Uncommon 3,932/16,384 (~24%), Common 11,628/16,384 (~71%)**. These tiers are disjoint. The selected tier picks uniformly among its entries. Legendary and Mythic items are appearance variants; variant crew have the same combat bonus as their standard counterpart. Rare ship variants add distinctive hull colors, fins, trim, rings or energy ribbons without a power bonus.
 
@@ -343,7 +353,7 @@ The spherical zone starts at 600 metres, begins shrinking after 30 seconds, and 
 - `scripts/exploration`: Resource-defined sectors, scans, patrol encounters, chart navigation and discovery records.
 - `scripts/online`: HTTP account client, ENet lobby, authoritative simulation, bounded inputs and snapshot presentation.
 - `server`: Python/SQLite account, profile, escrow/offer/market and combat reward service, plus a cross-platform launcher.
-- `resources/collectibles`: 41 reusable `.tres` collectible definitions.
+- `resources/collectibles`: 45 reusable `.tres` collectible definitions.
 - `resources/ships`: reusable Interceptor, Skirmisher, Guardian, Bomber and Support `.tres` definitions.
 
 Add a ship class by creating another `ShipStats` Resource; the movement and weapon systems read its values. Add weapons by extending `WeaponSpec` and the projectile/weapon behavior. Input ownership is separated from simulation. The online server simulates all ships; clients present snapshots. Prediction and lag compensation are future work.
@@ -352,7 +362,7 @@ Add a ship class by creating another `ShipStats` Resource; the movement and weap
 
 - Godot headless editor import and main-menu startup. Restricted-sandbox editor debug sockets were unavailable; script imports and the real renderer completed.
 - `tests/smoke_test.gd`: **38 checks passed**, including spawning, switching, abilities, commands, damage, regeneration, laser/missile impacts, momentum, boost, zone escalation, destruction, victory/defeat, timeout and menu cleanup.
-- `tests/progression_test.gd`: **51 checks passed**, including catalog integrity, research costs, fitting ownership, wrong-slot/class rejection, crew transfers, Resource isolation, duplicate rewards, save/reload, backup recovery, malformed-save repair, future-version preservation, real hangar callbacks, rare appearance geometry and match reward integration.
+- `tests/progression_test.gd`: **51 checks passed**, including catalog integrity, research costs, fitting ownership, wrong-slot rejection and universal livery fitting, crew transfers, Resource isolation, duplicate rewards, save/reload, backup recovery, malformed-save repair, future-version preservation, real hangar callbacks, rare appearance geometry and match reward integration.
 - `tests/exploration_test.gd`: **16 checks passed**, including sector spawning, scans, repeat-reward rejection, patrol rewards, warp, hull unlocks, Bomber/Support abilities, discovery persistence, save migration and online UI creation.
 - `tests/online_presentation_test.gd`: **11 checks passed** for replicated health, boost, locking, cooldowns, destruction, zone/timer, projectile cleanup, control transfer and correct team-two victory/defeat messages.
 - `tests/test_service.py`: **21 Python tests passed** for authentication, single-use tickets, fitting/research rules, listing/offer escrow, simultaneous purchase rejection, public profile privacy and idempotent authoritative rewards.
@@ -410,3 +420,9 @@ Passed 444 Godot checks, including 18 new command-deck checks for the actual nav
 Passed **484 Godot checks** across 17 suites (40 new companion checks plus 444 existing checks), and **21 backend tests**. New checks cover both actual 3D models/portable GLBs, runtime orbital animation, crew research/fitting/save-reload, real projectile impacts, cooldown/range/friendly restrictions, bounded/expiring slows, protection against spawn-protected status effects and splash blocked by geometry. The progression tests now expect 43 catalog entries and 16 crew.
 
 Actual two-client authenticated Free Roam runs were performed separately with Orbitot and Glimbloom equipped: the server confirmed their effects and kills, and clients confirmed their signature projectile geometry was replicated. Multiplayer tests also check late join, movement, warp, station repair, death/respawn, saved rewards, trading and protected service endpoints. A disconnect HUD guard prevents reads from a closed ENet peer. A native OpenGL render of both companions was inspected. Windows GUI execution remains untested on this Linux machine.
+
+### v0.17 validation
+
+Passed **608 Godot checks across 18 suites** and **22 backend tests**. The new 124-check suite exercises every livery on all five classes, all discovered crew on each class, retained base stats/abilities, real meshes and gameplay attachments, hull changes, independent skin/crew choice, orbital animation, save/reload and actual Hangar selection callbacks. The backend test verifies all crew and livery combinations against actual stored online accounts while retaining ownership restrictions.
+
+Actual authenticated two-client Free Roam sessions passed with an **Orbitot Skirmisher** and a **Glimbloom Guardian**, verifying replicated hull/skin identity as well as companion attack signatures, effects, rewards and respawn. A native OpenGL showcase of both skins on all five hulls was inspected. Windows GUI execution remains untested on this Linux development machine.

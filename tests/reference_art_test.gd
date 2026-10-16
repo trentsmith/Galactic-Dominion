@@ -70,7 +70,7 @@ func run() -> void:
  lunar_profile.salvage = 500
  check(lunar_profile.research("crew_lunaflutter") and lunar_profile.research("variant_lunaflutter") and lunar_profile.salvage == 160, "Lunaflutter crew and scout appearance can be researched")
  var original := lunar_profile.configured_stats(0)
- check(lunar_profile.equip(0,"variant","variant_lunaflutter") and not lunar_profile.equip(1,"variant","variant_lunaflutter"), "Lunar scout appearance fits only the Interceptor")
+ check(lunar_profile.equip(0,"variant","variant_lunaflutter") and lunar_profile.equip(1,"variant","variant_lunaflutter"), "Lunar appearance fits Interceptors and Skirmishers")
  var fitted := lunar_profile.configured_stats(0)
  check(fitted.variant_style == "moon_moth" and fitted.speed == original.speed and fitted.laser_damage == original.laser_damage and fitted.hull == original.hull, "The moth ship appearance does not change combat statistics")
  check(lunar_profile.equip(0,"crew","crew_lunaflutter"), "Moon Moth crew fits the existing companion slot")

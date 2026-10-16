@@ -91,6 +91,31 @@ class AccountMarketTests(unittest.TestCase):
         self.assertEqual(self.store.me(self.a)['salvage'],10)
         self.store.equip(self.a,0,'weapon','weapon_lance')
         with self.assertRaises(ServiceError): self.store.research(self.a,'variant_void')
+    def test_all_liveries_and_companions_fit_every_class(self):
+        from service import CLASS_NAMES
+        variants=[item for item,definition in ITEMS.items() if definition['kind']=='variant']
+        crews=[item for item,definition in ITEMS.items() if definition['kind']=='crew']
+        with self.store.transaction() as db:
+            p=self.store._profile(self.store._user(db,self.a))
+            for item in variants+crews+['ship_bomber','ship_support']:
+                self.store._grant(p,item,'Test fixture')
+            p['loadouts'][1]['crew']='';p['loadouts'][2]['crew']=''
+            self.store._save(db,self.a,p)
+        for hull in CLASS_NAMES:
+            self.store.equip(self.a,0,None,None,hull=hull)
+            for item in variants:
+                p=self.store.equip(self.a,0,'variant',item)
+                self.assertEqual(p['loadouts'][0]['variant'],item)
+                self.assertEqual(p['ship_classes'][0],hull)
+            for item in crews:
+                p=self.store.equip(self.a,0,'crew',item)
+                self.assertEqual(p['loadouts'][0]['crew'],item)
+        self.store.equip(self.a,0,'variant','variant_orbitot')
+        p=self.store.equip(self.a,0,None,None,hull='guardian')
+        self.assertEqual(p['loadouts'][0]['variant'],'variant_orbitot')
+        self.assertEqual(self.store.me(self.a)['loadouts'][0]['variant'],'variant_orbitot')
+        with self.assertRaises(ServiceError):self.store.equip(self.b,0,'variant','variant_glimbloom')
+
     def test_authoritative_rewards_and_match_lock(self):
         self.store.start_match('match-a',[{'user_id':self.a,'team':0},{'user_id':self.b,'team':1}])
         with self.assertRaises(ServiceError): self.store.list_item(self.a,'engine_sprint',10)

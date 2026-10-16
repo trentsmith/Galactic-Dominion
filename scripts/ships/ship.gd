@@ -26,6 +26,8 @@ var hits := 0
 var outside_time := 0.0
 var crew_name := "Unassigned"
 var hit_effect_remaining := 0.0
+var livery_clock := 0.0
+var livery_orbits: Array[Node3D] = []
 var companion: AlienCompanion
 
 func _ready() -> void:
@@ -66,11 +68,12 @@ func _ready() -> void:
 
 func _build_visual() -> void:
  SpaceModelFactory.ship(self, stats, team)
+ for child in get_children():
+  if child.has_meta("orbit_speed"):livery_orbits.append(child)
  engine_mesh = find_child("MainEngine",true,false)
  muzzle_mesh = find_child("MuzzleFlash",true,false)
  shield_mesh = find_child("ShieldShell",true,false)
  _build_component_visuals()
- _build_variant_visual(stats.color)
 
 func _build_component_visuals() -> void:
  if stats.engine_style != "standard":
@@ -95,29 +98,6 @@ func _build_component_visuals() -> void:
   antenna.size = Vector3(0.15, 1.4, 0.15)
   _mesh(antenna, Vector3(0, 1.1, 2.0), Color(0.9, 0.65, 1))
 
-func _build_variant_visual(color: Color) -> void:
- if stats.variant_style in ["standard","moon_moth","comet_pup"]:
-  return
- var accent := Color(1, 0.25, 0.9) if stats.variant_style == "voidglass" else Color(0.2, 1, 1) if stats.variant_style == "aurora" else Color(1, 0.8, 0.25)
- for side in [-1.0, 1.0]:
-  var trim := BoxMesh.new()
-  trim.size = Vector3(0.25, 0.4, 5.5)
-  _mesh(trim, Vector3(side * 1.2, 0.3, 0), accent, true)
-  var fin := BoxMesh.new()
-  fin.size = Vector3(0.3, 1.6, 2.5)
-  var fin_mesh := _mesh(fin, Vector3(side * 3.0, 0.6, 1.0), color.lightened(0.3))
-  fin_mesh.rotation.z = side * 0.45
- if stats.variant_style == "celestial":
-  var ring := TorusMesh.new()
-  ring.inner_radius = 3.3
-  ring.outer_radius = 3.5
-  _mesh(ring, Vector3(0, 0, 1.5), accent, true).rotation.x = PI / 2.0
- else:
-  for side in [-1.0, 1.0]:
-   var ribbon := BoxMesh.new()
-   ribbon.size = Vector3(0.12, 0.12, 7.0)
-   _mesh(ribbon, Vector3(side * 2.5, 0.3, 3.5), accent, true)
-
 func _mesh(shape: Mesh, position: Vector3, color: Color, unshaded: bool = false) -> MeshInstance3D:
  var mesh := MeshInstance3D.new()
  mesh.mesh = shape
@@ -126,6 +106,10 @@ func _mesh(shape: Mesh, position: Vector3, color: Color, unshaded: bool = false)
  mesh.material_override = material
  add_child(mesh)
  return mesh
+
+func _process(delta: float) -> void:
+ livery_clock += delta
+ for orbit in livery_orbits:orbit.rotate_object_local(Vector3.UP,float(orbit.get_meta("orbit_speed"))*delta)
 
 func _physics_process(delta: float) -> void:
  if not alive:

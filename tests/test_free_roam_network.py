@@ -12,6 +12,8 @@ from service import Store,make_server
 def main():
     processes=[]
     crew=os.environ.get("GD_TEST_COMPANION","crew_nyx")
+    variant=os.environ.get("GD_TEST_VARIANT","variant_standard")
+    hull=os.environ.get("GD_TEST_HULL","interceptor")
     with tempfile.TemporaryDirectory() as temporary:
         tmp=Path(temporary);store=Store(tmp/'test.sqlite3','roam-test-key')
         a=store.register('Roam_A','integration-test-password')['profile']['user_id']
@@ -19,14 +21,16 @@ def main():
         with store.transaction() as db:
             p=store._profile(store._user(db,b));store._grant(p,'ship_bomber','Test fixture');store._save(db,b,p)
         with store.transaction() as db:
-            p=store._profile(store._user(db,a));store._grant(p,crew,"Test fixture");store._save(db,a,p)
+            p=store._profile(store._user(db,a));store._grant(p,crew,"Test fixture");store._grant(p,variant,"Test fixture");store._save(db,a,p)
         store.equip(a,0,"crew",crew)
+        store.equip(a,0,None,None,hull=hull)
+        store.equip(a,0,"variant",variant)
         store.equip(b,0,None,None,hull='bomber')
         http=make_server(store,'127.0.0.1',0)
         threading.Thread(target=http.serve_forever,daemon=True).start()
         with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as sock:
             sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
-        env=dict(os.environ,GD_SERVER_KEY='roam-test-key',GD_API_URL=f'http://127.0.0.1:{http.server_port}',GD_TEST_PORT=str(port),GD_TEST_COMPANION=crew,XDG_DATA_HOME=str(tmp/'data'),XDG_CACHE_HOME=str(tmp/'cache'),XDG_CONFIG_HOME=str(tmp/'config'))
+        env=dict(os.environ,GD_SERVER_KEY='roam-test-key',GD_API_URL=f'http://127.0.0.1:{http.server_port}',GD_TEST_PORT=str(port),GD_TEST_COMPANION=crew,GD_TEST_VARIANT=variant,GD_TEST_HULL=hull,XDG_DATA_HOME=str(tmp/'data'),XDG_CACHE_HOME=str(tmp/'cache'),XDG_CONFIG_HOME=str(tmp/'config'))
         handles=[]
         def launch(name,script,args=()):
             handle=open(tmp/(name+'.log'),'w');handles.append(handle)

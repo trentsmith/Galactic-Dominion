@@ -2,6 +2,8 @@ class_name CollectionCatalog
 extends RefCounted
 
 const DEFINITIONS = [
+ preload("res://resources/collectibles/variant_orbitot.tres"),
+ preload("res://resources/collectibles/variant_glimbloom.tres"),
  preload("res://resources/collectibles/crew_orbitot.tres"),
  preload("res://resources/collectibles/crew_glimbloom.tres"),
  preload("res://resources/collectibles/crew_cinderbit.tres"),

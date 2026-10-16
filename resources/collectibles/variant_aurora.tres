@@ -3,13 +3,13 @@
 [resource]
 script = ExtResource("1")
 id = "variant_aurora"
-display_name = "Aurora Skirmisher"
-description = "Rare Skirmisher variant with violet hull, luminous ribbons, and ion-blue trim."
+display_name = "Aurora Livery"
+description = "Aurora Livery for every ship class. Cosmetic only: preserves the selected hull, handling, weapons and class ability."
 kind = "variant"
 rarity = "legendary"
 slot = "variant"
 species = ""
-ship_class = "Skirmisher"
+ship_class = ""
 modifiers = {}
 color = Color(0.9, 0.35, 1, 1)
 visual_style = "aurora"

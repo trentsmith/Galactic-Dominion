@@ -3,12 +3,12 @@
 [resource]
 script = ExtResource("1")
 id = "variant_cinderbit"
-display_name = "Cinderbit Scout"
-description = "A Comet Pup Interceptor appearance with pearl-and-red ears, a puppy muzzle, glowing paw pods and a sculpted comet tail. Cosmetic only; normal Interceptor handling and damage."
+display_name = "Cinderbit Livery"
+description = "Cinderbit Livery for every ship class. Cosmetic only: preserves the selected hull, handling, weapons and class ability."
 kind = "variant"
 rarity = "rare"
 slot = "variant"
-ship_class = "Interceptor"
+ship_class = ""
 modifiers = {}
 color = Color(1, 0.32, 0.025, 1)
 visual_style = "comet_pup"

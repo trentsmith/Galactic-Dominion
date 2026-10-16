@@ -41,7 +41,7 @@ func run() -> void:
   for key in entry.modifiers:
    if not key in CollectionCatalog.MODIFIABLE_STATS or float(entry.modifiers[key]) <= 0:
     catalog_valid = false
- check(catalog_valid and ids.size() == 43, "Catalog has 43 unique, valid Resource definitions")
+ check(catalog_valid and ids.size() == 45, "Catalog has 45 unique, valid Resource definitions")
  var path := new_path("roundtrip")
  var profile := PlayerProfile.new(path)
  profile.load_profile()
@@ -64,10 +64,10 @@ func run() -> void:
  check(profile.equip(1, "crew", "crew_nyx"), "Discovered alien can pilot a ship")
  check(is_equal_approx(profile.configured_stats(1).shield_regen, 6.6), "Alien crew bonus reaches ship statistics")
  profile.acquire("variant_void")
- check(not profile.equip(1, "variant", "variant_void"), "Variant cannot fit the wrong ship class")
+ check(profile.equip(1, "variant", "variant_void"), "Owned cosmetic livery also fits a Skirmisher")
  check(profile.equip(0, "variant", "variant_void"), "Rare ship appearance fits its class")
  stats = profile.configured_stats(0)
- check(stats.variant_style == "voidglass" and stats.variant_name == "Voidglass Interceptor", "Variant changes appearance metadata")
+ check(stats.variant_style == "voidglass" and stats.variant_name == "Voidglass Livery", "Variant changes appearance metadata")
  var before := profile.salvage
  var reward := profile.acquire("variant_void")
  check(not reward.new and profile.salvage == before + 15 and profile.inventory.variant_void.count == 2, "Duplicate discovery yields salvage and increments record")
@@ -143,7 +143,7 @@ func run() -> void:
  main.show_hangar()
  await frames()
  var hangar: HangarScreen = main.menu.get_child(0)
- check(hangar.inventory_list.item_count == 43 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
+ check(hangar.inventory_list.item_count == 45 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
  check(get_nodes_in_group("ships").is_empty(), "Preview ships do not enter the combat target group")
  for index in range(3):
   hangar.selected_ship = index

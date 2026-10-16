@@ -1,13 +1,14 @@
-Galactic Dominion v0.16 adds **Orbitot** and **Glimbloom**, two original 3D fleet companions inspired by the supplied art references.
+Galactic Dominion v0.17 makes **every livery available on every ship class**.
 
-- Orbitot: pearl/gold armor, cyan face, two tilted orbital rails with six moving satellites and a ringed-planet crown. **Gravity Loop** fires tracking rings that deal 5 damage and slow maximum thrust speed by 35% for 1.5 seconds. The slow refreshes without stacking.
-- Glimbloom: six faceted iridescent petals, a forehead prism and five orbiting crystals. **Prism Pulse** deals 8 direct damage plus 4 to nearby enemies within 14 m; obstacles block splash and allies are safe.
-- Research either for **180 salvage** in the Hangar, then equip it in a ship's **Crew** slot. Both are uncommon. Existing saves and Legendary/Mythic rarity odds are preserved.
-- Server-controlled damage and effects online, with replicated signature projectile meshes.
-- **40 GLB + 40 self-contained Godot model scenes** in the separate model ZIP. Runtime orbital/wing/eye animations use GDScript; GLBs are static editable meshes.
+- All ten selections fit Interceptor, Skirmisher, Guardian, Bomber and Support.
+- Added **Orbitot Livery** and **Glimbloom Livery**, each researchable for **200 salvage** in the Hangar, then selectable in the **Variant** slot. Their companion crew are separate **180-salvage** items in the **Crew** slot.
+- Existing Lunaflutter, Cinderbit, Aurora, Ember, Celestial, Starlight and Voidglass unlocks now work across all classes. Existing ownership, item IDs and rarity are preserved.
+- Class statistics, handling, weapons and abilities stay with the selected hull. Skins do not grant companion attacks.
+- Orbitot ship satellites and Glimbloom ship crystals animate separately from the equipped companion. Older rare-skin trim now uses curved geometry.
+- **83 GLBs and 83 self-contained Godot scenes**, including all 45 non-standard livery/hull combinations.
 
-**Play:** extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Choose Hangar to research and equip your companion, then Explore the Galaxy or Fleet Royale. Peaceful Flight is available for relaxed solo exploration.
+**Play:** extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Open Hangar, choose your ship/class and use the Variant dropdown. Research unowned eligible skins from the collection list. Existing saves work; no reset is needed.
 
-**Host:** extract Galactic-Dominion-Server-Windows.zip and run Start-Server-Windows.bat. Update all clients and the host to v0.16. The Windows host package includes portable Python. Linux builds and SHA256 checksums are also included.
+**Host:** extract Galactic-Dominion-Server-Windows.zip and run Start-Server-Windows.bat. Update every client and the host to v0.17. Linux builds, model files and checksums are included.
 
-Validation details are recorded in README.md. Actual native OpenGL reference renders were inspected. Windows GUI execution remains untested on the Linux development machine. This remains a six-player self-hosted alpha; online surface expeditions and a global public hosting service are not implemented.
+Automated checks cover all livery/class combinations and crew compatibility, unchanged combat stats, persistent ownership/fitting and online profile validation. Actual native Godot renders were inspected. Windows GUI execution remains untested on this Linux development machine. Six-player self-hosting and the existing world scope remain unchanged.

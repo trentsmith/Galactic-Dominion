@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "variant_glimbloom"
+display_name = "Glimbloom Livery"
+description = "Glimbloom appearance for every ship class. Cosmetic only; companion attacks require separately equipped Glimbloom crew."
+kind = "variant"
+rarity = "rare"
+slot = "variant"
+ship_class = ""
+modifiers = {}
+color = Color(1, 0.32, 0.88, 1)
+visual_style = "glimbloom"
+research_cost = 200

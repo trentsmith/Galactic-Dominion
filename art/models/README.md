@@ -1,6 +1,6 @@
 # Editable 3D models
 
-Run `godot --headless --path . --script res://tools/export_models.gd` to generate 40 complete models: Orbitot Fleet Companion, Glimbloom Fleet Companion, Pixlet Pebble Scout, Lunaflutter Moon Moth, Lunaflutter Scout, Cinderbit Comet Pup, Cinderbit Scout, five standard ship classes, nine base fauna species, eighteen original Kindred/Radiant growth forms and a pearl/gold docking station.
+Run `godot --headless --path . --script res://tools/export_models.gd` to generate 83 complete models, including every non-standard livery on all five ship classes: Orbitot Fleet Companion, Glimbloom Fleet Companion, Pixlet Pebble Scout, Lunaflutter Moon Moth, Lunaflutter Scout, Cinderbit Comet Pup, Cinderbit Scout, five standard ship classes, nine base fauna species, eighteen original Kindred/Radiant growth forms and a pearl/gold docking station.
 
 Every model is saved as both a `.tscn` Godot scene and a `.glb` glTF 2.0 file. Godot scenes include the original outline passes; GLB files use standard PBR materials, emissive lights, names and separate mesh parts. They can be opened in Blender, Godot or another glTF editor. GLB models are static meshes, with no skeleton; blinking/orbiting/wing flutter/tail swishing/attacking are game behaviors implemented separately.
 
@@ -13,3 +13,5 @@ Kindred/Radiant files use `fauna_<species>_kindred` / `fauna_<species>_radiant` 
 The v0.14 pack regenerates the same 38 model pairs with the new authored hull profiles, sculpted fauna and modular harbour. Mesh profiles live in `scripts/visuals/art_geometry.gd`; creature details in `fauna_sculpt.gd`. These are editable meshes with standard PBR materials and vertex colors, not textured image planes.
 
 Orbitot/Glimbloom geometry and their signature projectile meshes live in `scripts/visuals/fleet_companion_art.gd`. Runtime `AlienVisual` animates separate satellite/crown/crystal pivots and crystal petals. The v0.16 pack contains 40 GLBs and 40 bundled Godot scenes.
+
+The v0.17 pack contains **83 model pairs**. It covers 45 non-standard skin/hull combinations, five standard hulls, five companion models, 27 fauna/forms and one station. Orbitot/Glimbloom have separate ship and companion models. The existing `ship_lunaflutter_scout` and `ship_cinderbit_scout` are their Interceptor variants; every other skin uses `ship_<livery>_<class>`. Cosmetic skins retain the selected class geometry and gameplay attachment names.

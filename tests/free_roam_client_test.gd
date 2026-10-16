@@ -69,6 +69,11 @@ func _process(delta: float) -> bool:
  return false
 func complete() -> void:
  var reply: Dictionary = await main.online_api.refresh()
+ if role=="Roam_A" and not OS.get_environment("GD_TEST_HULL").is_empty():
+  var stats: ShipStats = main.network.arena.ships[original_slot].stats
+  var expected: CollectibleDefinition = CollectionCatalog.find(OS.get_environment("GD_TEST_VARIANT"))
+  if stats.class_name_text.to_lower()!=OS.get_environment("GD_TEST_HULL") or stats.variant_style!=expected.visual_style:
+   push_error("Selected hull/livery did not replicate");quit(1);return
  var account_ok: bool = reply.has("data") and (main.online_api.account.wins == 2 if role == "Roam_A" else main.online_api.account.wins == 0)
  if OS.get_environment("GD_TEST_COMPANION") in ["crew_orbitot","crew_glimbloom"] and role=="Roam_A" and not signature_seen:
   push_error("New companion signature visual not replicated");quit(1);return

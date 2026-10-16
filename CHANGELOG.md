@@ -1,3 +1,11 @@
+## v0.17.0 — Every hull, every livery
+
+- All existing skins now fit all five ship classes, retaining existing ownership and collectible rarity.
+- Added researchable Orbitot/Glimbloom ship skins separately from their companion crew.
+- Preserve selected hull statistics, abilities, gameplay attachments and skins across hull changes and save/reload, locally and online.
+- Added animated ship orbital/crystal details and replaced block-shaped rare-skin trim with curved panels.
+- Expanded the model pack to 83 GLBs and 83 bundled Godot scenes, covering every non-standard skin/hull combination.
+
 ## v0.16.0 — Orbitot and Glimbloom
 
 - Added two reference-inspired 3D fleet companions: orbital satellites/ringed crown and faceted crystal petals/orbiting shards.

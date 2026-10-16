@@ -3,13 +3,13 @@
 [resource]
 script = ExtResource("1")
 id = "variant_celestial"
-display_name = "Celestial Guardian"
-description = "Rare Guardian variant with pearl hull, golden fins, and a radiant defensive ring."
+display_name = "Celestial Livery"
+description = "Celestial Livery for every ship class. Cosmetic only: preserves the selected hull, handling, weapons and class ability."
 kind = "variant"
 rarity = "legendary"
 slot = "variant"
 species = ""
-ship_class = "Guardian"
+ship_class = ""
 modifiers = {}
 color = Color(0.9, 0.9, 1, 1)
 visual_style = "celestial"

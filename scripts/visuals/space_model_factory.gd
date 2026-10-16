@@ -161,16 +161,19 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  var lunar := stats.variant_style == "moon_moth"
  if lunar: accent = Color(0.92,0.30,1)
  if comet: accent = Color(1,0.65,0.06)
+ var reference_skin := stats.variant_style in ["standard","moon_moth","comet_pup","orbitot","glimbloom"]
+ var hull_color := PEARL if reference_skin else stats.color.lightened(0.30)
+ var panel_color := BLUE if reference_skin else stats.color.darkened(0.35)
  var heavy := stats.ability in ["aegis","barrage"]
  var w := 1.52 if heavy else 1.12
- ArtGeometry.part(parent,[Vector4(.08,.12,-2.85,-.15),Vector4(w*.55,.48,-2.4,-.08),Vector4(w,.82,-1.5,0),Vector4(w*1.04,.9,0,0),Vector4(w*.85,.7,1.5,0),Vector4(w*.48,.46,2.5,0),Vector4(.08,.08,2.8,0)],PEARL,"PearlFuselage")
+ ArtGeometry.part(parent,[Vector4(.08,.12,-2.85,-.15),Vector4(w*.55,.48,-2.4,-.08),Vector4(w,.82,-1.5,0),Vector4(w*1.04,.9,0,0),Vector4(w*.85,.7,1.5,0),Vector4(w*.48,.46,2.5,0),Vector4(.08,.08,2.8,0)],hull_color,"PearlFuselage")
  for side in [-1,1]:
   var rail:=ArtGeometry.part(parent,[Vector4(.03,.04,-2.0,0),Vector4(.18,.12,-1.3,0),Vector4(.24,.14,.5,0),Vector4(.08,.06,1.9,0)],GOLD,"SweptArmorRail")
   rail.position=Vector3(side*w*.82,.15,0)
-  var plate:=ArtGeometry.part(parent,[Vector4(.02,.02,-1.3,0),Vector4(.35,.14,-.6,0),Vector4(.48,.2,.8,0),Vector4(.08,.04,1.9,0)],BLUE,"InsetShoulderPanel")
+  var plate:=ArtGeometry.part(parent,[Vector4(.02,.02,-1.3,0),Vector4(.35,.14,-.6,0),Vector4(.48,.2,.8,0),Vector4(.08,.04,1.9,0)],panel_color,"InsetShoulderPanel")
   plate.position=Vector3(side*w*.74,.65,0)
   ArtGeometry.sweep(parent,[Vector3(side*.8,.6,-1.2),Vector3(side*1.3,.45,.1),Vector3(side*1.5,.25,1.4)],[.035,.04,.015],accent,"NavigationLightRail")
- ball(parent,Vector3(0,0.12,1.05),Vector3(1.12,0.95,1.6),BLUE,"BlueRearArmor")
+ ball(parent,Vector3(0,0.12,1.05),Vector3(1.12,0.95,1.6),panel_color,"BlueRearArmor")
  ball(parent,Vector3(0,0.65,-2.20),Vector3(1.05,0.95,0.94),GOLD,"GoldCanopySeal")
  var visor := ball(parent,Vector3(0,0.73,-2.37),Vector3(0.96,0.85,0.91),Color(0.07,0.006,0.16) if lunar else Color(0.10,0.008,0.018) if comet else NAVY,"PilotCanopy")
  var cockpit_material := visor.material_override as StandardMaterial3D
@@ -207,6 +210,7 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
    ball(parent,Vector3(side*0.23,0.19,-3.15),Vector3(0.33,0.25,0.18),PEARL,"PupMuzzle")
   ball(parent,Vector3(0,0.33,-3.35),Vector3(0.18,0.12,0.10),Color(0.02,0.005,0.012),"PupNose")
   comet_tail(parent,Vector3(0,0.2,2.5),0.95)
+ FleetCompanionArt.ship_livery(parent,stats.variant_style,heavy,stats.color)
  ring(parent,Vector3(0,0,2.52),0.65,0.10,GOLD,"AftEngineCollar")
  var engine := SphereMesh.new()
  engine.radius = 0.47

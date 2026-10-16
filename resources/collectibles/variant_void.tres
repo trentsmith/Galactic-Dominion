@@ -3,13 +3,13 @@
 [resource]
 script = ExtResource("1")
 id = "variant_void"
-display_name = "Voidglass Interceptor"
-description = "Extremely rare Interceptor variant with obsidian hull and magenta energy lattice."
+display_name = "Voidglass Livery"
+description = "Voidglass Livery for every ship class. Cosmetic only: preserves the selected hull, handling, weapons and class ability."
 kind = "variant"
 rarity = "mythic"
 slot = "variant"
 species = ""
-ship_class = "Interceptor"
+ship_class = ""
 modifiers = {}
 color = Color(0.12, 0.07, 0.25, 1)
 visual_style = "voidglass"

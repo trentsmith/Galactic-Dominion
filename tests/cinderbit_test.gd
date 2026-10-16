@@ -31,7 +31,7 @@ func run() -> void:
  profile.salvage = 500
  check(profile.research("crew_cinderbit") and profile.research("variant_cinderbit") and profile.salvage == 160, "Both Cinderbit items can be researched through existing progression")
  var original := profile.configured_stats(0)
- check(profile.equip(0,"variant","variant_cinderbit") and not profile.equip(1,"variant","variant_cinderbit"), "The Comet Pup appearance fits only an Interceptor")
+ check(profile.equip(0,"variant","variant_cinderbit") and profile.equip(1,"variant","variant_cinderbit"), "The Comet Pup appearance fits Interceptors and Skirmishers")
  var fitted := profile.configured_stats(0)
  check(fitted.speed == original.speed and fitted.hull == original.hull and fitted.laser_damage == original.laser_damage, "Cinderbit ship styling is cosmetic")
  profile.equip(0,"crew","crew_cinderbit")

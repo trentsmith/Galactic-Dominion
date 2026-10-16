@@ -106,3 +106,48 @@ static func attack(parent: Node3D, style: String) -> void:
  elif style == "prism_pulse":
   var crystal := SpaceModelFactory.moon_crystal(parent,Vector3.ZERO,0.9)
   crystal.rotation.z = PI/4
+
+# Add skins to the actual selected hull; never replace it with an Interceptor.
+static func ship_livery(parent: Node3D, style: String, heavy: bool, color: Color) -> void:
+ if style in ["standard","moon_moth","comet_pup"]:return
+ var width := 1.52 if heavy else 1.12
+ if style == "orbitot":
+  var orbit := pivot(parent,"ShipSatelliteOrbit",Vector3(0.20,0,0.18),0.25)
+  orbit.position = Vector3(0,0.15,0.50)
+  SpaceModelFactory.ring(orbit,Vector3.ZERO,3.25,0.035,SpaceModelFactory.GOLD,"ShipGravityRail").rotation=Vector3.ZERO
+  SpaceModelFactory.ring(orbit,Vector3.ZERO,3.16,0.018,SpaceModelFactory.CYAN,"ShipIonTrail",true).rotation=Vector3.ZERO
+  for index in range(4):
+   var angle := TAU*index/4.0
+   var at := Vector3(cos(angle)*3.25,0,sin(angle)*3.25)
+   SpaceModelFactory.ball(orbit,at,Vector3.ONE*0.22,SpaceModelFactory.GOLD,"ShipSatelliteShell")
+   SpaceModelFactory.ball(orbit,at+Vector3(0,0,-0.15),Vector3.ONE*0.16,SpaceModelFactory.BLUE,"ShipSatelliteGem")
+  var crown := pivot(parent,"ShipPlanetCrown",Vector3(0.55,0,0.25),0.20)
+  crown.position=Vector3(0,1.65,0.5)
+  SpaceModelFactory.ball(crown,Vector3.ZERO,Vector3.ONE*0.25,SpaceModelFactory.BLUE,"ShipCrownPlanet")
+  SpaceModelFactory.ring(crown,Vector3.ZERO,0.58,0.035,SpaceModelFactory.GOLD,"ShipCrownRing").rotation=Vector3.ZERO
+ elif style == "glimbloom":
+  for side in [-1,1]:
+   for index in range(3):
+    var mount := Node3D.new()
+    mount.name="CrystalWingMount"
+    mount.position=Vector3(side*width*0.65,0.5,-0.35+index*0.8)
+    mount.rotation=Vector3(-PI/2,0,side*-0.75)
+    parent.add_child(mount,true)
+    crystal_petal(mount,Vector3.ZERO,side*(-0.6-index*0.4),0.95)
+  var crown := SpaceModelFactory.moon_crystal(parent,Vector3(0,1.3,-2.1),0.85)
+  crown.name="ShipForeheadPrism"
+  var orbit := pivot(parent,"ShipCrystalOrbit",Vector3(-0.12,0,0.15),-0.25)
+  orbit.position=Vector3(0,0.3,0.4)
+  for index in range(5):
+   var angle := TAU*index/5
+   var gem := SpaceModelFactory.moon_crystal(orbit,Vector3(cos(angle)*3.4,0,sin(angle)*3.4),0.7)
+   gem.name="ShipOrbitingPrism"
+ else:
+  # Curved rails and swept panels replace the old box-shaped rare-skin fins.
+  var accent := color.lightened(0.25)
+  for side in [-1,1]:
+   ArtGeometry.sweep(parent,[Vector3(side*width,0.7,-1.5),Vector3(side*(width+0.25),0.8,0),Vector3(side*(width+0.4),0.45,2.5)],[0.035,0.045,0.018],accent,"LiveryLightRail")
+   var panel := ArtGeometry.part(parent,[Vector4(.02,.03,-1.2,0),Vector4(.2,.12,0,0),Vector4(.12,.08,1.8,0),Vector4(.01,.01,2.2,0)],color.lightened(0.15),"LiverySweptPanel")
+   panel.position=Vector3(side*(width+0.6),0.4,0.4)
+  if style=="celestial":
+   SpaceModelFactory.ring(parent,Vector3(0,0,1.1),3.15,0.035,accent,"CelestialHalo",true)
