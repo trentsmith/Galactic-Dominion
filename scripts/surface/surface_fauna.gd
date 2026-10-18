@@ -27,6 +27,8 @@ func _ready() -> void:
  visual=SurfaceArt.creature(self,definition);visual.scale=Vector3.ONE*definition.size
  for part in visual.get_children():
   if part.has_meta("eye_open_y"):face_eyes.append(part)
+  elif str(part.name).begins_with("Pupil") or "Catchlight" in str(part.name):
+   part.set_meta("eye_open_y",part.scale.y);face_eyes.append(part)
  set_meta("scan_id","fauna."+definition.id);set_meta("scan_name",definition.display_name)
  marker=Label3D.new();marker.billboard=BaseMaterial3D.BILLBOARD_ENABLED;marker.position=Vector3(0,2.8,0);marker.font_size=28;marker.pixel_size=.009
  marker.modulate=Color(1,.5,.4) if definition.damage>0 else Color(.6,1,.8);add_child(marker)
