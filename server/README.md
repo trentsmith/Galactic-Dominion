@@ -4,7 +4,7 @@ Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with
 
 ## One-click Windows host package
 
-Download **Galactic-Dominion-Server-Windows.zip** from [the v0.19 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.19.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
+Download **Galactic-Dominion-Server-Windows.zip** from [the v0.20 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.20.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
 
 The server window prints the PC's LAN addresses. Friends on your same network run the player download, open Online, put that IP in Combat Server Address and click **Use This Address For A Local-Network Host**. The shortcut sets the account URL to `http://HOST:8080`. Clients on the hosting PC can use `127.0.0.1`. Connection preferences remember the address and username.
 
@@ -34,7 +34,7 @@ Equip an owned alien in **Online Fleet → Crew** before joining. Its companion 
 
 The host also runs recurring Crimson/Pelagian/Eldritch invasions, hostile ion storms and a shared 50-creature army limit. M shows a seven-region star chart, raid briefing and army orders. G within 100m surveys a landmark for the session, without inventory rewards. Online landing onto solo surfaces is disabled.
 
-Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.19 game build is required on the server and every client.
+Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.20 game build is required on the server and every client.
 
 ## Explicit launch command
 

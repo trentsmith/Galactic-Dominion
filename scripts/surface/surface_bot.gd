@@ -23,6 +23,8 @@ func _ready() -> void:
  camera=Camera3D.new();camera.top_level=true;camera.fov=62;add_child(camera);camera.current=true
  update_camera(1)
 func _unhandled_input(event: InputEvent) -> void:
+ if alive and not expedition.finished and not get_tree().paused and event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed and Input.mouse_mode!=Input.MOUSE_MODE_CAPTURED:
+  Input.mouse_mode=Input.MOUSE_MODE_CAPTURED;get_viewport().set_input_as_handled();return
  if not alive or Input.mouse_mode!=Input.MOUSE_MODE_CAPTURED:return
  if event is InputEventMouseMotion:
   yaw-=event.relative.x*expedition.sensitivity
@@ -81,7 +83,7 @@ func fire() -> bool:
   if alignment>score and expedition.clear_line(global_position,animal.global_position):
    score=alignment;target=animal
  var end:=global_position+heading*16
- if is_instance_valid(target):end=target.global_position;target.hit(16)
+ if is_instance_valid(target):end=target.global_position;target.hit(16,true)
  var curve:=Curve3D.new();curve.bake_interval=2;curve.add_point(global_position);curve.add_point(end)
  var beam:=Node3D.new();get_parent().add_child(beam)
  SpaceModelFactory.tube(beam,curve,Vector3.ZERO,.04,definition.color.lightened(.3),true)
@@ -91,7 +93,7 @@ func fire() -> bool:
 func read_controls() -> Dictionary:
  if input_provider.is_valid():return input_provider.call()
  if Input.mouse_mode!=Input.MOUSE_MODE_CAPTURED:return {}
- return {"move":Input.get_vector("strafe_left","strafe_right","forward","reverse"),"sprint":Input.is_action_pressed("boost"),"vertical":float(Input.is_action_pressed("up"))-float(Input.is_action_pressed("down")),"jump":Input.is_action_just_pressed("up"),"fire":Input.is_action_pressed("laser")}
+ return {"move":Input.get_vector("strafe_left","strafe_right","forward","reverse"),"sprint":Input.is_action_pressed("boost"),"vertical":float(Input.is_action_pressed("up"))-float(Input.is_action_pressed("down")),"jump":Input.is_action_just_pressed("up"),"fire":Input.is_action_pressed("laser"),"scan":Input.is_action_pressed("scan"),"capture":Input.is_action_just_pressed("surface_capture"),"extract":Input.is_action_just_pressed("surface_extract"),"gather":Input.is_action_just_pressed("surface_gather"),"next_hunt":Input.is_action_just_pressed("surface_next_hunt"),"next_bot":Input.is_action_just_pressed("surface_next_bot")}
 
 func aim_direction() -> Vector3:
  return Basis(Vector3.UP,yaw)*Vector3(0,-sin(pitch),-cos(pitch))

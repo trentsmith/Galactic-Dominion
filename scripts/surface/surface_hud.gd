@@ -16,7 +16,7 @@ func _ready() -> void:
  label(panel,expedition.definition.display_name.to_upper(),Vector2(25,20),24)
  info=label(panel,"",Vector2(25,60),17)
  notes=label(panel,"",Vector2(25,112),15)
- label(panel,"WASD move · Mouse look · Shift sprint · LMB defensive pulse\nG hold: scan · C: capture animal · F: gather seed · E: deliver cargo\nB: change bot at ship · T: next hunt · Esc: expedition choices\n"+("Space/Ctrl: swim up/down" if expedition.definition.aquatic else "Space: jump"),Vector2(25,180),14)
+ label(panel,"WASD move · Mouse look · Shift sprint · LMB non-lethal stun pulse\nG hold: scan · C: capture animal · F: gather seed · E: deliver cargo\nB: change bot at ship · T: next hunt · Esc: expedition choices\n"+("Space/Ctrl: swim up/down" if expedition.definition.aquatic else "Space: jump"),Vector2(25,180),14)
  hunt_label=label(panel,"",Vector2(900,25),16)
  hunt_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;hunt_label.custom_minimum_size.x=340;hunt_label.size.x=340
  prompt=label(panel,"",Vector2(25,610),18)
@@ -33,10 +33,15 @@ func _process(_delta: float) -> void:
  hunt_label.text="ACTIVE HUNT / T: CHANGE SPECIES\n"
  if is_instance_valid(tracked):
   hunt_label.text+="%s / %dm\nHEALTH %d / %d\n"%[tracked.definition.display_name,int(bot.position.distance_to(tracked.position)),int(tracked.health),int(tracked.definition.health)]
-  hunt_label.text+="Hold G within 12m to scan" if not expedition.surveyed(tracked) else "Weaken to half health with LMB" if tracked.definition.damage>0 and tracked.health>tracked.definition.health*.5 else "C within 8m: capture and transport"
+  hunt_label.text+="Hold G within 12m to scan" if not expedition.surveyed(tracked) else "LMB: stun to half health, then C" if tracked.definition.damage>0 and tracked.health>tracked.definition.health*.5 else "C within 8m: capture and transport"
  else:hunt_label.text+="No living target nearby / choose another species"
+ var catchable:=expedition.capture_target()
+ if is_instance_valid(catchable):
+  hunt_label.text+="\n\nC TARGET / "+catchable.definition.display_name
+  hunt_label.text+="\nREADY TO CAPTURE" if expedition.capture_ready(catchable) else "\nSCAN WITH G FIRST" if not expedition.surveyed(catchable) else "\nSTUN WITH LMB FIRST"
  var nearest:=expedition.nearest_specimen()
  if expedition.finished:prompt.text=""
+ elif Input.mouse_mode!=Input.MOUSE_MODE_CAPTURED and not get_tree().paused:prompt.text="CLICK THE SCENE TO RESUME EXPLORING / G: scan · C: capture"
  elif bot.position.distance_to(Vector3(0,1.5,0))<10:prompt.text="LANDING SHIP / E: DELIVER TO SANCTUARY · B: CHANGE BOT"
  elif is_instance_valid(nearest):
   var distance:=bot.global_position.distance_to(nearest.global_position)
@@ -66,6 +71,7 @@ func _menu(title: String,result: bool) -> Control:
    hunts.add_item("TRACK / "+species.display_name)
    if species.id==expedition.hunt_species:hunts.select(hunts.item_count-1)
   hunts.item_selected.connect(func(index):expedition.select_hunt(expedition.definition.fauna[index].id))
+  _button(column,"CRAFT CAPTURE POD / 1 ORE + 1 BLOOM",expedition.craft_capture_pod)
   _button(column,"RESUME",expedition.toggle_pause)
  _button(column,expedition.return_label,func():
   get_tree().paused=false;expedition.return_requested.emit())

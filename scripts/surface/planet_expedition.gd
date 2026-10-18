@@ -50,18 +50,19 @@ func _ready() -> void:
  print("GALACTIC_PLANET_READY planet=%s fauna=%d bot=%s" % [definition.id,fauna.size(),bot_definition.id])
 func _physics_process(delta: float) -> void:
  if finished:return
+ var controls:=bot.read_controls()
  var tracked:=tracked_animal()
  hunt_beacon.visible=is_instance_valid(tracked)
  if is_instance_valid(tracked):hunt_beacon.global_position=tracked.global_position+Vector3.UP*4
- if Input.is_action_just_pressed("surface_next_hunt"):cycle_hunt()
- if Input.is_action_just_pressed("surface_next_bot"):cycle_bot()
+ if bool(controls.get("next_hunt",false)):cycle_hunt()
+ if bool(controls.get("next_bot",false)):cycle_bot()
  elapsed+=delta
- if Input.mouse_mode==Input.MOUSE_MODE_CAPTURED and Input.is_action_pressed("scan"):
+ if bool(controls.get("scan",false)):
   scan_nearest(delta)
  else:scan_progress=maxf(0,scan_progress-delta*2)
- if Input.is_action_just_pressed("surface_extract"):extract()
- if Input.is_action_just_pressed("surface_capture"):capture_nearest()
- if Input.is_action_just_pressed("surface_gather"):gather_nearest()
+ if bool(controls.get("extract",false)):extract()
+ if bool(controls.get("capture",false)):capture_nearest()
+ if bool(controls.get("gather",false)):gather_nearest()
 func clear_line(a: Vector3,b: Vector3) -> bool:
  var query:=PhysicsRayQueryParameters3D.create(a+Vector3.UP*.8,b+Vector3.UP*.8,1)
  return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
@@ -81,10 +82,24 @@ func nearest_specimen(unrecorded: bool=true) -> Node3D:
   if next<distance:distance=next;nearest=node
  return nearest
 func scan_nearest(delta: float) -> void:
- var nearest:=nearest_specimen()
+ # A moving neighbor must not steal an in-progress scan.
+ var nearest: Node3D=scan_target if scan_eligible(scan_target) else null
+ if nearest==null:
+  var tracked:=tracked_animal()
+  if scan_eligible(tracked):nearest=tracked
+ if nearest==null:
+  var distance:=INF
+  for specimen in specimens:
+   if not scan_eligible(specimen):continue
+   var next:=bot.global_position.distance_squared_to(specimen.global_position)
+   if next<distance:distance=next;nearest=specimen
  if nearest!=scan_target:scan_progress=0;scan_target=nearest
  if not is_instance_valid(nearest) or bot.global_position.distance_to(nearest.global_position)>12 or not clear_line(bot.global_position,nearest.global_position):
-  scan_progress=0;return
+  scan_progress=0
+  var obstructed:=nearest_specimen()
+  if is_instance_valid(obstructed) and bot.global_position.distance_to(obstructed.global_position)<=12 and not clear_line(bot.global_position,obstructed.global_position):status_message="SCAN BLOCKED / move around the obstacle for a clear view"
+  return
+ if nearest is SurfaceFauna and nearest.definition.damage<=0:nearest.scan_interest_remaining=.35
  scan_progress+=delta
  if scan_progress>=2:
   survey_specimen(nearest);scan_progress=0;scan_target=null
@@ -148,16 +163,14 @@ func capture_nearest() -> bool:
  if cargo_animals.size()>=4 or profile.sanctuary.residents.size()+cargo_animals.size()>=48:
   status_message="TRANSPORT FULL / extract before collecting more creatures";return false
  if profile.sanctuary.materials.capture_pod<1:
-  status_message="NO CAPTURE PODS / craft more in your sanctuary";return false
- var candidate: SurfaceFauna
- var distance:=8.0
- for animal in fauna:
-  if not is_instance_valid(animal) or not animal.alive:continue
-  var next:=bot.position.distance_to(animal.position)
-  if next<distance and clear_line(bot.position,animal.position):distance=next;candidate=animal
- var tracked:=tracked_animal()
- if is_instance_valid(tracked) and bot.position.distance_to(tracked.position)<8 and clear_line(bot.position,tracked.position):candidate=tracked
- if not is_instance_valid(candidate):status_message="APPROACH A LIVING ANIMAL WITHIN 8m";return false
+  status_message="NO CAPTURE PODS / return to ship, Esc: craft a pod with 1 ore + 1 bloom";return false
+ var candidate:=capture_target()
+ if not is_instance_valid(candidate):
+  status_message="APPROACH A LIVING ANIMAL WITHIN 8m"
+  for animal in fauna:
+   if is_instance_valid(animal) and animal.alive and bot.position.distance_to(animal.position)<=8:
+    status_message="CAPTURE BLOCKED / move around the obstacle for a clear view";break
+  return false
  if not surveyed(candidate):status_message="SCAN THIS SPECIES WITH G BEFORE CAPTURE";return false
  if candidate.definition.damage>0 and candidate.health>candidate.definition.health*.5:
   status_message="DANGEROUS FAUNA / weaken to 50% health or less before capture";return false
@@ -229,3 +242,36 @@ func tracked_animal() -> SurfaceFauna:
   var next:=bot.position.distance_squared_to(animal.position)
   if next<distance:distance=next;best=animal
  return best
+
+func capture_ready(animal: SurfaceFauna) -> bool:
+ return is_instance_valid(animal) and animal.alive and surveyed(animal) and (animal.definition.damage<=0 or animal.health<=animal.definition.health*.5)
+
+func capture_target() -> SurfaceFauna:
+ # Prefer the tracked animal when ready; never let an ineligible hunt block
+ # another scanned creature already inside the capture radius.
+ var tracked:=tracked_animal()
+ if capture_ready(tracked) and bot.position.distance_to(tracked.position)<=8.0 and clear_line(bot.position,tracked.position):return tracked
+ var ready: SurfaceFauna
+ var nearest: SurfaceFauna
+ var distance:=8.001
+ var ready_distance:=8.001
+ for animal in fauna:
+  if not is_instance_valid(animal) or not animal.alive:continue
+  var next:=bot.position.distance_to(animal.position)
+  if next>8.0 or not clear_line(bot.position,animal.position):continue
+  if next<distance:distance=next;nearest=animal
+  if capture_ready(animal) and next<ready_distance:ready_distance=next;ready=animal
+ return ready if is_instance_valid(ready) else nearest
+
+func scan_eligible(node: Node3D) -> bool:
+ return is_instance_valid(node) and node in specimens and not surveyed(node) and not (node is SurfaceFauna and not node.alive) and bot.global_position.distance_to(node.global_position)<=12 and clear_line(bot.global_position,node.global_position)
+
+func craft_capture_pod() -> bool:
+ if finished or not at_landing_ship():status_message="POD WORKSHOP / return to the landing ship";return false
+ var before:=profile.sanctuary.duplicate(true)
+ if not SanctuaryState.craft(profile.sanctuary,"capture_pod"):
+  status_message="POD WORKSHOP / requires 1 ore + 1 bloom";return false
+ if not profile.save_profile():
+  profile.sanctuary=before;status_message=profile.save_error;return false
+ status_message="CAPTURE POD READY / "+str(profile.sanctuary.materials.capture_pod)+" available"
+ return true

@@ -2,9 +2,9 @@ class_name FaunaSculpt
 extends RefCounted
 static func build(parent: Node3D, definition: FaunaDefinition) -> Node3D:
  var root:=Node3D.new();parent.add_child(root)
- var c:=definition.color;var light:=c.lightened(.23);var glow:=definition.glow;var style:=definition.body_style
+ var c:=definition.color.lightened(.16);var light:=c.lightened(.20);var glow:=definition.glow;var style:=definition.body_style
  var aquatic:=style in ["jelly","fish","shark"]
- var body_profile: Array[Vector4]=[Vector4(.12,.15,-.85,1),Vector4(.5,.52,-.55,1.12),Vector4(.7,.62,.05,1.1),Vector4(.6,.52,.65,1),Vector4(.12,.16,1.05,1)]
+ var body_profile: Array[Vector4]=[Vector4(.12,.15,-.85,1),Vector4(.5,.52,-.55,1.12),Vector4(.78,.66,.05,1.1),Vector4(.64,.56,.65,1),Vector4(.12,.16,1.05,1)]
  if style in ["fish","shark"]:
   body_profile=[Vector4(.04,.05,-1.55,1.05),Vector4(.4,.42,-1.25,1.1),Vector4(.68,.67,-.35,1.2),Vector4(.5,.5,.55,1.1),Vector4(.12,.18,1.45,1.02),Vector4(.025,.05,1.7,1)]
  if style=="wisp":
@@ -41,12 +41,13 @@ static func build(parent: Node3D, definition: FaunaDefinition) -> Node3D:
     var z:float=(i-(count-1)*.5)*.8
     ArtGeometry.sweep(root,[Vector3(side*.48,.95,z),Vector3(side*.62,.62,z+.12),Vector3(side*.60,.22,z-.06),Vector3(side*.64,.12,z-.15)],[.19,.16,.095,.07],c.darkened(.06),"SculptedLeg")
     SpaceModelFactory.ball(root,Vector3(side*.64,.15,z-.2),Vector3(.18,.13,.25),c.darkened(.25),"RoundedPaw")
+    for toe in [-1,1]:SpaceModelFactory.ball(root,Vector3(side*.64+toe*.055,.21,z-.35),Vector3(.035,.025,.025),light,"PawDimple")
  # Organic heads use tapered cheeks and a muzzle instead of a second sphere.
  if not aquatic and style!="wisp":
-  ArtGeometry.part(root,[Vector4(.06,.07,-1.65,1.10),Vector4(.32,.26,-1.42,1.19),Vector4(.53,.48,-1.05,1.40),Vector4(.46,.46,-.65,1.43),Vector4(.1,.1,-.35,1.32)],light,"SculptedHead")
+  ArtGeometry.part(root,[Vector4(.12,.13,-1.72,1.32),Vector4(.40,.39,-1.5,1.45),Vector4(.61,.57,-1.05,1.48),Vector4(.54,.53,-.65,1.47),Vector4(.12,.12,-.35,1.35)],light,"SculptedHead")
   for side in [-1,1]:
    var ear:=SpaceModelFactory.mesh(root,SpaceModelFactory.petal_mesh(),Vector3(side*.36,1.62,-.75),c,"LeafEar")
-   ear.scale=Vector3(.36,.30 if style!="bat" else .43,.8);ear.rotation.z=side*-.5
+   ear.scale=Vector3(.43,.26 if style!="bat" else .38,.85);ear.rotation.z=side*-.5
    var inner:=SpaceModelFactory.mesh(ear,SpaceModelFactory.petal_mesh(),Vector3(0,.15,-.1),glow.lightened(.3),"EarLining")
    inner.scale=Vector3(.55,.65,.6)
  if style=="stag":
@@ -69,14 +70,34 @@ static func build(parent: Node3D, definition: FaunaDefinition) -> Node3D:
  elif style=="wisp":
   for side in [-1,1]:ArtGeometry.sweep(root,[Vector3(side*.3,.8,.3),Vector3(side*.7,.5,.8),Vector3(side*.5,.3,1.4),Vector3(side*.2,.65,1.8)],[.18,.14,.07,.006],glow,"DreamRibbon")
   SpaceModelFactory.ring(root,Vector3(0,1.45,.1),.8,.018,glow,"WispHalo",true).rotation=Vector3(.5,0,.2)
- var face_z:float=-1.48 if not aquatic and style!="wisp" else -.68 if style in ["jelly","wisp"] else -1.33
- var face_y:float=1.38 if not aquatic else 1.55 if style=="jelly" else 1.24
+ var face_z:float=-1.61 if not aquatic and style!="wisp" else -.68 if style in ["jelly","wisp"] else -1.33
+ var face_y:float=1.49 if not aquatic else 1.55 if style=="jelly" else 1.24
+ var soft:=Color(1,.86,.83).lerp(c.lightened(.6),.45)
  for side in [-1,1]:
-  var at:=Vector3(side*.23,face_y,face_z)
-  SpaceModelFactory.ball(root,at,Vector3(.16,.2,.08),Color(.015,.025,.06),"EyeSocket")
-  SpaceModelFactory.ball(root,at+Vector3(0,.005,-.065),Vector3(.09,.13,.025),glow,"Iris",true)
-  SpaceModelFactory.ball(root,at+Vector3(-.035,.06,-.09),Vector3(.035,.04,.012),Color(.95,1,1),"EyeCatchlight",true)
-  SpaceModelFactory.ball(root,Vector3(side*.34,face_y-.19,face_z+.01),Vector3(.10,.045,.025),Color(1,.53,.63),"RosyCheek")
-  if style=="watcher":SpaceModelFactory.ball(root,Vector3(side*.2,face_y+.27,face_z+.02),Vector3(.10,.12,.06),glow,"UpperEye",true)
- ArtGeometry.sweep(root,[Vector3(-.12,face_y-.2,face_z-.02),Vector3(0,face_y-.27,face_z-.03),Vector3(.12,face_y-.2,face_z-.02)],[.018,.022,.018],Color(.04,.02,.07),"LittleSmile")
+  var at:=Vector3(side*.27,face_y,face_z)
+  var eye:=SpaceModelFactory.ball(root,at,Vector3(.20,.255,.11),Color(.018,.025,.052),"EyeSocket")
+  var eye_mat:=eye.material_override as StandardMaterial3D
+  eye_mat.roughness=.16;eye_mat.clearcoat_enabled=true;eye_mat.clearcoat=.45
+  eye.set_meta("eye_open_y",eye.scale.y)
+  var iris:=SpaceModelFactory.ball(root,at+Vector3(0,-.035,-.09),Vector3(.115,.14,.032),glow.lightened(.15),"Iris")
+  iris.set_meta("eye_open_y",iris.scale.y)
+  SpaceModelFactory.ball(root,at+Vector3(0,-.025,-.13),Vector3(.063,.095,.015),Color(.008,.012,.025),"Pupil")
+  SpaceModelFactory.ball(root,at+Vector3(-.06,.08,-.155),Vector3(.055,.065,.014),Color(.97,1,1),"EyeCatchlight",true)
+  SpaceModelFactory.ball(root,at+Vector3(.055,-.07,-.155),Vector3(.022,.028,.009),Color(.75,.92,1),"LittleCatchlight",true)
+  SpaceModelFactory.ball(root,Vector3(side*.42,face_y-.22,face_z+.015),Vector3(.14,.065,.026),Color(1,.57,.65),"RosyCheek")
+  if not aquatic and style!="wisp":
+   SpaceModelFactory.ball(root,Vector3(side*.15,face_y-.27,face_z-.045),Vector3(.20,.14,.13),soft,"SoftMuzzle")
+  if style=="watcher":SpaceModelFactory.ball(root,Vector3(side*.22,face_y+.28,face_z+.02),Vector3(.09,.10,.045),glow.lightened(.2),"UpperEye",true)
+ if not aquatic and style!="wisp":SpaceModelFactory.ball(root,Vector3(0,face_y-.19,face_z-.18),Vector3(.075,.055,.04),Color(.14,.075,.12),"ButtonNose")
+ ArtGeometry.sweep(root,[Vector3(-.11,face_y-.32,face_z-.12),Vector3(0,face_y-.38,face_z-.14),Vector3(.11,face_y-.32,face_z-.12)],[.014,.018,.014],Color(.16,.065,.13),"LittleSmile")
+ soften_materials(root)
  return root
+
+static func soften_materials(node: Node) -> void:
+ for child in node.get_children():
+  if child is MeshInstance3D and child.material_override is StandardMaterial3D:
+   var mat:=child.material_override as StandardMaterial3D
+   if not str(child.name).begins_with("Eye") and not str(child.name).begins_with("Iris"):
+    mat.roughness=.70;mat.metallic=0;mat.metallic_specular=.22
+   mat.cull_mode=BaseMaterial3D.CULL_DISABLED
+  soften_materials(child)

@@ -1,10 +1,10 @@
-# Galactic Dominion — Land, Hunt and Bring Them Home
+# Galactic Dominion — Capture Rescue and Adorable Wildlife
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
 ## Download and play without Godot
 
-The v0.19 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.19.0)** and choose:
+The v0.20 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.20.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -29,11 +29,22 @@ See **[release instructions](docs/RELEASE.md)** and **[server hosting](server/RE
 From a terminal: `godot --path /path/to/galactic-dominion`.
 
 
+## Capture rescue and adorable wildlife
+
+- Scans hold onto a valid moving individual instead of jumping to a nearer animal. Passive creatures briefly settle while being scanned.
+- **Left-click stun pulses are non-lethal** on surface expeditions. Weakened creatures pause for a three-second capture window. Ordinary fleet and army combat remains unchanged.
+- **C TARGET** shows which nearby creature will be captured and whether it needs scanning or stunning. An unready tracked creature no longer blocks another ready animal. The full 8 m radius includes its boundary; solid obstacles still block capture.
+- If the mouse was released, click the scene to restore exploration controls. The HUD prompts you when input is inactive.
+- At the landing ship, press **Esc → Craft Capture Pod** to spend **1 ore + 1 bloom**, without abandoning the expedition. Existing cargo, save-failure retry and sanctuary delivery remain intact.
+- All nine wildlife species have larger glossy eyes/pupils and catchlights, softer palettes/materials, rosy cheeks and smiles. Land animals have fuller faces and rounded muzzles; living wild creatures blink. The shared art also updates sanctuary residents, friendship forms and army visuals. The 83-model pack is regenerated.
+
+![Actual Godot render of the updated wildlife](docs/images/adorable-fauna.webp)
+
 ## Land, hunt and bring them home
 
 1. Choose **Peaceful Flight** for relaxed solo exploration, or capture a world during normal Free Roam. Approach one of the three explorable planets or its owned outpost outside combat. Choose your explorer in the **Landing Bot Picker**, then press **L** or **Land Ship + Deploy Bot**. Your currently piloted hull and skin appear at the surface landing ship.
 2. Press **T** to cycle the active creature species. The hunt display and world-space marker guide you to the nearest living match and show its health and capture requirements. Pause with **Esc** for direct bot/hunt dropdowns.
-3. Hold **G** within 12 m to scan, then press **C** within 8 m to capture. Dangerous fauna must first be weakened to half health with the defensive pulse (**left mouse**). Captures consume pods; a new sanctuary starts with three. Craft more in its Workshop using ore and bloom.
+3. Hold **G** within 12 m to scan, then press **C** within 8 m to capture. Dangerous fauna must first be weakened to half health with the non-lethal stun pulse (**left mouse**). Captures consume pods; a new sanctuary starts with three. Craft more in its Workshop using ore and bloom.
 4. Return to the landing ship and press **E** to deliver up to four captured animals and collected seeds. Until delivery, cargo can be lost if the bot is destroyed or you leave. Save failures retain cargo for retry; repeated extraction cannot duplicate residents.
 5. Choose **Visit Sanctuary / Meet Your Captures** on the result screen. Your animals join the existing care, production and friendship systems. Leaving the sanctuary restores the same suspended space fleet and war session when the trip began in Free Roam.
 
@@ -456,3 +467,9 @@ Actual native Godot/OpenGL renders of the updated space assets and all five skin
 ### v0.19 validation
 
 Passed **665 Godot checks across 20 suites** and **22 backend tests**. The new 27-check round-trip test exercises the real orbital bot picker and L action, actual fitted ship at the landing site, bot selection/ownership and health preservation, hunt cycling/selection/marker, scan/capture, cargo preservation, failed-save rollback/retry, duplicate protection, persisted resident delivery and a real sanctuary visit returning to the same orbital scene. Existing surface/capture-loss and world-war regressions remain passing. A native OpenGL surface HUD render was inspected. Windows GUI execution remains untested on this Linux machine.
+
+### v0.20 validation
+
+Passed **702 Godot checks across 21 suites** and **22 backend tests**. The new 37-check suite injects physical G/C key events, keeps passive AI active during scanning, checks scan locking when a nearer individual appears, captures a ready animal despite an unready hunt, exercises repeated real non-lethal pulses, range/occlusion/save protections, refuge pod crafting and final resident persistence. Every species is checked for its new face details. Headless runs use the existing controller input adapter because the headless display cannot capture a mouse.
+
+The same scenario also ran through the native OpenGL window with the normal input path: **38 assertions passed**, including click-to-restore mouse capture. Scenery draws were hidden in that input test to keep the software renderer responsive; a separate native render of the actual animal models was inspected. The Compatibility renderer reported two small texture-cleanup errors at process exit in this environment. Windows GUI execution remains untested on the Linux development machine.

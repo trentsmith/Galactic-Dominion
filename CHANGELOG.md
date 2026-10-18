@@ -1,3 +1,11 @@
+## v0.20.0 — Capture rescue and adorable wildlife
+
+- Stable moving-target scans and a brief curious pause for passive animals.
+- Non-lethal surface stun pulses and a capture window for weakened creatures.
+- Ready-target selection, explicit C-target feedback, inclusive range boundary and retained obstacle/ownership/save protections.
+- Click-to-restore exploration input and landing-refuge pod crafting.
+- Softer, more expressive wildlife across all nine species and their sanctuary forms; updated model exports.
+
 ## v0.19.0 — Land, hunt and bring them home
 
 - Orbital explorer selection, L landing from controlled planets/outposts and the actual piloted hull/skin at the landing site.
