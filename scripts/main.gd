@@ -48,7 +48,9 @@ func _ready() -> void:
  AudioServer.set_bus_volume_db(0, linear_to_db(volume))
  _apply_display()
  show_menu()
- if "--free-roam" in arguments:
+ if "--tutorial" in arguments:
+  start_tutorial()
+ elif "--free-roam" in arguments:
   start_free_roam()
  elif "--fleet-war" in arguments:
   start_fleet_war()
@@ -75,6 +77,19 @@ func _unhandled_input(event: InputEvent) -> void:
    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
    show_menu(true)
   get_viewport().set_input_as_handled()
+
+func start_tutorial() -> void:
+ _clear_surface()
+ network.disconnect_session()
+ get_tree().paused = false
+ if is_instance_valid(menu):menu.queue_free()
+ if is_instance_valid(battle):
+  remove_child(battle)
+  battle.queue_free()
+ battle = TrainingFlight.new()
+ add_child(battle)
+ battle.pilot.sensitivity = sensitivity
+ battle.pilot.inverted = inverted
 
 func start_fleet_war() -> void:
  start_battle(10)

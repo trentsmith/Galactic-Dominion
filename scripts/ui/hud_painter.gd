@@ -43,13 +43,13 @@ func _draw() -> void:
   if candidate.alive and candidate.team != ship.team: opponents += 1
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
- text(Vector2(42, 72), "FREE ROAM / OPEN SPACE" if free_roam else "FLEET WAR  /  10v10" if battle.team_size == 10 else "FLEET ROYALE  /  VANGUARD", MUTED, 13)
+ text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "FLEET WAR  /  10v10" if battle.team_size == 10 else "FLEET ROYALE  /  VANGUARD", MUTED, 13)
  text(Vector2(42, 93), "ALLIES %d / HOSTILES %d" % [battle.living(battle.local_team()), opponents], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
  var exploring := battle is ExplorationMatch
  var remaining := maxi(0, int(battle.max_duration) - int(battle.elapsed))
- text(Vector2(width / 2 - 104, 48), "FREE ROAM" if free_roam else "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
- text(Vector2(width / 2 - 98, 70), "G SERVICE / J STAR CHART" if free_roam else "FREE FLIGHT / G SCAN / J MAP" if exploring else "FINAL COLLAPSE / NO RESPAWNS" if battle.elimination_only and battle.elapsed >= 480 else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
+ text(Vector2(width / 2 - 104, 48), "TRAINING" if battle.training else "FREE ROAM" if free_roam else "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
+ text(Vector2(width / 2 - 98, 70), "NO TIMER / NO INCOMING DAMAGE" if battle.training else "G SERVICE / J STAR CHART" if free_roam else "FREE FLIGHT / G SCAN / J MAP" if exploring else "FINAL COLLAPSE / NO RESPAWNS" if battle.elimination_only and battle.elapsed >= 480 else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
  panel(Rect2(Vector2(24, height - 200), Vector2(320, 176)))
  text(Vector2(42, height - 174), "%s  /  %s" % [ship.callsign.to_upper(), ship.stats.class_name_text.to_upper()], CYAN, 16)
  bar(Vector2(42, height - 145), "HULL INTEGRITY", ship.health.hull, ship.health.max_hull, Color(0.6, 0.9, 0.65))

@@ -53,6 +53,7 @@ func _ready() -> void:
   _button(quick,"OnlineButton","ONLINE PLAY",host.show_online,32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
   _label(column,"CHOOSE YOUR NEXT ADVENTURE",11,MUTED)
   var modes := GridContainer.new();modes.columns=2;modes.add_theme_constant_override("h_separation",10);modes.add_theme_constant_override("v_separation",8);column.add_child(modes)
+  _mode(modes,"TutorialButton","Replay flight school" if host.settings.get_value("tutorial","flight_completed",false) else "Start here: flight school","Learn to fly · safe practice",host.start_tutorial)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)
   _mode(modes,"FleetWarButton","Fleet War","10v10 · last fleet standing",host.start_fleet_war)
   _mode(modes,"PlanetsButton","Planet expeditions","Meet the wild frontier",host.show_planets)
@@ -68,7 +69,9 @@ func _ready() -> void:
    status.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
    status.custom_minimum_size.x=400
  else:
-  _button(column,"ReturnButton","RETURN TO COMMAND DECK",host.return_to_menu,40)
+  if host.battle is TrainingFlight and not host.battle.completed:
+   _button(column,"RetryLessonButton","RETRY THIS LESSON",func():host.battle.retry_lesson();host.resume(),40)
+  _button(column,"ReturnButton","SKIP TRAINING / COMMAND DECK" if host.battle is TrainingFlight else "RETURN TO COMMAND DECK",host.return_to_menu,40)
  var footer := HBoxContainer.new();footer.add_theme_constant_override("separation",12);column.add_child(footer)
  _button(footer,"SettingsButton","Settings",func():host.show_settings(paused),30).flat=true
  _button(footer,"ControlsButton","Flight controls",_show_controls,30).flat=true

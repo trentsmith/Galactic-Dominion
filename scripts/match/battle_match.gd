@@ -3,6 +3,7 @@ extends Node3D
 signal ended(winner, reason)
 
 const CLASSES = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+var training := false
 var team_size := 3
 var elimination_only := false
 var ships: Array[CombatShip] = []
@@ -32,6 +33,7 @@ func _ready() -> void:
  team_size = 10 if team_size == 10 and network_role == "offline" else 3
  elimination_only = team_size == 10
  var arena := SpaceArena.new()
+ arena.open_space = training
  arena.battle_scale = 1.7 if team_size == 10 else 1.0
  add_child(arena)
  zone = BattleZone.new()

@@ -1,5 +1,6 @@
 class_name ShipWeapons
 extends Node
+signal fired(missile: bool)
 
 var ship: CombatShip
 var primary: WeaponSpec
@@ -61,4 +62,5 @@ func fire(missile: bool = false) -> bool:
   SpaceAudio.play("missile" if missile else "laser")
  ship.shots += 1
  ship.muzzle_flash = 0.07
+ fired.emit(missile)
  return true

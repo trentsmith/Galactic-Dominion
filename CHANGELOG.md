@@ -1,3 +1,7 @@
+# v0.27 — Guided Flight School
+
+Add ten action-driven safe flight/combat lessons, retry and skip controls, saved completion, replay and onward links to free roam or planet exploration. Training never awards collection rewards.
+
 # v0.26 — 10v10 Fleet War
 
 Add twenty-ship solo elimination battles alongside 3v3 Fleet Royale, seven reinforcements, F1–F10 switching, larger obstacle-filled arena, distinct formation slots, final zone collapse and scrollable results. Online remains 3v3.

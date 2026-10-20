@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-26-ten-v-ten-fleet-war]
+    branches: [phase-27-flight-school]
   workflow_dispatch:
 permissions:
   contents: write
@@ -39,6 +39,12 @@ jobs:
           cat /tmp/game.log
           grep GALACTIC_FREE_ROAM_READY /tmp/game.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/game.log; then exit 1; fi
+      - name: Verify standalone tutorial startup
+        run: |
+          build/linux/GalacticDominion.x86_64 --headless --quit-after 30 -- --tutorial > /tmp/tutorial.log 2>&1
+          cat /tmp/tutorial.log
+          grep GALACTIC_TUTORIAL_READY /tmp/tutorial.log
+          if grep -E 'SCRIPT ERROR|ERROR:' /tmp/tutorial.log; then exit 1; fi
       - name: Verify all three standalone planet expeditions
         run: |
           for planet in 0 1 2; do
@@ -57,6 +63,7 @@ jobs:
         run: |
           godot --headless --path . --script res://tests/sanctuary_forms_test.gd
           godot --headless --path . --script res://tests/creature_army_test.gd
+          godot --headless --path . --script res://tests/tutorial_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/fleet_war_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60 -- --fleet-war
           godot --headless --path . --script res://tests/solo_balance_test.gd --fixed-fps 60
@@ -83,8 +90,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.26.0
+          tag=v0.27.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.26 — 10v10 Fleet War' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.27 — Guided Flight School' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

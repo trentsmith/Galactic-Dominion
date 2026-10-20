@@ -1,6 +1,12 @@
-# Galactic Dominion — 10v10 Fleet War
+# Galactic Dominion — Guided Flight School
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Start here: flight school
+
+Choose **Start here: flight school** on the command deck. Ten guided objectives teach forward flight, strafing, vertical movement, mouse steering, boost, target selection, laser hits, locked missiles, ship switching and fleet orders. Objectives advance through actual actions, rather than a timer. Allies cannot be damaged and the stationary practice drone never attacks. Training has no shrinking zone, time limit or collection rewards.
+
+Press **Esc** to pause, retry the current lesson or skip back to the command deck. Retrying target/weapon practice places the drone 160 metres in front of your ship. Completion is remembered in local settings, and the card becomes **Replay flight school**. The finish screen links to free roam and the first planet, with a brief planet-controls reminder. This release teaches flight/combat; landing and capture remain the existing planet/free-roam flows, rather than new guided lessons. Existing saves and loadouts are preserved. Developer launch shortcut: `-- --tutorial`.
 
 ## 10v10 Fleet War
 
@@ -32,7 +38,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.26 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.26.0)** and choose:
+The v0.27 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.27.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -525,3 +531,7 @@ The rift filaments use two shared mesh actors instead of thousands of cylinder n
 ### v0.26 validation
 
 Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/menu/progression/exploration suites, a complete twenty-ship AI skirmish, and 22 backend tests passed locally. The Fleet War test exercises F10 input mapping, automatic takeover, final collapse, elimination and mode-preserving replay. Human difficulty evaluation, Windows GUI play and performance on gaming hardware remain untested.
+
+### v0.27 validation
+
+167 checks passed locally across tutorial, menu, Fleet War, solo balance, smoke and progression suites, plus 22 backend tests. Tutorial checks include a real laser hit, successful missile locking/launching, completion persistence, replay, retry and skip. The lesson panel was inspected in an actual native Linux render. That scripted renderer reported two GPU texture leaks during shutdown; Windows GUI and human usability playtests remain untested.
