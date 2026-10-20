@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-20-capture-rescue-and-cute-fauna]
+    branches: [phase-22-streamed-wilderness]
   workflow_dispatch:
 permissions:
   contents: write
@@ -29,6 +29,8 @@ jobs:
                       (out/Path(name).name).write_bytes(archive.read(name))
           PY
           curl -fL --retry 3 -o /tmp/python-embed.zip https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip
+      - name: Verify wilderness streaming
+        run: godot --headless --path . --editor --import --quit && godot --headless --path . --script res://tests/wilderness_test.gd --fixed-fps 60
       - name: Export and package clients and servers
         run: python3 tools/build_release.py --godot /tmp/godot/Godot_v4.6.3-stable_linux.x86_64 --templates /tmp/templates --python-embed /tmp/python-embed.zip
       - name: Verify standalone Linux startup
@@ -76,8 +78,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.20.0
+          tag=v0.22.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.20 — Capture Rescue and Adorable Wildlife' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.22 — Streamed Planet Wilderness' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

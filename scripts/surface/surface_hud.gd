@@ -48,6 +48,7 @@ func _process(_delta: float) -> void:
   var danger:=" / DANGEROUS" if nearest is SurfaceFauna and nearest.definition.damage>0 else ""
   prompt.text="%s%s / %dm / %s" % [nearest.get_meta("scan_name","Unknown"),danger,int(distance),"HOLD G  %d%%" % int(expedition.scan_progress/2*100) if distance<=12 else "APPROACH WITHIN 12m TO SCAN"]
  else:prompt.text="ALL SPECIES SURVEYED / return to the landing ship"
+ if not expedition.finished and expedition.bot.position.length()>100:prompt.text+="  / HOME: %dm · 4km WILDERNESS" % int(expedition.bot.position.length())
 func _menu(title: String,result: bool) -> Control:
  var center:=CenterContainer.new();center.process_mode=Node.PROCESS_MODE_ALWAYS;center.theme=CartoonStyle.ui_theme()
  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(center)

@@ -74,6 +74,7 @@ func _ready() -> void:
   _create_encounter(region)
  if network_role == "offline":
   _create_signals()
+  _create_traffic()
  else:
   pilot.set_physics_process(false)
   pilot.set_process_unhandled_input(false)
@@ -134,6 +135,19 @@ func _create_encounter(region: int) -> void:
  trader.brain.roam_center = trader.position
  trader.eliminated.connect(_on_eliminated)
  ships.append(trader)
+
+func _create_traffic() -> void:
+ # Local civilian traffic does not enlarge authoritative online snapshots.
+ for region in range(FreeRoamWorld.CENTERS.size()):
+  for slot in range(2):
+   var trader:=CombatShip.new()
+   trader.team=0
+   trader.stats=CollectionCatalog.SHIP_TYPES.values()[(region+slot)%5].duplicate(true)
+   trader.callsign=("Survey courier" if slot==0 else "Supply freighter")+" / "+FreeRoamWorld.NAMES[region]
+   trader.position=FreeRoamWorld.CENTERS[region]+Vector3(-650+slot*180,80+slot*90,450)
+   add_child(trader)
+   trader.brain.roaming=true;trader.brain.sensor_range=400;trader.brain.command="defend";trader.brain.roam_center=trader.position
+   trader.eliminated.connect(_on_eliminated);ships.append(trader)
 
 func _create_signals() -> void:
  for region in range(FreeRoamWorld.CENTERS.size()):

@@ -4,9 +4,11 @@ var definition: PlanetDefinition
 var landing_stats: ShipStats
 var rng:=RandomNumberGenerator.new()
 var flora_nodes: Array[Node3D]=[]
-const RADIUS:=110.0
+const RADIUS:=2000.0
 static func height_at(x: float,z: float) -> float:
- return (sin(x*.045)*cos(z*.055)*2.4+sin((x+z)*.11)*.55)*smoothstep(9,22,Vector2(x,z).length())
+ var distance:=Vector2(x,z).length()
+ var hills:=(sin(x*.009)*cos(z*.011)*9+sin((x-z)*.017)*3)*smoothstep(120,260,distance)
+ return hills+(sin(x*.045)*cos(z*.055)*2.4+sin((x+z)*.11)*.55)*smoothstep(9,22,distance)
 func _ready() -> void:
  rng.seed=definition.seed_value
  var background:=WorldEnvironment.new()
@@ -43,12 +45,14 @@ func _ready() -> void:
   _obstacle(stone.position,1.2,1.6)
  _landmarks()
 func _terrain() -> void:
+ build_terrain_tile(self,Vector3.ZERO,240,72)
+func build_terrain_tile(parent: Node3D,center: Vector3,width: float,grid: int) -> void:
  var surface:=SurfaceTool.new();surface.begin(Mesh.PRIMITIVE_TRIANGLES)
- var grid:=72;var step:=240.0/grid
+ var step:=width/grid
  for x in range(grid):
   for z in range(grid):
    for offset in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
-    var px:float=-120+(x+offset.x)*step;var pz:float=-120+(z+offset.y)*step
+    var px:float=center.x-width*.5+(x+offset.x)*step;var pz:float=center.z-width*.5+(z+offset.y)*step
     surface.set_color(definition.ground_color.lightened((sin(px*.13)*cos(pz*.1)+1)*.025))
     surface.add_vertex(Vector3(px,height_at(px,pz),pz))
  surface.generate_normals()
@@ -57,9 +61,9 @@ func _terrain() -> void:
  var ground_material:=ShaderMaterial.new();ground_material.shader=preload("res://resources/shaders/planet_ground.gdshader")
  ground_material.set_shader_parameter("ground_color",definition.ground_color)
  ground_material.set_shader_parameter("biome",0 if definition.biome=="vampire" else 1 if definition.aquatic else 2)
- visual.material_override=ground_material;add_child(visual)
+ visual.material_override=ground_material;parent.add_child(visual)
  var body:=StaticBody3D.new();body.collision_layer=1;body.collision_mask=0
- var collision:=CollisionShape3D.new();collision.shape=mesh.create_trimesh_shape();body.add_child(collision);add_child(body)
+ var collision:=CollisionShape3D.new();collision.shape=mesh.create_trimesh_shape();body.add_child(collision);parent.add_child(body)
 func _obstacle(at: Vector3,radius: float,height: float) -> void:
  var body:=StaticBody3D.new();body.position=at;body.collision_layer=1;body.collision_mask=0
  var shape:=CylinderShape3D.new();shape.radius=radius;shape.height=height

@@ -36,6 +36,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
  clock+=delta
  if not alive:
+  if has_meta("wilderness_id"):return
   respawn_timer-=delta
   if respawn_timer<=0 and expedition.bot.global_position.distance_to(home)>18:
    position=home;alive=true;visible=true;collision_layer=4;health=definition.health;alert=0;dazed_remaining=0;scan_interest_remaining=0;state="roam";decide_timer=0
@@ -61,7 +62,7 @@ func _physics_process(delta: float) -> void:
    state="flee";destination=position+(position-bot.position).normalized()*12
   elif position.distance_to(destination)<3 or state!="roam":
    state="roam";destination=home+Vector3(rng.randf_range(-14,14),0,rng.randf_range(-14,14))
-  var flat:=Vector2(destination.x,destination.z).limit_length(102);destination.x=flat.x;destination.z=flat.y
+  var flat:=Vector2(destination.x,destination.z).limit_length(SurfaceWorld.RADIUS-8);destination.x=flat.x;destination.z=flat.y
  var direction:=Vector3(destination.x-position.x,0,destination.z-position.z).normalized()
  var obstacle_query:=PhysicsRayQueryParameters3D.create(global_position+Vector3.UP,global_position+Vector3.UP+direction*2.8,1)
  var obstacle:=get_world_3d().direct_space_state.intersect_ray(obstacle_query)

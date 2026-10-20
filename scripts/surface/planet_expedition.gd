@@ -11,6 +11,7 @@ var definition: PlanetDefinition
 var bot_definition: CollectibleDefinition
 var sensitivity:=.0025
 var inverted:=false
+var wilderness: WildernessStream
 var world: SurfaceWorld
 var bot: SurfaceBot
 var fauna: Array[SurfaceFauna]=[]
@@ -45,6 +46,7 @@ func _ready() -> void:
    animal.position.y=SurfaceWorld.height_at(animal.position.x,animal.position.z)+(4 if definition.aquatic else .5)
    add_child(animal);fauna.append(animal);specimens.append(animal)
  for plant in world.flora_nodes:specimens.append(plant)
+ wilderness=WildernessStream.new();wilderness.expedition=self;add_child(wilderness)
  hud=SurfaceHUD.new();hud.expedition=self;add_child(hud)
  Input.mouse_mode=Input.MOUSE_MODE_CAPTURED
  print("GALACTIC_PLANET_READY planet=%s fauna=%d bot=%s" % [definition.id,fauna.size(),bot_definition.id])

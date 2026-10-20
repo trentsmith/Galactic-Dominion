@@ -26,7 +26,7 @@ func run() -> void:
  for ship in roam.ships: ship.set_physics_process(false)
  roam.pilot.set_physics_process(false)
  roam.set_physics_process(false)
- check(roam.fleet.ships.size() == 3 and roam.ships.size() == 31, "Offline free roam spawns three fleet ships, twenty-one patrol ships and seven escorts")
+ check(roam.fleet.ships.size() == 3 and roam.ships.size() == 45, "Offline free roam spawns three fleet ships, twenty-one patrol ships and twenty-one civilian ships")
  check(roam.world.stations.size() == 7 and roam.beacons.size() == 21, "Seven connected regions contain stations and discovery signals")
  check(not roam.zone.visible and roam.zone.radius > 1000000, "Free roam has no shrinking zone or damage boundary")
  check(roam.hud.painter != null and roam.map_panel != null, "Flight HUD and star chart are connected")

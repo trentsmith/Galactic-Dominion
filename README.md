@@ -1,10 +1,16 @@
-# Galactic Dominion — Capture Rescue and Adorable Wildlife
+# Galactic Dominion — Streamed Planet Wilderness
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
+## Wilderness expansion
+
+Each of the three expedition planets now has a **4 km diameter exploration area** (2 km radius), with nearby terrain streamed in 240 m tiles. Leave the landing refuge and explore beyond the original survey trail to encounter random plant clusters, instanced meadows, rolling hills, collidable shipwrecks and stone landmarks. Nearby tiles add up to 36 interactive wildlife encounters to the 30 original survey animals. They use the existing nine species, with small size and color variations; this release does not introduce new species IDs. Scan, stun, capture and deliver to the sanctuary as before. The HUD shows distance home.
+
+Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civilians. Online space combat remains unchanged; surface expeditions are still single-player. This is a procedural prototype expansion, not a claim of Breath of the Wild's authored content, map size or production quality. Wildlife state survives tile revisits during an expedition; wilderness chunks are regenerated between expeditions.
+
 ## Download and play without Godot
 
-The v0.20 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.20.0)** and choose:
+The v0.22 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.22.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.

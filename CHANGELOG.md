@@ -1,3 +1,7 @@
+# v0.22 — Streamed Planet Wilderness
+
+Four-kilometre surface diameters on all three expedition worlds; incremental terrain, random vegetation and wildlife, persistent per-expedition streamed wildlife state, collidable wilderness landmarks, and fourteen additional offline civilian ships. Includes the storybook creature refinements. See docs/WILDERNESS.md for scope, limits and validation.
+
 ## v0.20.0 — Capture rescue and adorable wildlife
 
 - Stable moving-target scans and a brief curious pause for passive animals.

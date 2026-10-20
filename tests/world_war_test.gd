@@ -24,7 +24,7 @@ func run() -> void:
  check(roam.map_panel.position.x >= 0 and roam.map_panel.position.y >= 0 and roam.map_panel.get_rect().end.x <= root.get_visible_rect().size.x and roam.map_panel.get_rect().end.y <= root.get_visible_rect().size.y, "The interactive chart is completely inside the game viewport")
  roam.toggle_chart()
  check(roam.world.stations.size() == 7 and roam.encounters.size() == 7, "Seven connected regions contain service stations and living patrols")
- check(roam.ships.size() == 31 and roam.world.landmarks.size() == 7, "Expanded map contains 21 enemy ships, seven escorts and seven landmarks")
+ check(roam.ships.size() == 45 and roam.world.landmarks.size() == 7, "Expanded map contains 21 enemy ships, twenty-one civilian ships and seven landmarks")
  check(roam.world.obstacle_count == 210, "Each region includes eighteen collidable asteroids and twelve wreck obstacles")
  check(roam.world.hazards.size() == 7, "Every region has a visible ion storm hazard")
  var ship := roam.pilot.ship
