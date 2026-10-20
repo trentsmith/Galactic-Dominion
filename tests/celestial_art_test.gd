@@ -14,10 +14,16 @@ func run() -> void:
   check(model.find_child("BlueRearArmor",true,false).mesh is ArrayMesh,hull+" uses a sculpted rear deck instead of a sphere")
   check(model.find_child("CanopyEye",true,false)==null,hull+" standard cockpit has no face")
   check(model.find_children("SplitEnginePod*","Node3D",true,false).size()==2,hull+" has two mechanical split nacelles")
+  var round_parts:=0
+  for part in model.find_children("*","MeshInstance3D",true,false):
+   if part.mesh is SphereMesh and part.name not in ["ShieldShell","MuzzleFlash"]:round_parts+=1
+  check(round_parts==0,hull+" standard model has no decorative spheres")
   var glass: StandardMaterial3D=model.find_child("FlightDeckGlass",true,false).material_override
   check(glass.clearcoat_enabled and glass.roughness<.25,hull+" has a layered glass cockpit material")
   check(model.find_children("RecessedCoolingVent*","MeshInstance3D",true,false).size()==8,hull+" has recessed cooling details")
   check(model.find_child("MainEngine",true,false).mesh is ArrayMesh and model.find_child("AftIonAperture",true,false)!=null,hull+" has a tapered exhaust and recessed aperture")
+ var harbour:=Node3D.new();world.add_child(harbour);SpaceModelFactory.station(harbour)
+ check(harbour.find_children("DockingRail*","MeshInstance3D",true,false).size()==16,"The harbour uses open docking gantries rather than enclosed spherical pods")
  var rift:=RiftAnomalyArt.build(world,Vector3.ZERO)
  check(rift.get_child_count()==4 and rift.find_children("VioletEnergyFilament*","MeshInstance3D",true,false).size()==2,"Rift energy filaments use two meshes, not thousands of cylinder nodes")
  var planet := SpaceEnvironmentArt.planet(world,Vector3.ZERO,40,Color(.1,.3,.2),8.2,true)

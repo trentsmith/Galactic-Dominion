@@ -1,6 +1,14 @@
-# Galactic Dominion — Planet Creature Battles and Rift Ships
+# Galactic Dominion — Industrial Fleet and Orbital Shipyards
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Industrial fleet redesign
+
+The shared ship bodies are now built from chamfered rectangular armour rather than rounded profiles. The silhouette has a compact cockpit, exposed wing spars, power conduits, four separated engine cassettes, recessed cyan engine strips, overlapping plates, fasteners and subtle panel wear. Standard ships have no decorative spheres or faces. All five classes and compatible collectible liveries use the new underlying hull; themed skin accessories remain available. Functioning engine, muzzle, canopy and shield nodes are preserved.
+
+Orbital harbours use **open docking gantries and service decks**, replacing the giant blue berths and gold hoops visible in the previous chase view. The flight camera is closer and lower, making the player ship easier to read. Gameplay and ship statistics remain the same. This is a stronger procedural visual redesign, not a claim of production-quality reference-image rendering.
+
+![Actual gameplay chase-camera render](docs/images/shipyard-flight.webp)
 
 ## Wilderness expansion
 
@@ -10,7 +18,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.23 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.23.0)** and choose:
+The v0.24 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.24.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -491,3 +499,7 @@ The same scenario also ran through the native OpenGL window with the normal inpu
 527 Godot checks passed across creature battle, ship-only outpost, world war, free roam, surface/capture, sanctuary, wilderness, all-livery and art suites. Backend: 22 unittest checks passed. Two authenticated online clients verified that space creature deployment is rejected and ship conquest replicates. Native Godot reference-inspired space and creature battle renders were generated. Windows GUI performance and online planet battles are not tested or implemented.
 
 The rift filaments use two shared mesh actors instead of thousands of cylinder nodes. Match loading temporarily uses a bounded longer network timeout; normal peer timeouts return after loading. The online outpost integration test passed again after this optimization.
+
+### v0.24 validation
+
+326 Godot checks passed across celestial art, all-livery fitting, reference models, free roam, command deck, starlight art, smoke and planet creature combat suites. Backend: 22 unittest checks passed. Native OpenGL reference and actual chase-camera renders were generated and inspected. Windows GUI remains untested.

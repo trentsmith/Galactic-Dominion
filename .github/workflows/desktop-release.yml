@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-23-planet-creature-battles-and-rift-ships]
+    branches: [phase-24-industrial-fleet-and-shipyards]
   workflow_dispatch:
 permissions:
   contents: write
@@ -79,8 +79,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.23.0
+          tag=v0.24.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.23 — Planet Creature Battles and Rift Ships' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.24 — Industrial Fleet and Orbital Shipyards' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

@@ -13,3 +13,7 @@ releases/
 art/models/*.glb
 art/models/*.glb.import
 art/models/*.tscn
+
+# Textures extracted by Godot when importing generated GLB model exports.
+art/models/*.png
+art/models/*.png.import

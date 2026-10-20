@@ -170,16 +170,10 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
   if not lunar and not comet:
    ShipArtDetails.wing(parent,side,heavy,panel_color,accent)
   ShipArtDetails.nacelle(parent,Vector3(side*(2.4 if heavy else 2.0),-.12,.78),1.0 if heavy else .85,accent)
-  ring(parent,Vector3(side*0.82,-0.25,-2.75),0.16,0.04,GOLD,"NoseSensorSeal")
-  ball(parent,Vector3(side*0.82,-0.25,-2.80),Vector3.ONE*0.10,accent,"NoseSensor",true)
  if stats.ability == "aegis":
-  ring(parent,Vector3(0,0,0.9),2.05,0.10,GOLD,"GuardianArmorRing")
+  for side in [-1,1]:ShipArtDetails.block(parent,Vector3(side*1.15,-.25,.8),Vector3(.5,.45,1.4),ShipArtDetails.STEEL,"GuardianKeelArmor")
  elif stats.ability == "barrage":
-  for side in [-1,1]:
-   for y in [-0.35,0.25]: pod(parent,Vector3(side*1.1,y,1.6),0.53,Color(1,0.6,0.16))
- elif stats.ability == "repair":
-  ring(parent,Vector3(0,1.05,0.8),0.55,0.08,GOLD,"RepairBeaconRing").rotation = Vector3.ZERO
-  ball(parent,Vector3(0,1.16,0.8),Vector3(0.32,0.18,0.32),Color(0.45,1,0.78),"RepairBeacon",true)
+  for side in [-1,1]:ShipArtDetails.block(parent,Vector3(side*1.1,-.45,.5),Vector3(.6,.5,1.8),ShipArtDetails.STEEL,"BomberMissileMagazine")
  if lunar:
   moon_wings(parent,1.45,Vector3(0,0.35,0.6))
   moon_antennae(parent,1.10,Vector3(0,0.75,-1.6))
@@ -206,23 +200,28 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  barrier.visible = false
 
 static func station(parent: Node3D, accent: Color = CYAN) -> void:
- # A layered orbital harbour: shielded core, curved arms and recessed hangars.
- ArtGeometry.part(parent,[Vector4(.05,.05,-1.2,0),Vector4(.85,.85,-.7,0),Vector4(1.2,1.2,0,0),Vector4(1.0,1,1.2,0),Vector4(.4,.4,2,0),Vector4(.05,.05,2.4,0)],PEARL,"HarbourReactorHull")
- ring(parent,Vector3(0,0,-.65),.82,.07,GOLD,"ReactorCollar")
- ball(parent,Vector3(0,0,-.75),Vector3(.6,.6,.25),NAVY,"ReactorGlass")
- ring(parent,Vector3(0,0,-.96),.43,.045,accent,"ReactorPulse",true)
- for i in range(3):
-  var arm:=Node3D.new();arm.rotation.z=TAU*i/3;parent.add_child(arm)
-  ArtGeometry.sweep(arm,[Vector3(.9,0,.4),Vector3(1.6,.1,.3),Vector3(2.6,.4,0),Vector3(3.3,.6,-.7)],[.3,.28,.22,.13],PEARL,"CurvedDockArm")
-  var berth:=ArtGeometry.part(arm,[Vector4(.12,.1,-2.1,0),Vector4(.65,.45,-1.6,0),Vector4(.75,.55,-.2,0),Vector4(.5,.35,1.1,0),Vector4(.08,.08,1.4,0)],BLUE,"HarbourBerth")
-  berth.position=Vector3(3.2,.6,0)
-  ring(arm,Vector3(3.2,.6,-1.65),.46,.075,GOLD,"HangarLip").scale.y=.7
-  ball(arm,Vector3(3.2,.6,-1.72),Vector3(.38,.25,.07),NAVY,"HangarOpening")
-  for x in [-1,1]:
-   ball(arm,Vector3(3.2+x*.32,.68,-1.81),Vector3(.045,.025,.02),accent,"ApproachLight",true)
-  fin(arm,Vector3(2.9,.75,.6),Vector3(.4,.7,.5),-.4,accent)
- ring(parent,Vector3(0,0,.5),2.15,.06,GOLD,"HarbourTruss")
- ring(parent,Vector3(0,0,.58),2.2,.025,accent,"HarbourGuidance",true)
+ ShipArtDetails.armor(parent,[Vector4(.5,.65,-1.5,0),Vector4(.9,.9,-.7,0),Vector4(.8,.8,.8,0),Vector4(.45,.65,1.5,0)],ShipArtDetails.STEEL,"HarbourReactorHull")
+ for side in [-1,1]:
+  ShipArtDetails.block(parent,Vector3(side*2,0,0),Vector3(3.4,.22,.35),ShipArtDetails.DARK,"HarbourStructuralBeam")
+  for i in range(4):
+   ShipArtDetails.block(parent,Vector3(side*.84,.25,-.6+i*.35),Vector3(.05,.09,.22),accent,"ReactorStatusLight",true)
+  for z in [-1,1]:
+   var at:=Vector3(side*3.1,0,z*1.7)
+   var berth:=Node3D.new();berth.name="HarbourBerth";berth.position=at;parent.add_child(berth,true)
+   # Open docking gantries keep negative space visible through each berth.
+   for frame_side in [-1,1]:
+    for level in [-1,1]:
+     var rail:=ShipArtDetails.armor(berth,[Vector4(.12,.12,-1.5,0),Vector4(.18,.16,-1.1,0),Vector4(.18,.16,1.2,0),Vector4(.11,.11,1.5,0)],ShipArtDetails.ARMOR,"DockingRail")
+     rail.position=Vector3(frame_side*.72,level*.48,0)
+    for end in [-1,1]:
+     ShipArtDetails.block(berth,Vector3(frame_side*.72,0,end*1.18),Vector3(.16,.96,.15),ShipArtDetails.STEEL,"GantryUpright")
+   for end in [-1,1]:
+    ShipArtDetails.block(berth,Vector3(0,.5,end*1.18),Vector3(1.6,.16,.16),ShipArtDetails.ARMOR,"DockingArch")
+    ShipArtDetails.block(berth,Vector3(0,.43,end*1.28),Vector3(1.25,.045,.04),accent,"ApproachLight",true)
+   ShipArtDetails.block(berth,Vector3(0,-.5,0),Vector3(1.5,.09,2.2),ShipArtDetails.STEEL,"ServiceDeck")
+   for i in range(4):ShipArtDetails.block(berth,Vector3(0,-.44,-.7+i*.45),Vector3(1.4,.025,.035),ShipArtDetails.COPPER,"DockSafetyStripe")
+ var tower:=ShipArtDetails.armor(parent,[Vector4(.3,.18,-.7,0),Vector4(.52,.22,-.3,0),Vector4(.48,.20,.7,0)],ShipArtDetails.ARMOR,"ControlTower");tower.position.y=1.05
+ ShipArtDetails.block(parent,Vector3(0,1.1,-.72),Vector3(.55,.10,.035),accent,"TowerWindow",true)
 
 # Lunaflutter is built from layered, closed 3D wings and faceted crystal meshes.
 static func moon_wing(parent: Node3D, at: Vector3, dimensions: Vector3, lean: float, side: int) -> Node3D:

@@ -1,3 +1,7 @@
+# v0.24 — Industrial Fleet and Orbital Shipyards
+
+Replace rounded ship profiles with chamfered structural hulls, four separated engine cassettes, exposed machinery, overlapping armour, panel wear and soft exhaust halos. Replace large blue orbital harbour pods with open docking gantries. Move the chase camera closer and lower.
+
 # v0.23 — Planet Creature Battles and Rift Ships
 
 Move sanctuary creature combat onto planet expeditions with AI abilities, affinities and persistent levels. Optimize rift filaments into two meshes and give world loading bounded network timeout grace. Remove orbital creature armies while retaining ship outpost capture. Redesign standard ships as mechanical spacecraft and add Dreaming Rift anomaly scenery.

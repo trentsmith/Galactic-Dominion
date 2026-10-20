@@ -1,3 +1,5 @@
+Current ship exports use chamfered industrial hulls and generated panel-wear textures. Textures are embedded in the GLB and bundled Godot scenes; PNG sidecars extracted during editor import are generated cache files.
+
 # Editable 3D models
 
 Run `godot --headless --path . --script res://tools/export_models.gd` to generate 83 complete models, including every non-standard livery on all five ship classes: Orbitot Fleet Companion, Glimbloom Fleet Companion, Pixlet Pebble Scout, Lunaflutter Moon Moth, Lunaflutter Scout, Cinderbit Comet Pup, Cinderbit Scout, five standard ship classes, nine base fauna species, eighteen original Kindred/Radiant growth forms and a pearl/gold docking station.

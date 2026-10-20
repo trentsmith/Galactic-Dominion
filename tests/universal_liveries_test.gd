@@ -26,7 +26,7 @@ func run() -> void:
    root.add_child(model)
    SpaceModelFactory.ship(model,stats)
    var valid := model.find_child("MainEngine",true,false)!=null and model.find_child("PilotCanopy",true,false)!=null and model.find_child("ShieldShell",true,false)!=null and model.find_child("MuzzleFlash",true,false)!=null
-   if hull=="guardian":valid=valid and model.find_child("GuardianArmorRing",true,false)!=null
+   if hull=="guardian":valid=valid and model.find_child("GuardianKeelArmor",true,false)!=null
    if hull=="support":valid=valid and model.find_child("RepairBeacon",true,false)!=null
    if variant.id=="variant_orbitot":valid=valid and model.find_child("ShipSatelliteOrbit",true,false)!=null
    if variant.id=="variant_glimbloom":valid=valid and model.find_children("PrismPetal*","Node3D",true,false).size()==6

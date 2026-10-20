@@ -39,11 +39,11 @@ func _physics_process(delta: float) -> void:
 func update_camera(delta: float) -> void:
  if not is_instance_valid(ship):
   return
- var desired := ship.global_position + ship.global_basis * Vector3(0, 5.5, 18.0) + ship.velocity * 0.025
+ var desired := ship.global_position + ship.global_basis * Vector3(0, 3.4, 14.5) + ship.velocity * 0.025
  camera.global_position = camera.global_position.lerp(desired, 1.0 - exp(-8.0 * delta))
  var desired_basis := ship.global_basis
  camera.global_basis = camera.global_basis.slerp(desired_basis, 1.0 - exp(-12.0 * delta)).orthonormalized()
- camera.fov = lerpf(camera.fov, 82.0 if ship.movement.boost_requested else 72.0, delta * 3.0)
+ camera.fov = lerpf(camera.fov, 78.0 if ship.movement.boost_requested else 68.0, delta * 3.0)
 
 func take_control(next: CombatShip) -> void:
  if is_instance_valid(ship):
@@ -52,5 +52,5 @@ func take_control(next: CombatShip) -> void:
  ship = next
  ship.player_controlled = true
  aim_offset = Vector2.ZERO
- camera.global_position = ship.global_position + ship.global_basis * Vector3(0, 5.5, 18)
+ camera.global_position = ship.global_position + ship.global_basis * Vector3(0, 3.4, 14.5)
  camera.global_basis = ship.global_basis

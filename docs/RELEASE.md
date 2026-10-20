@@ -1,10 +1,12 @@
-Galactic Dominion v0.23 — Planet Creature Battles and Rift Ships
+Galactic Dominion v0.24 — Industrial Fleet and Orbital Shipyards
 
-- Deploy up to three owned sanctuary creatures on planet expeditions. N selects, R deploys, V attacks tracked wildlife, Z recalls. Esc includes party commands and rest at the landing ship.
-- Autonomous creature movement, attacks, nine named species abilities, six affinities, strengths/weaknesses, HP/attack/defense/speed, persistent experience and levels up to 50.
-- Wildlife fights back and uses abilities. Companion attacks leave wildlife capturable. Fainted companions remain owned.
-- Remove space creature garrisons and deployment; ships now capture outposts. Online legacy deployment requests are refused.
-- Redesign all five standard ship classes with mechanical armour, dark face-free canopies, split engine nacelles and cyan exhaust. Preserve collectible liveries.
-- Add an animated fiery anomaly and violet energy filaments in Dreaming Rift, with warmer space scenery.
+A stronger hard-surface redesign based on the reference and the actual gameplay screenshot:
 
-Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Older local saves receive level-one defaults. Update both clients and host to v0.23. Surface creature battles are single-player and real-time; online planet creature battles and production-quality reference-image graphics remain future work. Windows GUI performance is untested on the Linux development machine.
+- Compact chamfered hull, dark canopy, exposed structural spars and power conduits.
+- Four separated rectangular engine cassettes with cyan strips, bright cores, layered plates, fasteners and soft exhaust halos.
+- Subtle generated panel wear, steel and ceramic armour, restrained copper markings.
+- Open orbital docking gantries and service decks replacing the oversized blue harbour pods and gold hoops.
+- A closer, lower chase camera makes the new silhouette visible during flight.
+- All five classes and existing compatible liveries retain their gameplay attachments and statistics.
+
+Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Existing saves work; update clients and host together to v0.24. Planet creature battles and progression from v0.23 remain available. The actual in-engine reference and chase-camera previews are included in the repository. Windows GUI performance remains untested; the art remains a procedural prototype.
