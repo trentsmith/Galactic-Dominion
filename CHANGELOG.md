@@ -1,6 +1,6 @@
 # v0.23 — Planet Creature Battles and Rift Ships
 
-Move sanctuary creature combat onto planet expeditions with AI abilities, affinities and persistent levels. Remove orbital creature armies while retaining ship outpost capture. Redesign standard ships as mechanical spacecraft and add Dreaming Rift anomaly scenery.
+Move sanctuary creature combat onto planet expeditions with AI abilities, affinities and persistent levels. Optimize rift filaments into two meshes and give world loading bounded network timeout grace. Remove orbital creature armies while retaining ship outpost capture. Redesign standard ships as mechanical spacecraft and add Dreaming Rift anomaly scenery.
 
 # v0.22 — Streamed Planet Wilderness
 

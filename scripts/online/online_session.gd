@@ -29,6 +29,7 @@ var desired_states: Array = []
 var pending_peers: Dictionary = {}
 var client_lobby: Dictionary = {}
 var loading_peers: Dictionary = {}
+var loading_connection:=true
 
 func _ready() -> void:
  api = get_parent().online_api
@@ -81,10 +82,12 @@ func join_server(host: String, port: int = 7777) -> bool:
  return true
 
 func _peer_connected(id: int) -> void:
+ _set_peer_timeout(id,true)
  if server_mode:
   pending_peers[id] = 0.0
 
 func _connected() -> void:
+ loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
  authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.23.0")))
 
@@ -226,6 +229,7 @@ func request_start(mode: String = "royale") -> void:
   names.append(ship_name)
   crew_names.append(crew_name)
   ship_totals.append(Vector2.ZERO)
+ for id in members:_set_peer_timeout(int(id),true)
  arena = FreeRoamMatch.new() if match_mode == "free_roam" else BattleMatch.new()
  arena.name = "Arena"
  arena.network_role = "server"
@@ -264,6 +268,7 @@ func request_start(mode: String = "royale") -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Array, mode: String = "royale") -> void:
+ loading_connection=true;_set_peer_timeout(1,true)
  if server_mode or serialized.size() != 6:
   return
  var host := get_parent()
@@ -400,7 +405,7 @@ func _physics_process(delta: float) -> void:
   if not loading_peers.is_empty():
    for id in loading_peers.keys():
     loading_peers[id] += delta
-    if loading_peers[id] > 20:
+    if loading_peers[id] > 60:
      loading_peers.erase(id)
      multiplayer.multiplayer_peer.disconnect_peer(id)
    _start_if_loaded()
@@ -486,6 +491,8 @@ func _physics_process(delta: float) -> void:
 
 @rpc("authority", "call_remote", "reliable", 2)
 func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: float, bullets: Array) -> void:
+ if loading_connection:
+  _set_peer_timeout(1,false);loading_connection=false
  if not is_instance_valid(arena) or states.size() != arena.ships.size() or owners.size() != arena.ships.size():
   return
  desired_states = states
@@ -656,6 +663,7 @@ func match_loaded() -> void:
 
 func _start_if_loaded() -> void:
  if server_mode and loading_peers.is_empty() and is_instance_valid(arena) and not arena.finished:
+  for id in members:_set_peer_timeout(int(id),false)
   arena.set_physics_process(true)
   for ship in arena.ships:
    ship.set_physics_process(true)
@@ -777,3 +785,8 @@ func receive_army(data: Dictionary) -> void:
 func army_notice(message: String) -> void:
  if arena is FreeRoamMatch: arena.log_label.text = message
  status_changed.emit(message)
+
+func _set_peer_timeout(id: int,loading: bool) -> void:
+ if not multiplayer.multiplayer_peer is ENetMultiplayerPeer:return
+ var connection: ENetPacketPeer=(multiplayer.multiplayer_peer as ENetMultiplayerPeer).get_peer(id)
+ if connection!=null:connection.set_timeout(32,60000 if loading else 5000,120000 if loading else 30000)

@@ -8,7 +8,8 @@ static func build(parent: Node3D,at: Vector3) -> Node3D:
  visual.visibility_range_end=7500;root.add_child(visual)
  var light:=OmniLight3D.new();light.omni_range=1200;light.light_color=Color(1,.28,.07);light.light_energy=2;root.add_child(light)
  for side in [-1,1]:
-  var curve:=Curve3D.new()
-  for i in range(8):curve.add_point(Vector3(side*(390+sin(i*3.4)*23),350-i*90,40+sin(i*1.7)*20))
-  SpaceModelFactory.tube(root,curve,Vector3.ZERO,1.0,Color(.65,.25,1),true)
+  var points: Array[Vector3]=[]
+  for i in range(8):points.append(Vector3(side*(390+sin(i*3.4)*23),350-i*90,40+sin(i*1.7)*20))
+  var filament:=ArtGeometry.sweep(root,points,[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],Color(.65,.25,1),"VioletEnergyFilament")
+  var glow:=filament.material_override as StandardMaterial3D;glow.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;glow.next_pass=null;glow.emission_enabled=true;glow.emission=Color(.65,.25,1)
  return root

@@ -18,6 +18,8 @@ func run() -> void:
   check(glass.clearcoat_enabled and glass.roughness<.25,hull+" has a layered glass cockpit material")
   check(model.find_children("RecessedCoolingVent*","MeshInstance3D",true,false).size()==8,hull+" has recessed cooling details")
   check(model.find_child("MainEngine",true,false).mesh is ArrayMesh and model.find_child("AftIonAperture",true,false)!=null,hull+" has a tapered exhaust and recessed aperture")
+ var rift:=RiftAnomalyArt.build(world,Vector3.ZERO)
+ check(rift.get_child_count()==4 and rift.find_children("VioletEnergyFilament*","MeshInstance3D",true,false).size()==2,"Rift energy filaments use two meshes, not thousands of cylinder nodes")
  var planet := SpaceEnvironmentArt.planet(world,Vector3.ZERO,40,Color(.1,.3,.2),8.2,true)
  check(planet.get_node("CloudLayer").scale.x>1 and planet.get_node("CloudLayer").scale.x<planet.get_node("AtmosphereRim").scale.x,"Planet clouds occupy a separate shell beneath the atmosphere")
  check(planet.get_node("CloudLayer").material_override.shader==SpaceEnvironmentArt.CLOUDS,"Cloud patterns use an independent animated material")

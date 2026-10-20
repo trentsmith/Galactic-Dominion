@@ -29,7 +29,7 @@ def main():
                 time.sleep(.05)
             clients = [(name, launch(name, 'res://tests/army_network_client.gd')) for name in ('Army_A', 'Army_B')]
             for name, client in clients:
-                assert client.wait(timeout=70) == 0, (tmp / (name + '.log')).read_text()
+                assert client.wait(timeout=180) == 0, (tmp / (name + '.log')).read_text()
                 log = (tmp / (name + '.log')).read_text()
                 assert 'ARMY_CLIENT_PASS' in log and 'SCRIPT ERROR' not in log, log
             server_log = (tmp / 'server.log').read_text()
@@ -47,5 +47,7 @@ def main():
             for handle in handles: handle.close()
             debug = Path('/tmp/gd13-army-network-logs'); debug.mkdir(exist_ok=True)
             for file in tmp.glob('*.log'): (debug / file.name).write_text(file.read_text())
+            for file in tmp.glob("*.log"):
+                print("\n" + file.name + "\n" + file.read_text()[-12000:])
             http.shutdown(); http.server_close()
 if __name__ == '__main__': main()

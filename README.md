@@ -488,4 +488,6 @@ The same scenario also ran through the native OpenGL window with the normal inpu
 
 ### v0.23 validation
 
-526 Godot checks passed across creature battle, ship-only outpost, world war, free roam, surface/capture, sanctuary, wilderness, all-livery and art suites. Backend: 22 unittest checks passed. Two authenticated online clients verified that space creature deployment is rejected and ship conquest replicates. Native Godot reference-inspired space and creature battle renders were generated. Windows GUI performance and online planet battles are not tested or implemented.
+527 Godot checks passed across creature battle, ship-only outpost, world war, free roam, surface/capture, sanctuary, wilderness, all-livery and art suites. Backend: 22 unittest checks passed. Two authenticated online clients verified that space creature deployment is rejected and ship conquest replicates. Native Godot reference-inspired space and creature battle renders were generated. Windows GUI performance and online planet battles are not tested or implemented.
+
+The rift filaments use two shared mesh actors instead of thousands of cylinder nodes. Match loading temporarily uses a bounded longer network timeout; normal peer timeouts return after loading. The online outpost integration test passed again after this optimization.

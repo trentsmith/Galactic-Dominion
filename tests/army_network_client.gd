@@ -17,7 +17,7 @@ func run() -> void:
  main.online_api.base_url = OS.get_environment("GD_API_URL")
  var reply: Dictionary = await main.online_api.sign_in(OS.get_environment("GD_TEST_USER"), "integration-test-password")
  if reply.has("error"): quit(1); return
- main.network.status_changed.connect(func(message): notices.append(message))
+ main.network.status_changed.connect(func(message): notices.append(message);print("CLIENT_STATE ",message))
  main.network.lobby_changed.connect(func(data):
   var ready := false
   for player in data.players:
@@ -32,10 +32,11 @@ func run() -> void:
  await main.network.join_server("127.0.0.1", int(OS.get_environment("GD_TEST_PORT")))
 func _process(delta: float) -> bool:
  elapsed += delta
- if elapsed > 65:
+ if elapsed > 170:
   push_error("ARMY_CLIENT_TIMEOUT %s units=%s enemies=%s attack=%s capture=%s" % [notices, units_seen, enemy_seen, attack_seen, captured]); quit(1); return false
  if not is_instance_valid(main) or not main.network.arena is FreeRoamMatch: return false
  var arena: FreeRoamMatch = main.network.arena
+ if not sent:print("CLIENT_ARENA_LOADED")
  if not sent:
   sent = true
   main.network.ship_event.rpc_id(1, "army_deploy", 2)
