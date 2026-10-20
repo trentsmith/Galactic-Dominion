@@ -12,6 +12,8 @@ func run() -> void:
   var model := Node3D.new();world.add_child(model)
   SpaceModelFactory.ship(model,CollectionCatalog.SHIP_TYPES[hull])
   check(model.find_child("BlueRearArmor",true,false).mesh is ArrayMesh,hull+" uses a sculpted rear deck instead of a sphere")
+  check(model.find_child("CanopyEye",true,false)==null,hull+" standard cockpit has no face")
+  check(model.find_children("SplitEnginePod*","Node3D",true,false).size()==2,hull+" has two mechanical split nacelles")
   var glass: StandardMaterial3D=model.find_child("FlightDeckGlass",true,false).material_override
   check(glass.clearcoat_enabled and glass.roughness<.25,hull+" has a layered glass cockpit material")
   check(model.find_children("RecessedCoolingVent*","MeshInstance3D",true,false).size()==8,hull+" has recessed cooling details")

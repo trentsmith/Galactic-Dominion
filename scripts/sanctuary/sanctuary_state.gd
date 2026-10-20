@@ -7,7 +7,7 @@ const FLIGHT_RECIPES=[{"title":"Survey Anchor","cost":{"ore":8,"fiber":6,"bloom"
 static func defaults() -> Dictionary:
  return {"name":"Little Star Sanctuary","palette":0,"materials":{"food":12,"bloom":3,"fiber":2,"ore":4,"pearl":0,"alloy":0,"essence":0,"crystal":0,"capture_pod":3},"habitats":[{"id":1,"kind":"meadow","x":-1,"z":0,"level":1},{"id":2,"kind":"planter","x":1,"z":0,"level":1}],"residents":[new_resident(1,"bloodstag","Ruby")],"plants":[{"id":"starter.berry","name":"Starberry Bush","growth":0.0,"stored":0,"clock":0.0}],"seeds":{},"flight_stage":0,"location":3,"next_id":2,"time":0.0}
 static func new_resident(id: int,species: String,nickname: String="") -> Dictionary:
- return {"id":id,"species":species,"name":nickname,"nutrition":75.0,"happiness":70.0,"energy":80.0,"growth":0.0,"bond":0.0,"love":0.0,"care_time":0.0,"form_stage":0,"production":0,"clock":0.0,"pet_cooldown":0.0,"habitat":1 if species=="bloodstag" else 0}
+ return {"level":1,"experience":0,"battles_won":0,"id":id,"species":species,"name":nickname,"nutrition":75.0,"happiness":70.0,"energy":80.0,"growth":0.0,"bond":0.0,"love":0.0,"care_time":0.0,"form_stage":0,"production":0,"clock":0.0,"pet_cooldown":0.0,"habitat":1 if species=="bloodstag" else 0}
 static func fauna(id: String) -> FaunaDefinition:
  for planet in PlanetCatalog.WORLDS:
   for item in planet.fauna:
@@ -53,6 +53,7 @@ static func sanitize(value: Variant) -> Dictionary:
    resident_ids[id]=true
    var resident:=new_resident(id,species,str(entry.get("name","")).left(24))
    for key in ["nutrition","happiness","energy","growth","bond"]:resident[key]=number(entry.get(key,resident[key]),0,100)
+   resident.level=int(number(entry.get("level",1),1,50));resident.experience=int(number(entry.get("experience",0),0,CreatureCombat.needed(resident.level)-1));resident.battles_won=int(number(entry.get("battles_won",0),0,999999))
    resident.love=number(entry.get("love",minf(50,resident.bond*.5)),0,100)
    resident.care_time=number(entry.get("care_time",0),0,99999999)
    resident.form_stage=int(number(entry.get("form_stage",0),0,2))

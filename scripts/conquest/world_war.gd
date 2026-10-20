@@ -48,15 +48,8 @@ func dispatch() -> void:
   ship.brain.roam_center = destination
   ship.brain.command = "attack"
   ship.targeting.select(null)
- var ai_count := 0
- for unit in battle.army.units.values():
-  if unit.owner < 0: ai_count += 1
- var count := mini(3, mini(24 - ai_count, CreatureArmy.CAP - battle.army.units.size()))
- for slot in range(maxi(0, count)):
-  var id := battle.army.spawn(CreatureArmy.SPECIES[(faction - 2) * 3 + slot], faction, -100 - wave, destination + Vector3(-300, slot * 15, 0), target)
-  if id >= 0: battle.army.units[id].order = "assault"
  dispatches += 1
- message = "%s raids %s / %d ships, %d landing troops" % [FACTION_NAMES[faction], battle.army.worlds[target].name, mini(3, candidates.size()), maxi(0, count)]
+ message = "%s raids %s / %d ships" % [FACTION_NAMES[faction], battle.army.worlds[target].name, mini(3, candidates.size())]
  history.push_front(message)
  if history.size() > 4: history.pop_back()
  wave += 1

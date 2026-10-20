@@ -16,7 +16,8 @@ func _ready() -> void:
  label(panel,expedition.definition.display_name.to_upper(),Vector2(25,20),24)
  info=label(panel,"",Vector2(25,60),17)
  notes=label(panel,"",Vector2(25,112),15)
- label(panel,"WASD move · Mouse look · Shift sprint · LMB non-lethal stun pulse\nG hold: scan · C: capture animal · F: gather seed · E: deliver cargo\nB: change bot at ship · T: next hunt · Esc: expedition choices\n"+("Space/Ctrl: swim up/down" if expedition.definition.aquatic else "Space: jump"),Vector2(25,180),14)
+ notes.size.x=780;notes.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ label(panel,"WASD move · Mouse look · Shift sprint · LMB non-lethal stun pulse\nG hold: scan · C: capture animal · F: gather seed · E: deliver cargo\nB: change bot at ship · T: next hunt · Esc: expedition choices\n"+("Space/Ctrl: swim up/down" if expedition.definition.aquatic else "Space: jump"),Vector2(25,245),14)
  hunt_label=label(panel,"",Vector2(900,25),16)
  hunt_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;hunt_label.custom_minimum_size.x=340;hunt_label.size.x=340
  prompt=label(panel,"",Vector2(25,610),18)
@@ -29,12 +30,20 @@ func _process(_delta: float) -> void:
  info.text="%s / HULL %d  SHIELD %d  ENERGY %d\nSURVEY %d / 6  ·  %d UNEXTRACTED  ·  SHIP %dm" % [bot.definition.display_name,int(bot.hull),int(bot.shield),int(bot.stamina),expedition.survey_count(),expedition.pending.size(),int(bot.position.length())]
  notes.text=expedition.status_message+"\nTRANSPORT %d / 4  ·  SEEDS %d  ·  CAPTURE PODS %d" % [expedition.cargo_animals.size(),expedition.cargo_seeds.size(),expedition.profile.sanctuary.materials.capture_pod]
  if expedition.gravity_multiplier()<.5:notes.text+="\nREALITY FRACTURE / LOW GRAVITY / jump with care"
+ var chosen:=expedition.party.selected()
+ notes.text+="\nPARTY %d / 3 · %s · N: select · R: deploy · V: attack hunt · Z: recall"%[expedition.party.units.size(),str(chosen.get("name","N to choose creature"))]
+ if not chosen.is_empty():
+  var attributes:=CreatureCombat.attributes(chosen)
+  notes.text+="\nLv%d %s · ATK %d DEF %d · %s · XP %d/%d"%[attributes.level,attributes.affinity,int(attributes.attack),int(attributes.defense),attributes.ability,int(chosen.get("experience",0)),CreatureCombat.needed(attributes.level)]
  var tracked:=expedition.tracked_animal()
  hunt_label.text="ACTIVE HUNT / T: CHANGE SPECIES\n"
  if is_instance_valid(tracked):
   hunt_label.text+="%s / %dm\nHEALTH %d / %d\n"%[tracked.definition.display_name,int(bot.position.distance_to(tracked.position)),int(tracked.health),int(tracked.definition.health)]
   hunt_label.text+="Hold G within 12m to scan" if not expedition.surveyed(tracked) else "LMB: stun to half health, then C" if tracked.definition.damage>0 and tracked.health>tracked.definition.health*.5 else "C within 8m: capture and transport"
  else:hunt_label.text+="No living target nearby / choose another species"
+ if not chosen.is_empty() and is_instance_valid(tracked):
+  var attack_type:=CreatureCombat.affinity(str(chosen.species));var defense_type:=CreatureCombat.affinity(tracked.definition.id)
+  hunt_label.text+="\n%s → %s: %.2fx damage"%[attack_type,defense_type,CreatureCombat.multiplier(attack_type,defense_type)]
  var catchable:=expedition.capture_target()
  if is_instance_valid(catchable):
   hunt_label.text+="\n\nC TARGET / "+catchable.definition.display_name
@@ -53,7 +62,10 @@ func _menu(title: String,result: bool) -> Control:
  var center:=CenterContainer.new();center.process_mode=Node.PROCESS_MODE_ALWAYS;center.theme=CartoonStyle.ui_theme()
  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(center)
  var box:=PanelContainer.new();box.custom_minimum_size=Vector2(560,260);center.add_child(box)
- var column:=VBoxContainer.new();column.add_theme_constant_override("separation",16);box.add_child(column)
+ var column:=VBoxContainer.new();column.add_theme_constant_override("separation",16)
+ if not result:
+  var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(560,580);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;box.add_child(scroll);scroll.add_child(column);column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ else:box.add_child(column)
  var title_label:=Label.new();title_label.text=title;title_label.add_theme_font_size_override("font_size",28);column.add_child(title_label)
  if result:
   var detail:=Label.new();detail.text=expedition.status_message;detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail.custom_minimum_size.x=520;column.add_child(detail)
@@ -72,6 +84,15 @@ func _menu(title: String,result: bool) -> Control:
    hunts.add_item("TRACK / "+species.display_name)
    if species.id==expedition.hunt_species:hunts.select(hunts.item_count-1)
   hunts.item_selected.connect(func(index):expedition.select_hunt(expedition.definition.fauna[index].id))
+  var creatures:=OptionButton.new();creatures.name="CreatureChoice";column.add_child(creatures)
+  for resident in expedition.party.residents():
+   var stats:=CreatureCombat.attributes(resident)
+   creatures.add_item("%s · Lv%d %s · %s"%[resident.name,stats.level,stats.affinity,stats.ability],int(resident.id))
+  creatures.item_selected.connect(func(index):expedition.party.selected_id=creatures.get_item_id(index))
+  _button(column,"DEPLOY SELECTED CREATURE / R",expedition.party.deploy)
+  _button(column,"ATTACK TRACKED WILDLIFE / V",expedition.party.attack)
+  _button(column,"RECALL PARTY / Z",expedition.party.recall)
+  _button(column,"REST CREATURE PARTY AT SHIP",expedition.party.rest)
   _button(column,"CRAFT CAPTURE POD / 1 ORE + 1 BLOOM",expedition.craft_capture_pod)
   _button(column,"RESUME",expedition.toggle_pause)
  _button(column,expedition.return_label,func():
@@ -95,6 +116,13 @@ func refresh_choices() -> void:
   var choices:=expedition.available_bot_choices()
   for index in range(choices.size()):
    if choices[index].id==expedition.bot_definition.id:bots.select(index)
+ var creatures:=pause_panel.find_child("CreatureChoice",true,false) as OptionButton
+ if creatures!=null:
+  creatures.clear()
+  for resident in expedition.party.residents():
+   var stats:=CreatureCombat.attributes(resident)
+   creatures.add_item("%s · Lv%d %s · %s"%[resident.name,stats.level,stats.affinity,stats.ability],int(resident.id))
+   if int(resident.id)==expedition.party.selected_id:creatures.select(creatures.item_count-1)
  var hunts:=pause_panel.find_child("ActiveHuntChoice",true,false) as OptionButton
  if hunts!=null:
   for index in range(expedition.definition.fauna.size()):

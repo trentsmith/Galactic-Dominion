@@ -62,12 +62,12 @@ func run() -> void:
  var party := 0
  for unit in roam.army.units.values():
   if unit.owner == -100 and unit.order == "assault": party += 1
- check(party == 3 and roam.army.units.size() <= 50, "AI landing parties enter creature combat under the global cap")
+ check(party == 0 and roam.army.units.is_empty(), "Space raids contain ships without creature landing parties")
  for i in range(12): war.dispatch()
  var ai := 0
  for unit in roam.army.units.values():
   if unit.owner < 0: ai += 1
- check(ai <= 24 and roam.army.units.size() <= 50, "Repeated AI invasions respect their budget and the 50-creature cap")
+ check(ai == 0 and roam.army.units.is_empty(), "Repeated space invasions cannot spawn creatures")
  check(war.history.size() <= 4, "The war briefing keeps a bounded event history")
  var snap := roam.army.snapshot()
  check(snap.war.dispatches == war.dispatches, "Army snapshots include the shared war timeline")

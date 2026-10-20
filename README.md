@@ -1,4 +1,4 @@
-# Galactic Dominion — Streamed Planet Wilderness
+# Galactic Dominion — Planet Creature Battles and Rift Ships
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
@@ -10,7 +10,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.22 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.22.0)** and choose:
+The v0.23 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.23.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -111,27 +111,33 @@ Press **H** in Free Roam to hide/restore the HUD and floating labels. It changes
 
 ## Open world faction war
 
-Free Roam now spans **seven connected regions**: Vesper Reach, Kharon Belt, Auralith Drift, Ember Frontier, Pelagian Veil, Bloodforge Expanse and Dreaming Rift. Press **M** for the clickable star chart and destination selector, or fly between them directly. Each region contains a service station, survey landmark, asteroid belt, collidable wreck field and dangerous ion cloud. New coral, industrial and crystalline landmarks distinguish the frontier. There are 21 enemy patrol ships online (plus six human/AI pilot slots); solo adds three fleet ships and seven civilian escorts.
+Free Roam now spans **seven connected regions**: Vesper Reach, Kharon Belt, Auralith Drift, Ember Frontier, Pelagian Veil, Bloodforge Expanse and Dreaming Rift. Press **M** for the clickable star chart and destination selector, or fly between them directly. Each region contains a service station, survey landmark, asteroid belt, collidable wreck field and dangerous ion cloud. New coral, industrial and crystalline landmarks distinguish the frontier. There are 21 enemy patrol ships online (plus six human/AI pilot slots); solo adds three fleet ships and twenty-one civilians.
 
-The **Crimson Dominion**, **Pelagian Concord** and **Eldritch Host** send raids against rival-held worlds. The first dispatch happens after 25 seconds, then every minute. Up to three existing NPC ships arrive by hyperspace and engage with normal combat AI, accompanied by up to three landing troops under the shared 50-creature cap. AI troop occupancy is capped at 24. The HUD and chart show the next raid countdown and recent attacks. The host runs invasions and shares war state with online clients.
+The **Crimson Dominion**, **Pelagian Concord** and **Eldritch Host** send raids against rival-held worlds. The first dispatch happens after 25 seconds, then every minute. Up to three existing NPC ships arrive by hyperspace and engage with normal combat AI, with no creature troops. The HUD and chart show the next raid countdown and recent attacks. The host runs invasions and shares war state with online clients.
 
 Find a survey landmark using HUD markers and distance, then press **G within 100m**. Solo landmark records persist locally; online surveys are session records and award no inventory items. Existing solo signal discoveries and combat rewards remain available. Ion storms deal 5 damage per second through normal shields/hull; leave the glowing cloud to recover. Hostiles, storms and recent damage prevent safe warp/service.
 
-In **solo Free Roam**, conquer a world outpost, approach within 650m outside combat, and select **Land Bot** in M. Deploy onto Varkhoss Prime, Pelagia or Ny’Zaroth, explore its 3D wildlife habitat, then return to the **same suspended orbital session**. Fleet positions, troops and war state survive the trip. Orbital simulation pauses while on the solo surface; shared online surface exploration and seamless atmospheric flight are not implemented.
+In **solo Free Roam**, conquer a world outpost, approach within 650m outside combat, and select **Land Bot** in M. Deploy onto Varkhoss Prime, Pelagia or Ny’Zaroth, explore its 3D wildlife habitat, then return to the **same suspended orbital session**. Fleet positions, outpost ownership and war state survive the trip. Orbital simulation pauses while on the solo surface; shared online surface exploration and seamless atmospheric flight are not implemented.
 
 The map is finite and fully loaded, with no shrinking battle boundary. Faction territory and raid state last for the current session. Discoveries, collectibles and sanctuary progress persist as before. Online and local inventories stay separate.
 
 ![Actual seven-region star chart](docs/images/open-world-chart.webp)
 
-## Creature armies and world conquest
+## Planet creature battles and ship-only outposts
 
-Free Roam now supports **50 active creatures across the server**, including 18 initial AI defenders. Each pilot can command up to 10 expedition troops. Press **M**, scroll down, choose one of nine species and deploy a squad of up to five. Reinforcements have a 20-second cooldown. Orders: **Follow**, **Assault Nearest World**, **Recall**. A living ship within 1600m of an outpost can order an assault. Your HUD gives the nearest outpost name, owner and distance.
+Creature troops no longer spawn or deploy in space. Hold a ship within 330 m of an uncontested outpost for 30 seconds to capture it; enemy ships contest capture. Space faction raids contain ships only. Legacy online creature deploy messages are rejected by the host. The `CreatureArmy` class remains as a compatibility adapter for outpost ownership snapshots, with no creature units.
 
-Conquer orbital outposts at **Varkhoss Prime**, **Pelagia** and **Ny’Zaroth**: keep troops within 330m for 30 uncontested seconds. Hostile troops contest progress; abandoned captures decay. Opponents can recapture worlds. Scouts (Duskbat, Riftfin Hunter, Riftwisp) move faster; strikers (Nightfang, Riftfin Hunter, Veilcrawler) hit harder; wardens (Antlerstag, Prism Reefgrazer, Manyeye) have 65 HP rather than 45. Troops attack hostile creatures and ships automatically; nearby ships automatically retaliate. Server AI owns all damage and capture, and shares troops/attacks/ownership with online players.
+On a **single-player Planet Expedition**, deploy up to three owned sanctuary residents. **N** selects a creature, **R** deploys it, **V** orders an attack on tracked wildlife, and **Z** recalls the party. Esc offers a creature selector and the same commands. Companions follow, avoid nearby obstacles, attack and automatically use their species abilities. Wild opponents retaliate and use their own abilities. Combat is real-time, not turn-based.
 
-Troops are free expedition units, **separate from sanctuary pets and trading inventory**. Destroyed troops free capacity; recall removes surviving troops; disconnecting removes that pilot’s roster. Army kills do not mint ship encounter rewards. Conquest resets at session end; no persistent territorial ownership or online surface invasions yet. Fleet Royale stays ship-only.
+Owned creatures have HP, attack, defense, movement speed, an affinity and a species ability. Earn XP by subduing wildlife, level from 1 to 50, and retain progression in the local save. Bond and friendship forms also improve combat attributes. Species use Grove, Tide, Ember, Dusk, Aether and Stone affinities; advantages deal 1.75x damage, weaknesses 0.6x, others 1x. See [the combat guide](docs/CREATURE_BATTLES.md) for the full chart and nine abilities.
 
-![Actual 3D army render](docs/images/creature-armies.webp)
+Companion attacks are nonlethal so wildlife remains capturable. Fainted companions remain owned; return to the landing ship and choose **Esc → Rest Creature Party**. Recall preserves health and ability cooldowns. No permanent creature death, creature trading expansion, human-versus-human surface battles or surface networking is added in this release. Ship crew robots and collectible ship liveries remain separate systems.
+
+## Mechanical ships and the Dreaming Rift
+
+Standard ships across all five classes use faceted hull panels, dark face-free cockpits, twin split nacelles and cyan engine strips. Collectible liveries retain their cosmetic identity on the redesigned hulls. The Dreaming Rift region contains an animated orange-rimmed anomaly, violet energy filaments and warm illumination. It is scenery, not a new travel mechanic. The reference image guided the direction; these remain procedural prototype assets, without production-quality volumetrics or hand-authored textures.
+
+![Actual in-engine reference-inspired space render](docs/images/rift-flight.webp)
 
 ## Friendship and love growth forms
 
@@ -479,3 +485,7 @@ Passed **665 Godot checks across 20 suites** and **22 backend tests**. The new 2
 Passed **702 Godot checks across 21 suites** and **22 backend tests**. The new 37-check suite injects physical G/C key events, keeps passive AI active during scanning, checks scan locking when a nearer individual appears, captures a ready animal despite an unready hunt, exercises repeated real non-lethal pulses, range/occlusion/save protections, refuge pod crafting and final resident persistence. Every species is checked for its new face details. Headless runs use the existing controller input adapter because the headless display cannot capture a mouse.
 
 The same scenario also ran through the native OpenGL window with the normal input path: **38 assertions passed**, including click-to-restore mouse capture. Scenery draws were hidden in that input test to keep the software renderer responsive; a separate native render of the actual animal models was inspected. The Compatibility renderer reported two small texture-cleanup errors at process exit in this environment. Windows GUI execution remains untested on the Linux development machine.
+
+### v0.23 validation
+
+526 Godot checks passed across creature battle, ship-only outpost, world war, free roam, surface/capture, sanctuary, wilderness, all-livery and art suites. Backend: 22 unittest checks passed. Two authenticated online clients verified that space creature deployment is rejected and ship conquest replicates. Native Godot reference-inspired space and creature battle renders were generated. Windows GUI performance and online planet battles are not tested or implemented.

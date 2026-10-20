@@ -52,6 +52,7 @@ func load_tile(key: Vector2i) -> void:
   animal.set_meta("wilderness_id",id)
   expedition.add_child(animal)
   if memories.has(id):
+   if bool(memories[id].get("xp_awarded",false)):animal.set_meta("battle_xp_awarded",true)
    animal.health=memories[id].health;animal.alive=memories[id].alive;animal.visible=animal.alive;animal.collision_layer=4 if animal.alive else 0
    # Captures/deaths stay absent for the rest of this expedition, including reloads.
    if not animal.alive:animal.respawn_timer=1.0e9
@@ -68,7 +69,7 @@ func load_tile(key: Vector2i) -> void:
 func unload_tile(key: Vector2i) -> void:
  var chunk: Dictionary=chunks[key]
  for animal in chunk.animals:
-  memories[str(animal.get_meta("wilderness_id"))]={"health":animal.health,"alive":animal.alive}
+  memories[str(animal.get_meta("wilderness_id"))]={"health":animal.health,"alive":animal.alive,"xp_awarded":animal.has_meta("battle_xp_awarded")}
   expedition.fauna.erase(animal);expedition.specimens.erase(animal);animal.queue_free()
  for plant in chunk.plants:
   expedition.world.flora_nodes.erase(plant);expedition.specimens.erase(plant)

@@ -162,14 +162,14 @@ static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
  if lunar: accent = Color(0.92,0.30,1)
  if comet: accent = Color(1,0.65,0.06)
  var reference_skin := stats.variant_style in ["standard","moon_moth","comet_pup","orbitot","glimbloom"]
- var hull_color := PEARL if reference_skin else stats.color.lightened(0.30)
- var panel_color := BLUE if reference_skin else stats.color.darkened(0.35)
+ var hull_color := Color(.60,.64,.68) if stats.variant_style=="standard" else PEARL if reference_skin else stats.color.lightened(0.30)
+ var panel_color := Color(.085,.12,.16) if stats.variant_style=="standard" else BLUE if reference_skin else stats.color.darkened(0.35)
  var heavy := stats.ability in ["aegis","barrage"]
  ShipArtDetails.hull(parent,stats,hull_color,panel_color,accent)
  for side in [-1,1]:
   if not lunar and not comet:
    ShipArtDetails.wing(parent,side,heavy,panel_color,accent)
-  pod(parent,Vector3(side*(2.0 if heavy else 1.65),-0.24,0.78),0.92 if heavy else 0.74,accent)
+  ShipArtDetails.nacelle(parent,Vector3(side*(2.4 if heavy else 2.0),-.12,.78),1.0 if heavy else .85,accent)
   ring(parent,Vector3(side*0.82,-0.25,-2.75),0.16,0.04,GOLD,"NoseSensorSeal")
   ball(parent,Vector3(side*0.82,-0.25,-2.80),Vector3.ONE*0.10,accent,"NoseSensor",true)
  if stats.ability == "aegis":

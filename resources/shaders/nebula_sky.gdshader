@@ -14,11 +14,11 @@ void sky(){
  float wisps=smoothstep(.28,.80,broad+fine*.22)*band;
  float dust=smoothstep(.51,.74,fbm(d*7.+9.1))*band;
  vec3 color=vec3(.002,.005,.015);
- vec3 indigo=vec3(.075,.045,.16);
- vec3 teal=vec3(.018,.13,.19);
+ vec3 indigo=vec3(.15,.035,.20);
+ vec3 teal=mix(vec3(.03,.08,.16),vec3(.42,.12,.035),smoothstep(.42,.72,broad));
  color+=mix(indigo,teal,smoothstep(.28,.7,fine))*wisps*1.20;
  float core=pow(max(dot(d,normalize(vec3(.6,.12,.7))),0.),20.);
- color+=vec3(.15,.095,.055)*core*band*(.4+broad);
+ color+=vec3(.46,.16,.055)*core*band*(.4+broad);
  color*=1.-dust*.62;
  color+=vec3(.045,.075,.11)*pow(wisps,3.);
  vec2 grid=SKY_COORDS*vec2(1400.,700.);

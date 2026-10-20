@@ -20,6 +20,7 @@ func run() -> void:
  var key: Vector2i=stream.chunks.keys()[0]
  var animal: SurfaceFauna=stream.chunks[key].animals[0]
  var id:=str(animal.get_meta("wilderness_id"))
+ animal.set_meta("battle_xp_awarded",true)
  animal.health=1;animal.alive=false;animal.respawn_timer=1
  animal._physics_process(60)
  check(not animal.alive,"Captured streamed wildlife stays absent even without unloading")
@@ -29,6 +30,7 @@ func run() -> void:
  var restored: SurfaceFauna=stream.chunks[key].animals[0]
  check(str(restored.get_meta("wilderness_id"))==id and not restored.alive,"Captured wildlife cannot be duplicated by unloading and revisiting")
  check(restored.health==1,"Unloaded wildlife health survives revisiting")
+ check(restored.has_meta("battle_xp_awarded"),"Tile revisits cannot duplicate creature battle experience")
  var seed:=stream.tile_seed(key)
  check(seed==stream.tile_seed(key) and seed!=stream.tile_seed(key+Vector2i.ONE),"World generation seeds are stable and tile-specific")
  stream.update_center(Vector3(-1500,0,900))

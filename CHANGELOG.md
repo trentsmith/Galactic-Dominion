@@ -1,3 +1,7 @@
+# v0.23 — Planet Creature Battles and Rift Ships
+
+Move sanctuary creature combat onto planet expeditions with AI abilities, affinities and persistent levels. Remove orbital creature armies while retaining ship outpost capture. Redesign standard ships as mechanical spacecraft and add Dreaming Rift anomaly scenery.
+
 # v0.22 — Streamed Planet Wilderness
 
 Four-kilometre surface diameters on all three expedition worlds; incremental terrain, random vegetation and wildlife, persistent per-expedition streamed wildlife state, collidable wilderness landmarks, and fourteen additional offline civilian ships. Includes the storybook creature refinements. See docs/WILDERNESS.md for scope, limits and validation.

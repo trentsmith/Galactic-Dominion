@@ -48,6 +48,7 @@ func _ready() -> void:
    backdrop._asteroid(CENTERS[index] + offset, rng.randf_range(8, 28), rng)
    obstacle_count += 1
   _frontier(index, rng)
+ RiftAnomalyArt.build(self,CENTERS[6]+Vector3(0,260,-1250))
 
 func _frontier(region: int, rng: RandomNumberGenerator) -> void:
  var center: Vector3 = CENTERS[region]

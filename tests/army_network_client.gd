@@ -41,14 +41,11 @@ func _process(delta: float) -> bool:
   main.network.ship_event.rpc_id(1, "army_deploy", 2)
   main.network.ship_event.rpc_id(1, "army_deploy", 2)
  var army := arena.army
- var me: int = main.network.peer_id
- units_seen = units_seen or army.owned_count(me) == 5
- for unit in army.units.values():
-  if unit.owner > 0 and unit.owner != me: enemy_seen = true
-  if unit.flash > 0: attack_seen = true
- captured = army.worlds[0].owner == 0 and army.worlds[0].captures >= 1
- if units_seen and enemy_seen and attack_seen and captured and arena.war.dispatches >= 1:
-  print("ARMY_CLIENT_PASS: authenticated deploy, cooldown, other player troops, AI combat and replicated world conquest / faction raid timeline")
-  main.network.disconnect_session()
-  quit(0)
+ var refused:=false
+ for notice in notices:
+  if "planets" in notice:refused=true
+ captured=army.worlds[0].owner==0 and army.worlds[0].captures>=1
+ if refused and army.units.is_empty() and captured:
+  print("ARMY_CLIENT_PASS: legacy creature deployment rejected; ship outpost capture replicated")
+  main.network.disconnect_session();quit(0)
  return false

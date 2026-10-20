@@ -258,17 +258,6 @@ func _build_roam_ui() -> void:
  var note := Label.new()
  note.text = "You can also fly directly between stations. Warp and service require\nno hostiles within 650m and no recent damage. Warp preserves health."
  choices.add_child(note)
- army_species = OptionButton.new()
- for species in CreatureArmy.SPECIES:
-  army_species.add_item(SanctuaryForms.form_name(species, 0))
- choices.add_child(army_species)
- for action in ["deploy", "follow", "assault", "recall"]:
-  var order := Button.new()
-  order.text = {"deploy":"DEPLOY 5 CREATURES", "follow":"ARMY / FOLLOW SHIP", "assault":"ARMY / ASSAULT NEAREST WORLD", "recall":"ARMY / RECALL TROOPS"}[action]
-  order.pressed.connect(func():
-   if network_role == "client": army_requested.emit(action, army_species.selected)
-   else: log_label.text = army_action(1, pilot.ship, action, army_species.selected))
-  choices.add_child(order)
  army_status = Label.new()
  choices.add_child(army_status)
  var close := Button.new()
@@ -340,7 +329,7 @@ func _update_roam_ui(delta: float) -> void:
  var ship := pilot.ship
  if is_instance_valid(army_status):
   var owner := 1 if network_role == "offline" else multiplayer.get_unique_id()
-  army_status.text = "ARMY %d/10 / SERVER %d/50\n" % [army.owned_count(owner), army.units.size()]
+  army_status.text = "OUTPOST CONTROL / hold with ships\n"
   for outpost in army.worlds:
    army_status.text += "%s: Team %d / %d%%\n" % [outpost.name, outpost.owner + 1, int(outpost.progress / CreatureArmy.CAPTURE_SECONDS * 100)]
  if is_instance_valid(war_status): war_status.text = "PEACEFUL EXPLORATION / No raids or environmental damage" if peaceful else war.briefing()
@@ -354,7 +343,7 @@ func _update_roam_ui(delta: float) -> void:
   if profile != null:
    profile.record_discovery("open.region.%d" % region, FreeRoamWorld.NAMES[region])
  var nearby: Dictionary = army.worlds[army.nearest_world(ship.position)]
- info.text = "%s  /  %dm TO STATION\n%s  /  %dm\n%s  /  %d CREATURES ACTIVE" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), nearby.name, int(ship.position.distance_to(nearby.position)), "PEACEFUL FLIGHT" if peaceful else "NEXT RAID %ds" % maxi(0, ceili(war.countdown)), army.units.size()]
+ info.text = "%s  /  %dm TO STATION\n%s  /  %dm\n%s  /  CREATURE BATTLES ON PLANETS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), nearby.name, int(ship.position.distance_to(nearby.position)), "PEACEFUL FLIGHT" if peaceful else "NEXT RAID %ds" % maxi(0, ceili(war.countdown))]
  if not ship.alive:
   prompt.text = "SHIP LOST / REDEPLOYING AT NEAREST STATION"
   return

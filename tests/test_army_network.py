@@ -37,7 +37,7 @@ def main():
             for file in tmp.glob('*.log'):
                 log = file.read_text()
                 assert 'SCRIPT ERROR' not in log and 'ERROR:' not in log and 'above the MTU' not in log, log
-            print('ARMY_NETWORK_PASS: two authenticated clients; host spawning, shared creature state, AI combat, destruction and 30-second conquest replicated to both clients')
+            print('ARMY_NETWORK_PASS: two authenticated clients; space creature deployment rejected and ship outpost capture replicated')
         finally:
             for proc in processes:
                 if proc.poll() is None: proc.terminate()

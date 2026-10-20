@@ -15,6 +15,9 @@ var alert:=0.0
 var respawn_timer:=0.0
 var dazed_remaining:=0.0
 var scan_interest_remaining:=0.0
+var skill_cooldown:=4.0
+var guard_remaining:=0.0
+var fury_remaining:=0.0
 var face_clock:=0.0
 var face_eyes: Array[Node3D]=[]
 var rng:=RandomNumberGenerator.new()
@@ -42,6 +45,7 @@ func _physics_process(delta: float) -> void:
    position=home;alive=true;visible=true;collision_layer=4;health=definition.health;alert=0;dazed_remaining=0;scan_interest_remaining=0;state="roam";decide_timer=0
   return
  if expedition.finished:return
+ skill_cooldown=maxf(0,skill_cooldown-delta);guard_remaining=maxf(0,guard_remaining-delta);fury_remaining=maxf(0,fury_remaining-delta)
  dazed_remaining=maxf(0,dazed_remaining-delta)
  scan_interest_remaining=maxf(0,scan_interest_remaining-delta)
  attack_timer=maxf(0,attack_timer-delta);alert=maxf(0,alert-delta);decide_timer-=delta
@@ -49,9 +53,13 @@ func _physics_process(delta: float) -> void:
  var distance:=global_position.distance_to(bot.global_position)
  var predator:=definition.damage>0
  marker.visible=distance<24
- marker.text=definition.display_name+(" / DANGER" if predator else " / PASSIVE")+"\n%d / %d" % [int(health),int(definition.health)]
+ marker.text=definition.display_name+" · Lv%d %s"%[CreatureCombat.wild_level(self),CreatureCombat.affinity(definition.id)]+(" / DANGER" if predator else " / PASSIVE")+"\n%d / %d" % [int(health),int(definition.health)]
  if dazed_remaining>0 or (scan_interest_remaining>0 and not predator):
   state="dazed" if dazed_remaining>0 else "curious";destination=position
+ elif is_instance_valid(expedition.party) and expedition.party.target==self and not expedition.party.units.is_empty():
+  state="duel";destination=expedition.party.units.values()[0].actor.global_position
+  if skill_cooldown<=0 and global_position.distance_to(destination)<12:
+   skill_cooldown=7;expedition.party.wild_skill(self)
  elif decide_timer<=0:
   decide_timer=.25
   if Vector2(position.x,position.z).length()<13:
@@ -83,6 +91,7 @@ func _physics_process(delta: float) -> void:
   attack_timer=1.2;bot.hurt(definition.damage)
 func hit(damage: float, nonlethal: bool=false) -> void:
  if not alive:return
+ if guard_remaining>0:damage*=.55
  health=maxf(1.0,health-maxf(0,damage)) if nonlethal else health-maxf(0,damage)
  if nonlethal and health<=definition.health*.5:dazed_remaining=3.0
  alert=6

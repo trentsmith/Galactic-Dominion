@@ -129,6 +129,8 @@ func refresh_status() -> void:
  for resident in state.residents:
   if resident.id!=garden.selected_resident:continue
   resident_info.text="%s\nFood %d / Joy %d / Energy %d\nGrowth %d / Friendship %d / Love %d\nStored %d / 12 / Produces %s" % [SanctuaryForms.form_name(resident.species,resident.form_stage),resident.nutrition,resident.happiness,resident.energy,resident.growth,resident.bond,resident.love,resident.production,SanctuaryState.PRODUCE[resident.species]]
+  var combat:=CreatureCombat.attributes(resident)
+  resident_info.text+="\nLv%d %s · ATK %d DEF %d SPD %.1f\n%s · XP %d / %d"%[combat.level,combat.affinity,int(combat.attack),int(combat.defense),float(combat.speed),combat.ability,int(resident.get("experience",0)),CreatureCombat.needed(combat.level)]
   form_info.text=SanctuaryForms.progress_text(resident)
   awaken_button.disabled=not SanctuaryForms.ready(resident)
   awaken_button.text="RADIANT FORM ACHIEVED" if resident.form_stage==2 else "AWAKEN "+("KINDRED" if resident.form_stage==0 else "RADIANT")+" FORM"
