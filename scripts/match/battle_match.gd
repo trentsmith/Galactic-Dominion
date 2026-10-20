@@ -51,8 +51,10 @@ func _ready() -> void:
     ship.stats = preconfigured_stats[team_index * 3 + slot]
    if team_index == 1 and network_role == "offline":
     ship.stats = ship.stats.duplicate(true)
-    ship.stats.crew_id = ["crew_nyx", "crew_kael", "crew_orith"][slot]
-    ship.crew_name = CollectionCatalog.find(ship.stats.crew_id).display_name
+    ship.stats.hull*=.85;ship.stats.shield*=.85
+    ship.stats.laser_cooldown*=1.15;ship.stats.missile_cooldown*=1.15
+    ship.stats.crew_id = ""
+    ship.crew_name = "AI pilot"
    ship.team = team_index
    ship.fleet_slot = slot
    ship.callsign = ("Vanguard" if team_index == 0 else "Ravager") + " %d" % (slot + 1)
@@ -61,13 +63,20 @@ func _ready() -> void:
     ship.rotation.y = PI
    add_child(ship)
    ships.append(ship)
+   if network_role=="offline":
+    if team_index==0:
+     ship.weapons.secondary.speed=220.0;ship.weapons.secondary.turn_rate=4.5
+     ship.weapons.aim_assist_dot=.97;ship.targeting.lock_duration=.8
+    else:
+     ship.health.regen_rate*=.5
+     ship.brain.retreat_duration=3.5;ship.brain.burst_duration=2;ship.brain.burst_pause=.65
    ship.eliminated.connect(_on_eliminated)
    if team_index == 0:
     fleet.ships.append(ship)
     ship.eliminated.connect(fleet.on_eliminated)
  fleet.switch_to(0)
- fleet.issue_command("follow")
  pilot.ship.targeting.cycle()
+ fleet.issue_command("attack" if network_role=="offline" else "follow")
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)

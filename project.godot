@@ -1,7 +1,7 @@
 config_version=5
 [application]
 config/name="Galactic Dominion"
-config/version="0.24.0"
+config/version="0.25.0"
 run/flush_stdout_on_print=true
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
@@ -104,12 +104,12 @@ laser={
 }
 missile={
 "deadzone": 0.2,
-"events": [Object(InputEventMouseButton,"button_index":2)]
+"events": [Object(InputEventKey,"physical_keycode":77)]
 }
 
 scan={"deadzone": 0.2, "events": [Object(InputEventKey,"physical_keycode":71)]}
 scenic_hud={"deadzone": 0.2, "events": [Object(InputEventKey,"physical_keycode":72)]}
-sector_map={"deadzone": 0.2, "events": [Object(InputEventKey,"physical_keycode":77)]}
+sector_map={"deadzone": 0.2, "events": [Object(InputEventKey,"physical_keycode":74)]}
 
 surface_extract={"deadzone": 0.2, "events": [Object(InputEventKey,"physical_keycode":69)]}
 

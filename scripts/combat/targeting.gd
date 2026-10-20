@@ -4,6 +4,7 @@ extends Node
 var ship: CombatShip
 var target: CombatShip
 var lock_time := 0.0
+var lock_duration:=1.2
 var selection_range := INF
 
 func tick(delta: float) -> void:
@@ -13,12 +14,12 @@ func tick(delta: float) -> void:
   return
  var direction := ship.global_position.direction_to(target.global_position)
  if (-ship.global_basis.z).dot(direction) > 0.90 and ship.global_position.distance_to(target.global_position) < 600.0:
-  lock_time = minf(1.2, lock_time + delta)
+  lock_time = minf(lock_duration, lock_time + delta)
  else:
   lock_time = maxf(0.0, lock_time - delta * 2.0)
 
 func locked() -> bool:
- return is_instance_valid(target) and target.alive and lock_time >= 1.2
+ return is_instance_valid(target) and target.alive and lock_time >= lock_duration
 
 func select(candidate: CombatShip) -> void:
  if target != candidate:

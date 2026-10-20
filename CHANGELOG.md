@@ -1,3 +1,7 @@
+# v0.25 — Balanced Solo Combat and Missile Controls
+
+Move missiles to M and the star chart to J. Give offline Fleet Royale immediate wingmate support, faster allied missiles and acquisition, wider laser assistance, reduced enemy durability and regeneration, paced enemy fire and shorter automatic retreats. Remove free enemy alien escorts in solo matches. Preserve online and free-roam balance.
+
 # v0.24 — Industrial Fleet and Orbital Shipyards
 
 Replace rounded ship profiles with chamfered structural hulls, four separated engine cassettes, exposed machinery, overlapping armour, panel wear and soft exhaust halos. Replace large blue orbital harbour pods with open docking gantries. Move the chase camera closer and lower.

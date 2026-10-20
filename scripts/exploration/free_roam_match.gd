@@ -180,7 +180,7 @@ func _build_roam_ui() -> void:
  prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  column.add_child(prompt)
  log_label = Label.new()
- log_label.text = "M / Star chart · H / Hide HUD for a scenic flight"
+ log_label.text = "J / Star chart · H / Hide HUD for a scenic flight"
  log_label.custom_minimum_size.x = 400
  log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  log_label.add_theme_color_override("font_color", Color(.55,.64,.75))
@@ -352,7 +352,7 @@ func _update_roam_ui(delta: float) -> void:
   if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
    service_ship(ship, true)
  else:
-  prompt.text = "M  Star chart · G  Survey · H  Scenic view"
+  prompt.text = "J  Star chart · G  Survey · H  Scenic view"
   if not peaceful and world.hazard_at(ship.position): prompt.text = "ION STORM / TAKING DAMAGE / LEAVE THE GLOWING CLOUD"
   if network_role == "offline" and Input.is_action_just_pressed("scan") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
    var result := survey_landmark(1, ship)

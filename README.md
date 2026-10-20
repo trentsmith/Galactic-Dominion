@@ -1,6 +1,14 @@
-# Galactic Dominion — Industrial Fleet and Orbital Shipyards
+# Galactic Dominion — Balanced Solo Combat
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Solo combat and missile controls
+
+**M fires missiles after target lock. J opens the star chart.** Updated help and HUD labels show these controls. Right-click no longer fires ship missiles; sanctuary orbit controls are unchanged.
+
+Solo Fleet Royale starts the two AI wingmates in Attack mode. Friendly missiles travel at 220 m/s with stronger steering and a 0.8-second lock, and friendly lasers have a slightly wider aim-assist cone. Solo enemies have 15% less hull/shield, 15% longer weapon cooldowns, half shield regeneration, brief firing pauses and a 3.5-second automatic shield-depletion retreat limit. Explicit retreat orders still work. Solo opponents no longer receive free alien attack companions. Enemy stats are cloned, leaving catalog resources untouched.
+
+These combat balance adjustments apply to **offline 3v3 Fleet Royale only**. Online combat and free-roam balance retain their previous values; the M/J bindings apply throughout ship play. This is an accessibility pass, not a human-tested difficulty rating. A full AI skirmish exercised both fleets and destroyed two opposing ships; human playtesting is still needed.
 
 ## Industrial fleet redesign
 
@@ -18,7 +26,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.24 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.24.0)** and choose:
+The v0.25 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.25.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -109,9 +117,9 @@ v0.15 replaces plain wreck boxes with layered hulls, ribs and broken armor; shap
 
 Space has a quieter nebula sky, natural planet colors, layered annular rings, irregular rocks, softer ion mist and distance culling for tiny distant props/planets. Ceramic armor, dark glass and gold metal use different surface responses. Surface lighting casts shadows; the HUD uses subtler panels and narrower flight text.
 
-For a calm solo trip, choose **Free Roam**, press **M**, then **Restart in Peaceful Exploration**. This resets the current flight into a friendly session with no faction raids or ion damage; saved local progress stays intact. World outposts are friendly for solo surface visits. The chart can restart normal faction war. Online play retains its existing combat rules.
+For a calm solo trip, choose **Free Roam**, press **J**, then **Restart in Peaceful Exploration**. This resets the current flight into a friendly session with no faction raids or ion damage; saved local progress stays intact. World outposts are friendly for solo surface visits. The chart can restart normal faction war. Online play retains its existing combat rules.
 
-Press **H** in Free Roam to hide/restore the HUD and floating labels. It changes presentation only; combat continues unless you chose peaceful exploration. M still opens the chart. Neither viewing option uploads local progress to the online inventory.
+Press **H** in Free Roam to hide/restore the HUD and floating labels. It changes presentation only; combat continues unless you chose peaceful exploration. J opens the chart. Neither viewing option uploads local progress to the online inventory.
 
 ![Actual in-game scenic flight](docs/images/starlight-flight.webp)
 
@@ -119,7 +127,7 @@ Press **H** in Free Roam to hide/restore the HUD and floating labels. It changes
 
 ## Open world faction war
 
-Free Roam now spans **seven connected regions**: Vesper Reach, Kharon Belt, Auralith Drift, Ember Frontier, Pelagian Veil, Bloodforge Expanse and Dreaming Rift. Press **M** for the clickable star chart and destination selector, or fly between them directly. Each region contains a service station, survey landmark, asteroid belt, collidable wreck field and dangerous ion cloud. New coral, industrial and crystalline landmarks distinguish the frontier. There are 21 enemy patrol ships online (plus six human/AI pilot slots); solo adds three fleet ships and twenty-one civilians.
+Free Roam now spans **seven connected regions**: Vesper Reach, Kharon Belt, Auralith Drift, Ember Frontier, Pelagian Veil, Bloodforge Expanse and Dreaming Rift. Press **J** for the clickable star chart and destination selector, or fly between them directly. Each region contains a service station, survey landmark, asteroid belt, collidable wreck field and dangerous ion cloud. New coral, industrial and crystalline landmarks distinguish the frontier. There are 21 enemy patrol ships online (plus six human/AI pilot slots); solo adds three fleet ships and twenty-one civilians.
 
 The **Crimson Dominion**, **Pelagian Concord** and **Eldritch Host** send raids against rival-held worlds. The first dispatch happens after 25 seconds, then every minute. Up to three existing NPC ships arrive by hyperspace and engage with normal combat AI, with no creature troops. The HUD and chart show the next raid countdown and recent attacks. The host runs invasions and shares war state with online clients.
 
@@ -171,7 +179,7 @@ Schema 4 saves load older schemas 1–3, preserve friendship and provide partial
 
 ## Free-roaming space
 
-**Free Roam / Open Space** loads seven connected regions into one world. Fly directly between the original four regions and three new frontier regions, or open **M** for station warp. There is no shrinking zone, boundary damage, eight-minute timeout or session-ending team elimination. Nearby ship markers and **Tab** targeting are limited to 1,400 metres to keep the view readable.
+**Free Roam / Open Space** loads seven connected regions into one world. Fly directly between the original four regions and three new frontier regions, or open **J** for station warp. There is no shrinking zone, boundary damage, eight-minute timeout or session-ending team elimination. Nearby ship markers and **Tab** targeting are limited to 1,400 metres to keep the view readable.
 
 - Your three configured fleet ships travel together; F1–F3 switching and the five fleet orders work as before.
 - Twenty-one AI patrol ships roam seven regions, while seven friendly civilian escorts roam near stations in solo play. Raider factions can fight each other as well as your fleet.
@@ -296,7 +304,7 @@ Every victory grants one uniformly selected hull from these five classes, in add
 
 ## Galaxy & Network expansion
 
-**Galactic Exploration** takes your configured fleet into four sectors: Vesper Reach, Kharon Belt, Auralith Drift and Ember Frontier. Each sector has a different asteroid layout and planet tint, three scan signals and a hostile patrol. The HUD marks signals and enemies. Approach a signal within 35 metres and **hold G for two seconds** to scan it. Press **M** to open the sector chart and warp, or return to the hangar. The chart does not pause combat; Esc does pause local exploration.
+**Galactic Exploration** takes your configured fleet into four sectors: Vesper Reach, Kharon Belt, Auralith Drift and Ember Frontier. Each sector has a different asteroid layout and planet tint, three scan signals and a hostile patrol. The HUD marks signals and enemies. Approach a signal within 35 metres and **hold G for two seconds** to scan it. Press **J** to open the sector chart and warp, or return to the hangar. The chart does not pause combat; Esc does pause local exploration.
 
 Sector entry, scans and defeated patrols produce one-time discovery records and salvage. Scans reveal specific crew, equipment or hulls, so exploration gives a predictable route to new content. Revisited records do not pay again. Warp redeploys your fleet in the chosen sector. The **Galactic Records** hangar tab lists discoveries and their UTC timestamps.
 
@@ -361,12 +369,12 @@ Updates use the same Godot application name, so extracting a new build to anothe
 | Shift | Boost; consumes a regenerating reserve |
 | Left mouse button | Hold to fire primary lasers |
 | Tab | Cycle enemy targets |
-| Right mouse button | Fire tracking missile after lock |
+| M | Fire tracking missile after lock |
 | R | Ship class ability |
 | F1 / F2 / F3 | Control Interceptor / Skirmisher / Guardian |
 | 1 / 2 / 3 / 4 / 5 | Fleet: Follow / Attack selected target / Defend / Regroup / Retreat |
 | G | Hold to scan a nearby exploration signal |
-| M | Exploration sector chart |
+| J | Exploration sector chart |
 | Esc | Pause/settings; online combat continues while the menu is open |
 
 Keep a selected enemy within the forward cone and within 600 metres for 1.2 seconds to lock missiles. Shields regenerate after four seconds without damage. Destruction of the controlled ship switches to a surviving friendly ship.
@@ -503,3 +511,7 @@ The rift filaments use two shared mesh actors instead of thousands of cylinder n
 ### v0.24 validation
 
 326 Godot checks passed across celestial art, all-livery fitting, reference models, free roam, command deck, starlight art, smoke and planet creature combat suites. Backend: 22 unittest checks passed. Native OpenGL reference and actual chase-camera renders were generated and inspected. Windows GUI remains untested.
+
+### v0.25 validation
+
+205 Godot checks passed across solo balance, smoke, free roam, progression, exploration, command deck and planet creature battles. A full AI skirmish ran to 90 simulated seconds: two enemy ships destroyed, allied damage 245.2 and opposing damage 240.8. This verifies combat activity and killability, not a measured human win rate. Windows GUI remains untested.

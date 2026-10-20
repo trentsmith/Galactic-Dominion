@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-24-industrial-fleet-and-shipyards]
+    branches: [phase-25-balanced-solo-missile-controls]
   workflow_dispatch:
 permissions:
   contents: write
@@ -57,6 +57,8 @@ jobs:
         run: |
           godot --headless --path . --script res://tests/sanctuary_forms_test.gd
           godot --headless --path . --script res://tests/creature_army_test.gd
+          godot --headless --path . --script res://tests/solo_balance_test.gd --fixed-fps 60
+          godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/planet_creature_battle_test.gd
           godot --headless --path . --script res://tests/world_war_test.gd
           godot --headless --path . --script res://tests/starlight_art_test.gd
@@ -79,8 +81,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.24.0
+          tag=v0.25.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.24 — Industrial Fleet and Orbital Shipyards' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.25 — Balanced Solo Combat and Missile Controls' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

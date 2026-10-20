@@ -55,6 +55,7 @@ func run() -> void:
   battle.fleet.issue_command(command)
   check(battle.ships[1].brain.command == command, "Fleet command: " + command)
  freeze_ships()
+ player.weapons.laser_remaining=0;player.weapons.missile_remaining=0
  battle.set_physics_process(false)
  var health := ShipHealth.new()
  health.configure(player.stats)

@@ -137,7 +137,7 @@ func _show_controls() -> void:
  controls_popup.add_child(margin)
  var column:=VBoxContainer.new();column.add_theme_constant_override("separation",14);margin.add_child(column)
  _label(column,"A LITTLE FLIGHT SCHOOL",23,MINT)
- _label(column,"W / S    Forward / reverse\nA / D    Strafe · Space / Ctrl    Vertical\nMouse    Steer · Q / E    Roll\nShift    Boost · R    Ship ability\n\nLeft click    Laser · Right click    Missile\nTab    Target · F1–F3    Switch ship\n1–5    Fleet commands\n\nM    Star chart · G    Scan / service\nH    Scenic HUD · Esc    Pause / menu",15,INK)
+ _label(column,"W / S    Forward / reverse\nA / D    Strafe · Space / Ctrl    Vertical\nMouse    Steer · Q / E    Roll\nShift    Boost · R    Ship ability\n\nLeft click    Laser · M    Missile\nTab    Target · F1–F3    Switch ship\n1–5    Fleet commands\n\nJ    Star chart · G    Scan / service\nH    Scenic HUD · Esc    Pause / menu",15,INK)
  _label(column,"Peaceful flight has no raids or ion damage.\nFleet Royale has a shrinking battle zone.\nOnline play continues while menus are open.",13,MUTED)
  _button(column,"CloseControlsButton","GOT IT / BACK TO THE STARS",func():controls_popup.hide(),40)
  controls_popup.popup_centered(Vector2i(470,520))

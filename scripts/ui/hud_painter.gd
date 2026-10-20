@@ -49,7 +49,7 @@ func _draw() -> void:
  var exploring := battle is ExplorationMatch
  var remaining := maxi(0, 480 - int(battle.elapsed))
  text(Vector2(width / 2 - 104, 48), "FREE ROAM" if free_roam else "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
- text(Vector2(width / 2 - 98, 70), "G SERVICE / M STAR CHART" if free_roam else "FREE FLIGHT / G SCAN / M MAP" if exploring else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
+ text(Vector2(width / 2 - 98, 70), "G SERVICE / J STAR CHART" if free_roam else "FREE FLIGHT / G SCAN / J MAP" if exploring else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
  panel(Rect2(Vector2(24, height - 200), Vector2(320, 176)))
  text(Vector2(42, height - 174), "%s  /  %s" % [ship.callsign.to_upper(), ship.stats.class_name_text.to_upper()], CYAN, 16)
  bar(Vector2(42, height - 145), "HULL INTEGRITY", ship.health.hull, ship.health.max_hull, Color(0.6, 0.9, 0.65))
@@ -59,7 +59,7 @@ func _draw() -> void:
  panel(Rect2(Vector2(width - 320, height - 200), Vector2(296, 176)))
  text(Vector2(width - 300, height - 171), "ARMAMENT", CYAN, 16)
  text(Vector2(width - 300, height - 143), "LMB   LASER    %s" % ("READY" if ship.weapons.laser_remaining <= 0 else "%.1fs" % ship.weapons.laser_remaining), Color.WHITE, 15)
- text(Vector2(width - 300, height - 115), "RMB   MISSILE  %s" % ("READY" if ship.weapons.missile_remaining <= 0 else "%.1fs" % ship.weapons.missile_remaining), Color.WHITE, 15)
+ text(Vector2(width - 300, height - 115), "M     MISSILE  %s" % ("READY" if ship.weapons.missile_remaining <= 0 else "%.1fs" % ship.weapons.missile_remaining), Color.WHITE, 15)
  text(Vector2(width - 300, height - 87), "R   %s" % ship.stats.ability.to_upper(), CYAN, 15)
  text(Vector2(width - 300, height - 61), "ACTIVE %.1fs" % ship.ability_remaining if ship.ability_remaining > 0 else ("READY" if ship.ability_cooldown <= 0 else "RECHARGING %.1fs" % ship.ability_cooldown), MUTED, 13)
  text(Vector2(width - 300, height - 35), "ESC   PAUSE / SETTINGS", MUTED, 13)
@@ -111,7 +111,7 @@ func _draw() -> void:
  if is_instance_valid(target) and target.alive:
   var info := "%s  /  %dm" % [target.callsign.to_upper(), int(ship.global_position.distance_to(target.global_position))]
   text(center + Vector2(-120, 95), info, RED, 15)
-  text(center + Vector2(-120, 118), "MISSILE LOCK" if ship.targeting.locked() else "ACQUIRING  %d%%" % int(ship.targeting.lock_time / 1.2 * 100), CYAN if ship.targeting.locked() else MUTED, 13)
+  text(center + Vector2(-120, 118), "MISSILE LOCK" if ship.targeting.locked() else "ACQUIRING  %d%%" % int(ship.targeting.lock_time / ship.targeting.lock_duration * 100), CYAN if ship.targeting.locked() else MUTED, 13)
  else:
   text(center + Vector2(-110, 95), "TAB  /  ACQUIRE TARGET", MUTED, 14)
  if ship.outside_time > 0:

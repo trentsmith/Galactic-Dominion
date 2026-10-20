@@ -10,6 +10,10 @@ var state := State.FOLLOW
 var alert_time := 0.0
 var retarget_timer := 0.0
 var retreat_latch := false
+var retreat_duration:=INF
+var retreat_elapsed:=0.0
+var burst_duration:=2.0
+var burst_pause:=0.0
 # Defaults preserve arena behavior; free-roam ships only sense nearby opponents.
 var sensor_range := INF
 var roaming := false
@@ -28,9 +32,10 @@ func tick(delta: float) -> void:
  var radius: float = ship.get_parent().zone.radius if ship.get_parent() is BattleMatch else 600.0
  if ship.health.shield <= 0.0:
   retreat_latch = true
+ if retreat_latch:retreat_elapsed+=delta
  if ship.health.shield > ship.health.max_shield * 0.35:
-  retreat_latch = false
- if command == "retreat" or retreat_latch:
+  retreat_latch = false;retreat_elapsed=0.0
+ if command == "retreat" or (retreat_latch and retreat_elapsed<retreat_duration):
   state = State.RETREAT
   var away := Vector3(0, 30, 0)
   if is_instance_valid(enemy):
@@ -50,9 +55,10 @@ func tick(delta: float) -> void:
    state = State.EVADE
    destination = ship.global_position + ship.global_basis.x * (80.0 if ship.fleet_slot % 2 == 0 else -80.0) - ship.global_basis.z * 60.0
   var aim := ship.global_position.direction_to(enemy.global_position + enemy.velocity * distance / ship.weapons.primary.speed)
-  if (-ship.global_basis.z).dot(aim) > 0.975 and distance < 650.0:
+  var firing_window:=burst_pause<=0 or fmod(patrol_time+ship.fleet_slot*.4,burst_duration+burst_pause)<burst_duration
+  if firing_window and (-ship.global_basis.z).dot(aim) > 0.975 and distance < 650.0:
    ship.weapons.fire()
-  if ship.targeting.locked() and distance < 500.0:
+  if firing_window and ship.targeting.locked() and distance < 500.0:
    ship.weapons.fire(true)
   if distance < 200.0 and ship.ability_cooldown <= 0.0:
    ship.activate_ability()

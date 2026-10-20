@@ -7,6 +7,7 @@ var secondary: WeaponSpec
 var laser_remaining := 0.0
 var missile_remaining := 0.0
 var overcharge := false
+var aim_assist_dot:=0.985
 
 func configure(stats: ShipStats) -> void:
  primary = WeaponSpec.new()
@@ -52,7 +53,7 @@ func fire(missile: bool = false) -> bool:
   var distance := ship.global_position.distance_to(target.global_position)
   var predicted := target.global_position + target.velocity * distance / spec.speed
   var aim := ship.global_position.direction_to(predicted)
-  if projectile.direction.dot(aim) > 0.985:
+  if projectile.direction.dot(aim) > aim_assist_dot:
    projectile.direction = aim
  ship.get_parent().add_child(projectile)
  projectile.global_position = ship.global_position - ship.global_basis.z * 5.0
