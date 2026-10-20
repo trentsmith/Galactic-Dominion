@@ -109,7 +109,10 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
  var replay := Button.new()
  replay.text = "DEPLOY AGAIN"
  replay.custom_minimum_size.y = 42
- replay.pressed.connect(battle.get_parent().start_battle.bind(battle.team_size))
+ if battle.story_mission=="crimson_interdiction":
+  replay.text="RETURN TO ASTRA / STORY JOURNAL" if battle.winner==0 else "RETRY STORY ENCOUNTER"
+  replay.pressed.connect(battle.get_parent().show_story if battle.winner==0 else battle.get_parent().start_story_encounter)
+ else:replay.pressed.connect(battle.get_parent().start_battle.bind(battle.team_size))
  layout.add_child(replay)
  var menu := Button.new()
  menu.text = "MAIN MENU"

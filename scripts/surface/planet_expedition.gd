@@ -52,11 +52,14 @@ func _ready() -> void:
  for plant in world.flora_nodes:specimens.append(plant)
  wilderness=WildernessStream.new();wilderness.expedition=self;add_child(wilderness)
  party=CreatureParty.new();party.expedition=self;add_child(party)
+ var engineer:=StoryNPC.new();engineer.npc_id="milo";engineer.position=Vector3(6,SurfaceWorld.height_at(6,2)+.2,2);add_child(engineer)
  hud=SurfaceHUD.new();hud.expedition=self;add_child(hud)
  cargo_animals.assign(profile.surface_transport.animals)
  cargo_seeds.assign(profile.surface_transport.seeds)
  if not cargo_animals.is_empty() or not cargo_seeds.is_empty():status_message="TRANSPORT RECOVERED / %d animals, %d seeds / press E here at the ship to deliver" % [cargo_animals.size(),cargo_seeds.size()]
  Input.mouse_mode=Input.MOUSE_MODE_CAPTURED
+ if profile.story.accepted and not definition.id in profile.story.visited:
+  if not StoryCampaign.visit(profile,definition.id):status_message=profile.story_message
  print("GALACTIC_PLANET_READY planet=%s fauna=%d bot=%s" % [definition.id,fauna.size(),bot_definition.id])
 func _physics_process(delta: float) -> void:
  if finished:return
@@ -155,6 +158,7 @@ func extract() -> bool:
  var before_inventory:=profile.inventory.duplicate(true)
  var before_salvage:=profile.salvage
  var before_transport:=profile.surface_transport.duplicate(true)
+ var before_story:=profile.story.duplicate(true)
  SanctuaryState.intake(profile.sanctuary,cargo_animals,cargo_seeds)
  for id in pending:
   if not profile.exploration_records.has(id):
@@ -164,8 +168,10 @@ func extract() -> bool:
   profile.exploration_records[complete_id]={"name":definition.display_name+" / Complete Survey","discovered_at":int(Time.get_unix_time_from_system())}
   profile.salvage+=25;profile.acquire(definition.survey_reward,"Galactic exploration")
  profile.surface_transport={"animals":[],"seeds":[]}
+ if not cargo_animals.is_empty() and profile.story.accepted:profile.story.rescued=true
  if not profile.save_profile():
   profile.surface_transport=before_transport
+  profile.story=before_story
   profile.sanctuary=before_sanctuary;profile.exploration_records=before_records;profile.inventory=before_inventory;profile.salvage=before_salvage
   status_message="DELIVERY NOT SAVED / "+profile.save_error+" / cargo retained; retry E"
   return false

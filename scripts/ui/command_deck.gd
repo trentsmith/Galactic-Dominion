@@ -45,10 +45,11 @@ func _ready() -> void:
  title.add_theme_constant_override("line_spacing",-5)
  var online: bool = is_instance_valid(host.battle) and host.battle.network_role != "offline"
  _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "Find your crew. Explore strange worlds.\nMake a little home among the stars.",15,MUTED)
- var primary := _button(column,"ResumeButton" if paused else "ExploreButton","RESUME FLIGHT   >" if paused else "EXPLORE THE GALAXY   >",host.resume if paused else host.start_free_roam,52)
+ var primary := _button(column,"ResumeButton" if paused else "StoryButton","RESUME FLIGHT   >" if paused else "STORY / "+StoryCampaign.TITLES[StoryCampaign.stage(host.profile)].to_upper()+"   >" if host.profile.story.accepted else "BEGIN YOUR STORY   >",host.resume if paused else host.show_story,52)
  _primary_style(primary)
  if not paused:
   var quick := HBoxContainer.new();quick.add_theme_constant_override("separation",10);column.add_child(quick)
+  _button(quick,"ExploreButton","FREE ROAM",host.start_free_roam,32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
   _button(quick,"PeacefulButton","PEACEFUL FLIGHT",func():host.start_free_roam(true),32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
   _button(quick,"OnlineButton","ONLINE PLAY",host.show_online,32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
   var battle_options := HBoxContainer.new();column.add_child(battle_options)

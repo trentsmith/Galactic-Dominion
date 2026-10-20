@@ -1,3 +1,7 @@
+# v0.31 — The Lantern Signal
+
+Add an original seven-objective opening story, O journal, three NPC comms portraits, field engineer, lore/help dialogue and permanent-component crafting. Connect real visits, safe creature delivery, F1 fitting and a named Crimson patrol victory. Reserve mission parts, save schema 6 progression transactionally, prevent repeat story rewards and preserve online server flow.
+
 # v0.30 — Solo AI Difficulty
 
 Add saved Relaxed/Standard/Veteran presets for solo 3v3 and 10v10, behavioral tuning, HUD/results labels, optional local playtest reports, and a human testing guide. Preserve online/free-roam/training/planet rules. Fix offscreen damage-arrow triangulation uncovered by automated comparisons. Human calibration remains pending.

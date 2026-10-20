@@ -7,6 +7,9 @@ var sanctuary_scene: SanctuaryGarden
 var surface: PlanetExpedition
 var parked_roam: FreeRoamMatch
 var battle: BattleMatch
+var story_layer: CanvasLayer
+var story_previous_paused := false
+var story_previous_mouse := Input.MOUSE_MODE_VISIBLE
 var difficulty := "standard"
 var sensitivity := 0.0025
 var inverted := false
@@ -49,6 +52,7 @@ func _ready() -> void:
  volume = settings.get_value("audio", "volume", 0.6)
  AudioServer.set_bus_volume_db(0, linear_to_db(volume))
  _apply_display()
+ var tracker:=StoryTracker.new();tracker.host=self;add_child(tracker)
  show_menu()
  if "--tutorial" in arguments:
   start_tutorial()
@@ -65,6 +69,10 @@ func _ready() -> void:
   start_planet(int(arguments[index+1]) if index+1<arguments.size() else 0,"crew_pixlet")
 
 func _unhandled_input(event: InputEvent) -> void:
+ if event.is_action_pressed("story_journal") or (is_instance_valid(story_layer) and event.is_action_pressed("pause")):
+  if is_instance_valid(story_layer):close_story()
+  else:show_story()
+  get_viewport().set_input_as_handled();return
  if is_instance_valid(sanctuary_scene) and event.is_action_pressed("pause"):
   sanctuary_scene.close();get_viewport().set_input_as_handled();return
  if is_instance_valid(surface) and event.is_action_pressed("pause"):
@@ -96,7 +104,7 @@ func start_tutorial() -> void:
 func start_fleet_war() -> void:
  start_battle(10)
 
-func start_battle(size_per_team: int = 3) -> void:
+func start_battle(size_per_team: int = 3,mission: String = "") -> void:
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -107,7 +115,8 @@ func start_battle(size_per_team: int = 3) -> void:
   battle.queue_free()
  battle = BattleMatch.new()
  battle.team_size = size_per_team
- battle.difficulty = difficulty
+ battle.difficulty = "veteran" if mission!="" and difficulty=="veteran" else "standard" if mission!="" else difficulty
+ battle.story_mission = mission
  battle.profile = profile
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
@@ -416,3 +425,70 @@ func difficulty_choice(parent: Control) -> OptionButton:
   _save_settings())
  parent.add_child(choice)
  return choice
+
+func show_story() -> void:
+ if is_instance_valid(story_layer):return
+ story_previous_paused=get_tree().paused
+ story_previous_mouse=Input.mouse_mode
+ var online:=is_instance_valid(battle) and battle.network_role!="offline"
+ if not online:get_tree().paused=true
+ Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+ story_layer=CanvasLayer.new();story_layer.layer=30;story_layer.process_mode=Node.PROCESS_MODE_ALWAYS;add_child(story_layer)
+ var screen:=StoryScreen.new();screen.host=self;screen.readonly=online
+ var stage:=StoryCampaign.stage(profile)
+ screen.npc="sera" if stage in [2,3] else "milo" if stage==4 else "astra"
+ if is_instance_valid(surface) and surface.at_landing_ship():screen.npc="milo"
+ story_layer.add_child(screen)
+
+func close_story() -> void:
+ if not is_instance_valid(story_layer):return
+ remove_child(story_layer);story_layer.queue_free();story_layer=null
+ get_tree().paused=story_previous_paused
+ Input.mouse_mode=story_previous_mouse
+
+func story_action() -> void:
+ var stage:=StoryCampaign.stage(profile)
+ match stage:
+  0:StoryCampaign.accept(profile)
+  1,2:
+   if is_instance_valid(surface):
+    if stage==1 and surface.definition.id=="varkhoss":StoryCampaign.visit(profile,"varkhoss")
+    close_story();return
+   story_travel("planet");return
+  3:StoryCampaign.debrief(profile)
+  4:
+   if is_instance_valid(story_layer):story_layer.get_child(0).npc="milo"
+  5:
+   if not story_can_travel():return
+   close_story();start_story_encounter();return
+  6:StoryCampaign.complete(profile)
+  7:story_travel("roam");return
+ if is_instance_valid(story_layer):story_layer.get_child(0).refresh()
+
+func story_can_travel() -> bool:
+ if is_instance_valid(battle) and battle.network_role!="offline":profile.story_message="Leave online play before launching a local story activity.";return false
+ if is_instance_valid(surface) and not surface.finished and not surface.pending.is_empty():
+  profile.story_message="Deliver your surveys with E at the landing ship before changing activities. Secured cargo is already saved."
+  if is_instance_valid(story_layer):story_layer.get_child(0).refresh()
+  return false
+ return true
+
+func story_travel(destination: String) -> void:
+ if not story_can_travel():return
+ close_story()
+ match destination:
+  "planet":start_planet(0)
+  "sanctuary":show_sanctuary()
+  "hangar":
+   return_to_menu();show_hangar()
+  "roam":start_free_roam()
+
+func start_story_encounter() -> bool:
+ if is_instance_valid(battle) and battle.network_role!="offline":
+  profile.story_message="Story encounters are local; leave online play first.";return false
+ if StoryCampaign.stage(profile)!=5:
+  profile.story_message="Complete the rescue and lead-ship upgrade before challenging the patrol.";return false
+ start_battle(3, "crimson_interdiction")
+ for ship in battle.ships:
+  if ship.team==1:ship.callsign="Crimson Interdictor %d"%(ship.fleet_slot+1);ship.crew_name="Crimson Dominion pilot"
+ return true

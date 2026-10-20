@@ -1,6 +1,14 @@
-# Galactic Dominion — Solo AI Difficulty
+# Galactic Dominion — The Lantern Signal
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Begin your story
+
+Choose **Begin your story** on the command deck, or press **O** during solo play. **The Lantern Signal** is a seven-objective opening chapter: answer Commander Astra, discover Varkhoss Prime, scan and capture a new creature, deliver it through the landing ship, debrief with Warden Sera, craft and fit Engineer Milo's Sprint Drive to F1, then defeat the named Crimson patrol and return to Astra.
+
+The journal highlights your next step and offers NPC mission dialogue, world lore and practical help. Milo appears as a holographic field NPC near planetary landing sites. His workshop crafts permanent component blueprints from sanctuary materials; Sera reserves a one-time engine kit for the story. The Sprint Drive trades 6% hull for speed and acceleration. Fitting applies on the next deployment. The patrol uses at least Standard AI (or your selected Veteran), without changing your saved difficulty preference.
+
+Only actual sanctuary delivery advances the rescue goal; the starter pet does not count. Only the named patrol victory advances the combat goal. Progress and one-time rewards save locally with rollback on failure. Opening comms pauses solo play; online comms are read-only and never pause the server. This is an original opening chapter with text dialogue and placeholder 3D NPCs, not a complete campaign or voiced cinematics. [Walkthrough and implementation notes](docs/STORY.md).
 
 ## Choose your solo difficulty
 
@@ -16,7 +24,7 @@ Within **8 m**, **C** captures the displayed eligible target and spends one pod.
 
 The HUD explains the next step, scan/weakening/pod requirements and the direction home. A ship beacon helps navigation. Refusals explain range, obstacles, storage and saving. Craft pods at the ship through **Esc → Craft Capture Pod**, for one ore and one bloom. Sanctuary capacity remains 48 residents; seed stacks cap at 99. Delivery refuses overflow instead of discarding cargo.
 
-Save schema 5 migrates schemas 1–4 automatically. Older builds refuse to overwrite the newer format. Surface expeditions remain single-player.
+Save schema 6 migrates schemas 1–5 automatically. Older builds refuse to overwrite the newer format. Surface expeditions remain single-player.
 
 ## Understand the fight
 
@@ -24,7 +32,7 @@ Combat now reports confirmed shield and hull damage separately. Camera-relative 
 
 Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
 
-Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.30.
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.31.
 
 ## Start here: flight school
 
@@ -62,7 +70,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.30 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.30.0)** and choose:
+The v0.31 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.31.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -571,3 +579,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.30 validation
 
 185 local Godot checks passed across difficulty, menu, solo balance, Fleet War, tutorial, combat feedback and progression suites, plus 22 backend tests. All three presets completed automated 10v10 comparison battles; actual metrics and limitations are in docs/DIFFICULTY_PLAYTEST.md. Native Linux menu/settings/results views were inspected. These checks do not replace human calibration or Windows hands-on playtesting.
+
+### v0.31 validation
+
+352 local Godot checks passed across ten story, creature, progression, combat, tutorial, menu and difficulty suites, plus 22 backend tests. The 42-check story suite covers the real discovery/capture/delivery/crafting/fitting/combat chain, save-failure rollback, migration, duplicate rewards, retry and online read-only behavior. Native Linux journal/workshop views were rendered and inspected. Windows GUI and human story usability testing remain pending.

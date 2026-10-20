@@ -1,11 +1,12 @@
-Galactic Dominion v0.30 — Solo AI Difficulty
+Galactic Dominion v0.31 — The Lantern Signal
 
-- Relaxed, Standard and Veteran selectors on the command deck and in Settings; choice persists for the next solo 3v3 or 10v10 battle.
-- Standard preserves existing balance. Relaxed reduces reaction and attack pressure; Veteran increases pressure without extra health above Standard.
-- Enemy raw weapon damage and allied aiming/missile assistance are unchanged. Online, free roam, planets and training retain their own balance.
-- HUD/results show the actual preset. Optional post-match difficulty ratings and metrics save locally, with a button to open the reports folder. No automatic uploads or account identifiers.
-- Fix offscreen/coincident damage-arrow rendering found during comparison battles.
+- Begin your story from the main menu; O opens the mission journal during play.
+- Commander Astra, Warden Sera and Engineer Milo guide discovery, creature rescue, sanctuary delivery, crafting and a harder named fleet encounter.
+- NPC mission/lore/help conversations, holographic 3D portraits and a field engineer at planetary landing sites.
+- Craft permanent Sprint Drive, Renewal Array and Deep Reserve component blueprints from sanctuary resources. Sera reserves the story engine kit; fit the Sprint Drive to F1 before the patrol.
+- Actual gameplay advances objectives. Saved chapter progress, one-time supplies and rewards, failed-save rollback and migration from older profiles.
+- Solo comms pause play; online comms are read-only. The existing flight tutorial remains available.
 
-All three presets completed automated 10v10 comparison battles. These are not human playtests: human calibration, human sound/difficulty assessment and Windows GUI play remain pending. See docs/DIFFICULTY_PLAYTEST.md for actual results and a testing plan.
+Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Choose Begin your story. O or Esc closes the journal. Existing saves migrate to schema 6; older game versions cannot load the new format. Update online hosts and clients together to v0.31.
 
-Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Select Solo Battle AI before launching Fleet Royale or Fleet War. Existing saves work. Update online hosts and clients together to v0.30.
+352 local Godot checks and 22 backend tests passed. Native Linux journal/workshop renders were inspected. This is an opening chapter with text dialogue and placeholder NPC models; further campaign chapters, voice acting and online story co-op are not implemented. Windows GUI and human usability playtesting remain pending.

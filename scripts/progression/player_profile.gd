@@ -2,7 +2,7 @@ class_name PlayerProfile
 extends RefCounted
 signal changed
 
-const VERSION := 5
+const VERSION := 6
 const SLOTS = ["engine", "shield", "weapon", "utility", "crew", "variant"]
 const DEFAULT_CREW = ["crew_astra", "crew_milo", "crew_sera"]
 var save_path := "user://commander_profile.json"
@@ -11,6 +11,8 @@ var loadouts: Array[Dictionary] = []
 var ship_classes: Array[String] = ["interceptor", "skirmisher", "guardian"]
 var exploration_records: Dictionary = {}
 var sanctuary: Dictionary = {}
+var story: Dictionary = StoryCampaign.defaults()
+var story_message := ""
 var surface_transport: Dictionary = {"animals":[],"seeds":[]}
 var commander_name := "Vanguard Commander"
 var salvage := 0
@@ -30,6 +32,7 @@ func _init(path: String = "user://commander_profile.json") -> void:
  _defaults()
 
 func _defaults() -> void:
+ story=StoryCampaign.defaults()
  sanctuary=SanctuaryState.defaults()
  surface_transport = {"animals":[],"seeds":[]}
  inventory.clear()
@@ -92,7 +95,7 @@ func _read(path: String) -> bool:
   save_blocked = true
   notice = "This save belongs to a newer game version. Saving is disabled to preserve it."
   return false
- if not int(parsed.version) in [1, 2, 3, 4, VERSION] or not parsed.get("inventory") is Dictionary or not parsed.get("loadouts") is Array:
+ if not int(parsed.version) in [1, 2, 3, 4, 5, VERSION] or not parsed.get("inventory") is Dictionary or not parsed.get("loadouts") is Array:
   return false
  _defaults()
  for id in parsed.inventory:
@@ -117,6 +120,7 @@ func _read(path: String) -> bool:
     exploration_records[str(key)] = {"discovered_at": _integer(saved_records[key].get("discovered_at", 0), 0, 4102444800), "name": str(saved_records[key].get("name", "Unknown")).left(80)}
  sanctuary=SanctuaryState.sanitize(parsed.get("sanctuary",{}))
  surface_transport = sanitize_transport(parsed.get("surface_transport",{}))
+ story=StoryCampaign.sanitize(parsed.get("story",{}))
  var used_crew: Array[String] = []
  for index in range(3):
   var saved_loadout: Dictionary = parsed.loadouts[index] if index < parsed.loadouts.size() and parsed.loadouts[index] is Dictionary else {}
@@ -148,7 +152,7 @@ func _integer(value: Variant, lower: int, upper: int) -> int:
  return clampi(int(value), lower, upper)
 
 func to_dict() -> Dictionary:
- return {"version": VERSION, "commander_name": commander_name, "inventory": inventory.duplicate(true), "loadouts": loadouts.duplicate(true), "ship_classes": ship_classes.duplicate(), "exploration_records": exploration_records.duplicate(true), "salvage": salvage, "battles": battles, "wins": wins, "total_kills": total_kills, "total_damage": total_damage, "sanctuary": sanctuary.duplicate(true), "surface_transport":surface_transport.duplicate(true)}
+ return {"version": VERSION, "commander_name": commander_name, "inventory": inventory.duplicate(true), "loadouts": loadouts.duplicate(true), "ship_classes": ship_classes.duplicate(), "exploration_records": exploration_records.duplicate(true), "salvage": salvage, "battles": battles, "wins": wins, "total_kills": total_kills, "total_damage": total_damage, "sanctuary": sanctuary.duplicate(true), "surface_transport":surface_transport.duplicate(true),"story":story.duplicate(true)}
 
 func save_profile() -> bool:
  save_error = ""

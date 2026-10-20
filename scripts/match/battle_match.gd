@@ -3,6 +3,7 @@ extends Node3D
 signal ended(winner, reason)
 
 const CLASSES = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+var story_mission := ""
 var difficulty := "standard"
 var playtest_path := ""
 var training := false
@@ -172,6 +173,8 @@ func finish(team: int, reason: String) -> void:
    kills += ally.kills
    damage += ally.damage_dealt
   rewards = profile.settle_battle(battle_id, winner, kills, damage)
+  if network_role=="offline" and story_mission=="crimson_interdiction" and winner==0:
+   if not StoryCampaign.victory(profile):profile.story_message="Patrol cleared, but story progress was not saved. Retry the story encounter after fixing saving."
   reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, 2 if winner == 0 else 1]
  ended.emit(team, reason)
  if network_role != "server":
