@@ -39,7 +39,7 @@ func _process(_delta: float) -> void:
  hunt_label.text="ACTIVE HUNT / T: CHANGE SPECIES\n"
  if is_instance_valid(tracked):
   hunt_label.text+="%s / %dm\nHEALTH %d / %d\n"%[tracked.definition.display_name,int(bot.position.distance_to(tracked.position)),int(tracked.health),int(tracked.definition.health)]
-  hunt_label.text+="Hold G within 12m to scan" if not expedition.surveyed(tracked) else "LMB: stun to half health, then C" if tracked.definition.damage>0 and tracked.health>tracked.definition.health*.5 else "C within 8m: capture and transport"
+  hunt_label.text+=expedition.hunt_guidance()
  else:hunt_label.text+="No living target nearby / choose another species"
  if not chosen.is_empty() and is_instance_valid(tracked):
   var attack_type:=CreatureCombat.affinity(str(chosen.species));var defense_type:=CreatureCombat.affinity(tracked.definition.id)
@@ -47,7 +47,8 @@ func _process(_delta: float) -> void:
  var catchable:=expedition.capture_target()
  if is_instance_valid(catchable):
   hunt_label.text+="\n\nC TARGET / "+catchable.definition.display_name
-  hunt_label.text+="\nREADY TO CAPTURE" if expedition.capture_ready(catchable) else "\nSCAN WITH G FIRST" if not expedition.surveyed(catchable) else "\nSTUN WITH LMB FIRST"
+  hunt_label.text+="\n"+expedition.capture_hint(catchable)
+ if not expedition.cargo_animals.is_empty() or not expedition.cargo_seeds.is_empty():hunt_label.text+="\n\n"+expedition.home_guidance()
  var nearest:=expedition.nearest_specimen()
  if expedition.finished:prompt.text=""
  elif Input.mouse_mode!=Input.MOUSE_MODE_CAPTURED and not get_tree().paused:prompt.text="CLICK THE SCENE TO RESUME EXPLORING / G: scan · C: capture"
@@ -70,7 +71,7 @@ func _menu(title: String,result: bool) -> Control:
  if result:
   var detail:=Label.new();detail.text=expedition.status_message;detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail.custom_minimum_size.x=520;column.add_child(detail)
  else:
-  var warning:=Label.new();warning.text="Deliver captures with E at the ship before leaving.\nChanging bots preserves current health and cargo.";column.add_child(warning)
+  var warning:=Label.new();warning.text="E at the ship saves surveys and delivers captures.\nSecured transport is recovered when you redeploy.\nChanging bots preserves current health and cargo.";column.add_child(warning)
   var bots:=OptionButton.new();bots.name="ActiveBotChoice";column.add_child(bots)
   var choices:=expedition.available_bot_choices()
   for item in choices:
@@ -103,7 +104,7 @@ func _button(parent: Control,text: String,callback: Callable) -> void:
 func show_result(success: bool) -> void:
  if success:
   expedition.status_message="%d new surveys saved. Planet survey: %d / 6.\nDelivered %d animals and %d seeds to your sanctuary.\n%s" % [expedition.pending.size(),expedition.survey_count(),expedition.cargo_animals.size(),expedition.cargo_seeds.size(),expedition.profile.save_error]
- else:expedition.status_message="The expedition bot was destroyed. Unextracted surveys were lost.\nYour owned bots and previously saved discoveries remain available."
+ else:expedition.status_message="The expedition bot was destroyed. Unextracted surveys were lost.\nSecured animals and seeds remain in transport. Redeploy, then E at the ship.\nYour owned bots and previously saved discoveries remain available."
  var result:=_menu("EXTRACTION COMPLETE" if success else "BOT DESTROYED",true)
  if success:
   var column: VBoxContainer=result.get_child(0).get_child(0)

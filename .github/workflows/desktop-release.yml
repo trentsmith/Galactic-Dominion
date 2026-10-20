@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-28-combat-feedback]
+    branches: [phase-29-dependable-creature-loop]
   workflow_dispatch:
 permissions:
   contents: write
@@ -77,6 +77,8 @@ jobs:
           godot --headless --path . --script res://tests/universal_liveries_test.gd
           godot --headless --path . --script res://tests/celestial_art_test.gd
           godot --headless --path . --script res://tests/landing_hunt_test.gd
+          godot --headless --path . --script res://tests/creature_loop_test.gd --fixed-fps 60
+          godot --headless --path . --script res://tests/planet_expedition_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/capture_rescue_test.gd
           python3 tests/test_army_network.py
           GD_TEST_COMPANION=crew_orbitot GD_TEST_VARIANT=variant_orbitot GD_TEST_HULL=skirmisher python3 tests/test_free_roam_network.py
@@ -91,8 +93,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.28.0
+          tag=v0.29.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.28 — Clearer Combat Feedback' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.29 — Dependable Creature Loop' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

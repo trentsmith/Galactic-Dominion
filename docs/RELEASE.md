@@ -1,13 +1,13 @@
-Galactic Dominion v0.28 — Clearer Combat Feedback
+Galactic Dominion v0.29 — Dependable Creature Loop
 
-- Camera-relative directional hit warnings; separate labels for zone, collision and ion-storm damage.
-- Distinct shield-break and critical-hull alerts, plus confirmed outgoing hit markers and damage amounts.
-- Bigger enemy shield/hull bars and a selected-target card with numeric health and lock progress.
-- Lock-ready chime, incoming hostile tracking-missile alerts, and explanations when M cannot fire.
-- Original layered weapon/impact/alarm sounds, with throttling and existing master-volume support.
-- Results explain survivor counts, damage, environmental losses, final damage sources and time-limit scores. Navigation remains visible while reports scroll.
-- Confirmed feedback replicates online; final authoritative ship states make survivor counts accurate.
+- Stable individual hunt tracking; clear scan, weaken, capture and return-home guidance.
+- G scans within 12m; non-lethal LMB stun or creature battles weaken dangerous wildlife; C captures within 8m.
+- Captures and seeds save durable transport. Capture and pod expenditure are atomic.
+- Secured cargo survives restart, leaving and bot destruction; redeploy and E at the ship delivers it.
+- Sanctuary delivery and manifest clearing save together. Failed saves preserve cargo; repeat delivery cannot duplicate residents.
+- Clear refusals for distance, obstacles, scanning, health, pods, deployment, storage and saving.
+- Home beacon and direction hints; full storage refuses overflow instead of discarding items.
 
-Existing saves, ship statistics and controls are preserved. Missiles remain M; star chart remains J. Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Update hosts and clients together to v0.28.
+Unbanked survey rewards remain at risk until extraction. Existing save schemas 1–4 migrate to schema 5; older builds refuse to overwrite the newer format. Surface expeditions remain single-player. Update hosts and clients together to v0.29. Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe.
 
-Validation includes projectile hits, camera-relative warnings, shield/hull thresholds, missile-threat filtering, lock/reload feedback, bounded history, non-silent unclipped PCM generation, replacement ships, online event deduplication, results layout, existing regressions and a real two-client match. Native Linux HUD/results renders were inspected; the renderer still reports two texture leaks during shutdown as in v0.27. Windows GUI, human sound preference and human difficulty assessment remain untested.
+Validation covers all three worlds, actual G/C input, real non-lethal attacks, save failures, reload recovery, seed recovery after bot destruction, duplicate-delivery prevention, migration and regressions. Native Linux HUD inspection completed; two existing renderer-shutdown texture leaks remain. Windows GUI and human usability playtests remain untested.

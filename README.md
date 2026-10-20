@@ -1,6 +1,16 @@
-# Galactic Dominion — Clearer Combat Feedback
+# Galactic Dominion — Dependable Creature Loop
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## A dependable creature journey
+
+**T** selects a hunt and tracks the same individual until it is captured, disappears or you change species. Approach within **12 m**, get a clear view and **hold G for two seconds**. Dangerous wildlife must be weakened to **50% health or lower** using non-lethal **LMB stun**, or **N** select / **R** deploy / **V** command your creature party. Passive animals stay curious briefly after scanning.
+
+Within **8 m**, **C** captures the displayed eligible target and spends one pod. Pod expenditure and the transport manifest save together: a failed save captures nothing and consumes nothing. Transport holds **four animals** plus seeds, and survives leaving, restarting and bot destruction. It is restored at the next expedition's landing ship. **E within 10 m of the ship** transfers cargo into sanctuary ownership and clears the manifest in one save. Failed delivery preserves cargo; repeated delivery cannot duplicate residents. Unbanked survey rewards remain expedition-local and are lost on bot destruction.
+
+The HUD explains the next step, scan/weakening/pod requirements and the direction home. A ship beacon helps navigation. Refusals explain range, obstacles, storage and saving. Craft pods at the ship through **Esc → Craft Capture Pod**, for one ore and one bloom. Sanctuary capacity remains 48 residents; seed stacks cap at 99. Delivery refuses overflow instead of discarding cargo.
+
+Save schema 5 migrates schemas 1–4 automatically. Older builds refuse to overwrite the newer format. Surface expeditions remain single-player.
 
 ## Understand the fight
 
@@ -46,7 +56,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.28 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.28.0)** and choose:
+The v0.29 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.29.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -547,3 +557,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.28 validation
 
 246 headless checks passed locally across combat feedback, tutorial, Fleet War, solo balance, smoke, progression, menu, free roam and exploration suites. All 22 backend tests and an actual two-client authenticated combat integration passed; both clients observed replicated confirmed damage events. Native Linux HUD/results renders were inspected. Two GPU texture-leak messages remain during renderer shutdown as in v0.27. Windows GUI, human sound preference and human playtesting remain untested.
+
+### v0.29 validation
+
+319 local checks passed across the complete three-planet loop, G/C capture input, planet expeditions, creature battles, progression, sanctuary forms, wilderness, tutorial and menu suites, plus 22 backend tests. Tests cover failed capture/delivery saves, pod rollback, reload recovery, seed cargo, bot destruction, duplicate delivery and schema 4 migration. A native Linux planet/HUD render was inspected; the existing two GPU texture-leak messages remain during shutdown. Windows GUI and human playtesting remain untested.

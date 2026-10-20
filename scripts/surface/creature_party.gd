@@ -17,17 +17,17 @@ func selected() -> Dictionary:
  return {}
 func cycle() -> void:
  var choices:=residents()
- if choices.is_empty():return
+ if choices.is_empty():expedition.status_message="NO CREATURE PARTY / scan and capture wildlife with C, then deliver with E at the ship";return
  var index:=-1
  for i in range(choices.size()):
   if int(choices[i].id)==selected_id:index=i
  selected_id=int(choices[(index+1)%choices.size()].id)
  expedition.status_message="CREATURE SELECTED / "+str(selected().name)
 func deploy(id: int=-1) -> bool:
- if expedition.finished or not expedition.bot.alive:return false
+ if not expedition.action_available("DEPLOY"):return false
  if id>=0:selected_id=id
  if selected().is_empty():
-  if id>=0:return false
+  if id>=0:expedition.status_message="CREATURE UNAVAILABLE / select a resident from your sanctuary";return false
   cycle()
  var resident:=selected()
  if resident.is_empty():expedition.status_message="Capture and deliver a creature to your sanctuary first.";return false
@@ -55,7 +55,9 @@ func rest() -> bool:
  recall();exhausted.clear();health_memory.clear();ability_memory.clear();expedition.status_message="CREATURES RESTED / ready to deploy.";return true
 func attack() -> bool:
  var chosen:=expedition.tracked_animal()
- if units.is_empty() or not is_instance_valid(chosen) or not chosen.alive:return false
+ if not expedition.action_available("CREATURE BATTLE"):return false
+ if units.is_empty():expedition.status_message="NO DEPLOYED CREATURES / N to select, R to deploy; or use LMB stun";return false
+ if not is_instance_valid(chosen) or not chosen.alive:expedition.status_message="NO LIVING HUNT / T to track another species";return false
  if chosen.global_position.distance_to(expedition.bot.global_position)>45 or not expedition.clear_line(expedition.bot.global_position,chosen.global_position):
   expedition.status_message="CREATURE BATTLE / approach your hunt within 45m with a clear view.";return false
  target=chosen;expedition.status_message="CREATURE PARTY / attack "+chosen.definition.display_name;return true
