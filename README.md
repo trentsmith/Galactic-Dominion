@@ -1,6 +1,12 @@
-# Galactic Dominion — Balanced Solo Combat
+# Galactic Dominion — 10v10 Fleet War
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## 10v10 Fleet War
+
+Choose **Fleet War** on the command deck for a twenty-ship solo space battle: one player and nine AI allies against ten AI opponents. Your three fitted ships are joined by seven temporary reinforcements spanning all five classes. **F1–F10** switches to any surviving ally; fleet orders 1–5 apply to the whole team. Destruction automatically transfers control. Reinforcements do not change your collection or saved loadouts.
+
+Fight across a 2.1 km starting battle zone with more asteroids and wreckage. No respawns: the last surviving team wins. After eight minutes the safe sphere collapses to zero over thirty seconds, then damages even ships at the centre until elimination. **Fleet Royale** retains its six-ship 3v3 match and eight-minute score tiebreaker. Online play remains 3v3; Fleet War is currently solo. Missiles remain **M**, star chart **J**. Results scroll to show all twenty ships and Deploy Again repeats the selected mode.
 
 ## Solo combat and missile controls
 
@@ -8,7 +14,7 @@ A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting a
 
 Solo Fleet Royale starts the two AI wingmates in Attack mode. Friendly missiles travel at 220 m/s with stronger steering and a 0.8-second lock, and friendly lasers have a slightly wider aim-assist cone. Solo enemies have 15% less hull/shield, 15% longer weapon cooldowns, half shield regeneration, brief firing pauses and a 3.5-second automatic shield-depletion retreat limit. Explicit retreat orders still work. Solo opponents no longer receive free alien attack companions. Enemy stats are cloned, leaving catalog resources untouched.
 
-These combat balance adjustments apply to **offline 3v3 Fleet Royale only**. Online combat and free-roam balance retain their previous values; the M/J bindings apply throughout ship play. This is an accessibility pass, not a human-tested difficulty rating. A full AI skirmish exercised both fleets and destroyed two opposing ships; human playtesting is still needed.
+These combat balance adjustments apply to **offline Fleet Royale and Fleet War**. Online combat and free-roam balance retain their previous values; the M/J bindings apply throughout ship play. This is an accessibility pass, not a human-tested difficulty rating. A full AI skirmish exercised both fleets and destroyed two opposing ships; human playtesting is still needed.
 
 ## Industrial fleet redesign
 
@@ -26,7 +32,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.25 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.25.0)** and choose:
+The v0.26 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.26.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -371,7 +377,7 @@ Updates use the same Godot application name, so extracting a new build to anothe
 | Tab | Cycle enemy targets |
 | M | Fire tracking missile after lock |
 | R | Ship class ability |
-| F1 / F2 / F3 | Control Interceptor / Skirmisher / Guardian |
+| F1–F3 / F1–F10 in Fleet War | Switch to an allied ship |
 | 1 / 2 / 3 / 4 / 5 | Fleet: Follow / Attack selected target / Defend / Regroup / Retreat |
 | G | Hold to scan a nearby exploration signal |
 | J | Exploration sector chart |
@@ -515,3 +521,7 @@ The rift filaments use two shared mesh actors instead of thousands of cylinder n
 ### v0.25 validation
 
 205 Godot checks passed across solo balance, smoke, free roam, progression, exploration, command deck and planet creature battles. A full AI skirmish ran to 90 simulated seconds: two enemy ships destroyed, allied damage 245.2 and opposing damage 240.8. This verifies combat activity and killability, not a measured human win rate. Windows GUI remains untested.
+
+### v0.26 validation
+
+Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/menu/progression/exploration suites, a complete twenty-ship AI skirmish, and 22 backend tests passed locally. The Fleet War test exercises F10 input mapping, automatic takeover, final collapse, elimination and mode-preserving replay. Human difficulty evaluation, Windows GUI play and performance on gaming hardware remain untested.

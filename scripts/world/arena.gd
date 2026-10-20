@@ -1,5 +1,6 @@
 class_name SpaceArena
 extends Node3D
+var battle_scale := 1.0
 var open_space := false
 var star_radius := 1700.0
 var arena_seed := 81023
@@ -41,14 +42,15 @@ func _ready() -> void:
  add_child(stars)
  if open_space: return
  SpaceEnvironmentArt.planet(self,Vector3(-1100,-450,-1600),430,Color(0.04,0.25,0.75),float(arena_seed),true)
- for index in range(34):
+ for index in range(int(34 * battle_scale)):
   var position := Vector3(rng.randf_range(-420, 420), rng.randf_range(-160, 160), rng.randf_range(-320, 320))
   if absf(position.x) < 55 and absf(position.y) < 45:
    position.y += 90
-  _asteroid(position, rng.randf_range(6, 22), rng)
- for index in range(22):
+  _asteroid(position * battle_scale, rng.randf_range(6, 22), rng)
+ for index in range(int(22 * battle_scale)):
   var debris := Node3D.new()
   debris.position = Vector3(rng.randf_range(-360, 360), rng.randf_range(-140, 140), rng.randf_range(-300, 300))
+  debris.position *= battle_scale
   debris.rotation = Vector3(rng.randf() * PI, rng.randf() * PI, rng.randf() * PI)
   add_child(debris)
   SceneryArt.wreck(debris,Vector3(rng.randf_range(2,5),1,rng.randf_range(4,9)))

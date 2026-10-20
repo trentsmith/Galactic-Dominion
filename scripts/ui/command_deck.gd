@@ -38,7 +38,7 @@ func _ready() -> void:
  row.add_child(scroll)
  var column := VBoxContainer.new()
  column.custom_minimum_size.x = 422
- column.add_theme_constant_override("separation",10)
+ column.add_theme_constant_override("separation",6)
  scroll.add_child(column)
  _label(column,"G A L A C T I C   D O M I N I O N",13,MINT)
  var title := _label(column,"Ready when\nyou are." if paused else "A galaxy\nof your own.",46,INK)
@@ -54,6 +54,7 @@ func _ready() -> void:
   _label(column,"CHOOSE YOUR NEXT ADVENTURE",11,MUTED)
   var modes := GridContainer.new();modes.columns=2;modes.add_theme_constant_override("h_separation",10);modes.add_theme_constant_override("v_separation",8);column.add_child(modes)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)
+  _mode(modes,"FleetWarButton","Fleet War","10v10 · last fleet standing",host.start_fleet_war)
   _mode(modes,"PlanetsButton","Planet expeditions","Meet the wild frontier",host.show_planets)
   _mode(modes,"SanctuaryButton","Your little planet","Care, grow and belong",host.show_sanctuary)
   _mode(modes,"HangarButton","Fleet & collection","Make every ship yours",host.show_hangar)
@@ -116,7 +117,7 @@ func _button(parent: Node,id: String,content: String,callback: Callable,height: 
  parent.add_child(button);return button
 
 func _mode(parent: Node,id: String,title: String,detail: String,callback: Callable) -> void:
- var button:=_button(parent,id,title+"\n"+detail,callback,58)
+ var button:=_button(parent,id,title+"\n"+detail,callback,50)
  button.custom_minimum_size.x=204;button.alignment=HORIZONTAL_ALIGNMENT_LEFT
  button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 
@@ -137,7 +138,7 @@ func _show_controls() -> void:
  controls_popup.add_child(margin)
  var column:=VBoxContainer.new();column.add_theme_constant_override("separation",14);margin.add_child(column)
  _label(column,"A LITTLE FLIGHT SCHOOL",23,MINT)
- _label(column,"W / S    Forward / reverse\nA / D    Strafe · Space / Ctrl    Vertical\nMouse    Steer · Q / E    Roll\nShift    Boost · R    Ship ability\n\nLeft click    Laser · M    Missile\nTab    Target · F1–F3    Switch ship\n1–5    Fleet commands\n\nJ    Star chart · G    Scan / service\nH    Scenic HUD · Esc    Pause / menu",15,INK)
+ _label(column,"W / S    Forward / reverse\nA / D    Strafe · Space / Ctrl    Vertical\nMouse    Steer · Q / E    Roll\nShift    Boost · R    Ship ability\n\nLeft click    Laser · M    Missile\nTab    Target · F1–F3    Switch ship\nFleet War: F1–F10    Any allied ship\n1–5    Fleet commands\n\nJ    Star chart · G    Scan / service\nH    Scenic HUD · Esc    Pause / menu",15,INK)
  _label(column,"Peaceful flight has no raids or ion damage.\nFleet Royale has a shrinking battle zone.\nOnline play continues while menus are open.",13,MUTED)
  _button(column,"CloseControlsButton","GOT IT / BACK TO THE STARS",func():controls_popup.hide(),40)
  controls_popup.popup_centered(Vector2i(470,520))

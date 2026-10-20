@@ -54,7 +54,10 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
  for ship in battle.ships:
   stats.text += "%s (%s)   %d    %d    %d%%
 " % [ship.callsign, ship.stats.class_name_text, ship.kills, int(ship.damage_dealt), int(100.0 * ship.hits / maxf(1, ship.shots))]
- column.add_child(stats)
+ var scroll := ScrollContainer.new()
+ scroll.custom_minimum_size = Vector2(600, 220 if battle.ships.size() > 6 else 160)
+ column.add_child(scroll)
+ scroll.add_child(stats)
  if battle.profile != null:
   var loot := Label.new()
   loot.text = "DISCOVERY SALVAGE  /  " + battle.reward_summary + "\n"
@@ -79,7 +82,7 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
  var replay := Button.new()
  replay.text = "DEPLOY AGAIN"
  replay.custom_minimum_size.y = 42
- replay.pressed.connect(battle.get_parent().start_battle)
+ replay.pressed.connect(battle.get_parent().start_battle.bind(battle.team_size))
  column.add_child(replay)
  var menu := Button.new()
  menu.text = "MAIN MENU"

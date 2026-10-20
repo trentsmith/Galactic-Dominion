@@ -3,6 +3,8 @@ extends Node3D
 signal ended(winner, reason)
 
 const CLASSES = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+var team_size := 3
+var elimination_only := false
 var ships: Array[CombatShip] = []
 var fleet: FleetManager
 var pilot: PlayerPilot
@@ -26,9 +28,16 @@ func _init() -> void:
 
 func _ready() -> void:
  battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
+ # Network protocol remains six slots; Fleet War is an offline mode.
+ team_size = 10 if team_size == 10 and network_role == "offline" else 3
+ elimination_only = team_size == 10
  var arena := SpaceArena.new()
+ arena.battle_scale = 1.7 if team_size == 10 else 1.0
  add_child(arena)
  zone = BattleZone.new()
+ if team_size == 10:
+  zone.start_radius = 1050.0
+  zone.final_radius = 150.0
  add_child(zone)
  camera = Camera3D.new()
  camera.far = 4000.0
@@ -41,14 +50,14 @@ func _ready() -> void:
  fleet.pilot = pilot
  add_child(fleet)
  for team_index in range(2):
-  for slot in range(3):
+  for slot in range(team_size):
    var ship := CombatShip.new()
-   ship.stats = profile.configured_stats(slot) if team_index == 0 and profile != null else CLASSES[slot]
-   if team_index == 0 and profile != null:
+   ship.stats = profile.configured_stats(slot) if team_index == 0 and profile != null and slot < 3 else reinforcement_stats(slot)
+   if team_index == 0 and profile != null and slot < 3:
     var crew := CollectionCatalog.find(str(profile.loadouts[slot].crew))
     ship.crew_name = crew.display_name if crew != null else "Unassigned"
-   if preconfigured_stats.size() == 6:
-    ship.stats = preconfigured_stats[team_index * 3 + slot]
+   if preconfigured_stats.size() == team_size * 2:
+    ship.stats = preconfigured_stats[team_index * team_size + slot]
    if team_index == 1 and network_role == "offline":
     ship.stats = ship.stats.duplicate(true)
     ship.stats.hull*=.85;ship.stats.shield*=.85
@@ -59,6 +68,8 @@ func _ready() -> void:
    ship.fleet_slot = slot
    ship.callsign = ("Vanguard" if team_index == 0 else "Ravager") + " %d" % (slot + 1)
    ship.position = Vector3((slot - 1) * 40.0, slot * 12.0, 230.0 if team_index == 0 else -230.0)
+   if team_size == 10:
+    ship.position = Vector3((slot % 5 - 2) * 65.0, (slot / 5) * 65.0 - 32.5, (410.0 + (slot / 5) * 75.0) * (1 if team_index == 0 else -1))
    if team_index == 1:
     ship.rotation.y = PI
    add_child(ship)
@@ -77,6 +88,9 @@ func _ready() -> void:
  fleet.switch_to(0)
  pilot.ship.targeting.cycle()
  fleet.issue_command("attack" if network_role=="offline" else "follow")
+ if team_size == 10:
+  # Start separate dogfights instead of assigning nine escorts to one opponent.
+  for ally in fleet.ships:ally.brain.commanded_target = null
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)
@@ -103,7 +117,7 @@ func _physics_process(delta: float) -> void:
  elapsed += delta
  update_auras()
  zone.tick(delta, ships)
- if elapsed >= max_duration:
+ if elapsed >= max_duration and not elimination_only:
   var scores := [0.0, 0.0]
   for ship in ships:
    if ship.alive:
@@ -164,3 +178,9 @@ func finish(team: int, reason: String) -> void:
 
 func local_team() -> int:
  return pilot.ship.team if is_instance_valid(pilot.ship) else 0
+
+func reinforcement_stats(slot: int) -> ShipStats:
+ if slot < 3:
+  return CLASSES[slot]
+ var support_classes := [CLASSES[0], CLASSES[1], CLASSES[2], preload("res://resources/ships/bomber.tres"), preload("res://resources/ships/support.tres")]
+ return support_classes[(slot - 3) % support_classes.size()]

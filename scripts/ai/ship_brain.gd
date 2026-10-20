@@ -74,8 +74,12 @@ func tick(delta: float) -> void:
   ship.movement.thrust = Vector3.ZERO
 
 func _formation() -> Vector3:
- var side := -1.0 if ship.fleet_slot == 1 else 1.0
- return leader.global_position + leader.global_basis * Vector3(side * 24, 8, 28)
+ var index := ship.fleet_slot
+ # Exclude the leader so every wingmate receives a separate formation slot.
+ if index > leader.fleet_slot:index -= 1
+ var side := -1.0 if index % 2 == 0 else 1.0
+ var row := index / 2 + 1
+ return leader.global_position + leader.global_basis * Vector3(side * (24 + row * 10), 8 + (index % 3) * 12, row * 32)
 
 func _find_target() -> void:
  if command == "attack" and is_instance_valid(commanded_target) and commanded_target.alive:

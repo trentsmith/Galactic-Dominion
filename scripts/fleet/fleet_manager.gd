@@ -10,7 +10,7 @@ var current_command := "follow"
 func _unhandled_input(event: InputEvent) -> void:
  if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
   return
- for slot in range(3):
+ for slot in range(mini(ships.size(), 10)):
   if event.is_action_pressed("ship_%d" % (slot + 1)):
    switch_to(slot)
  var commands := ["follow", "attack", "defend", "regroup", "retreat"]

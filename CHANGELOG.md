@@ -1,3 +1,7 @@
+# v0.26 — 10v10 Fleet War
+
+Add twenty-ship solo elimination battles alongside 3v3 Fleet Royale, seven reinforcements, F1–F10 switching, larger obstacle-filled arena, distinct formation slots, final zone collapse and scrollable results. Online remains 3v3.
+
 # v0.25 — Balanced Solo Combat and Missile Controls
 
 Move missiles to M and the star chart to J. Give offline Fleet Royale immediate wingmate support, faster allied missiles and acquisition, wider laser assistance, reduced enemy durability and regeneration, paced enemy fire and shorter automatic retreats. Remove free enemy alien escorts in solo matches. Preserve online and free-roam balance.

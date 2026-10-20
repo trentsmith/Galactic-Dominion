@@ -3,7 +3,7 @@ func _initialize() -> void:call_deferred("run")
 func run() -> void:
  var main: Node=load("res://scenes/main.tscn").instantiate();main.profile_path="user://solo-skirmish-test.json";root.add_child(main)
  await process_frame
- main.start_battle()
+ main.start_battle(10 if "--fleet-war" in OS.get_cmdline_user_args() else 3)
  var battle: BattleMatch=main.battle;battle.max_duration=90
  battle.pilot.set_physics_process(false);battle.pilot.ship.player_controlled=false
  battle.fleet.control_changed.connect(func(ship):ship.player_controlled=false)

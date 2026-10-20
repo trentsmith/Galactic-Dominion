@@ -50,6 +50,8 @@ func _ready() -> void:
  show_menu()
  if "--free-roam" in arguments:
   start_free_roam()
+ elif "--fleet-war" in arguments:
+  start_fleet_war()
  elif "--battle" in arguments:
   start_battle()
  elif "--sanctuary" in arguments:
@@ -74,7 +76,10 @@ func _unhandled_input(event: InputEvent) -> void:
    show_menu(true)
   get_viewport().set_input_as_handled()
 
-func start_battle() -> void:
+func start_fleet_war() -> void:
+ start_battle(10)
+
+func start_battle(size_per_team: int = 3) -> void:
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -84,6 +89,7 @@ func start_battle() -> void:
   battle.get_parent().remove_child(battle)
   battle.queue_free()
  battle = BattleMatch.new()
+ battle.team_size = size_per_team
  battle.profile = profile
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
