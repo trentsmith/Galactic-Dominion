@@ -1,6 +1,12 @@
-# Galactic Dominion — Dependable Creature Loop
+# Galactic Dominion — Solo AI Difficulty
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Choose your solo difficulty
+
+Choose **Relaxed**, **Standard** or **Veteran** with **Solo Battle AI** on the command deck or in Settings. Your preference is saved and applies to the next solo 3v3 or 10v10 battle. Standard preserves the previous balance; Relaxed gives enemies slower target reactions, shorter bursts and more pauses; Veteran increases reaction, tracking and firing pressure without extra health above Standard. Raw enemy weapon damage and friendly aiming/missile assistance are unchanged. Online, free roam, training and planet encounters are unaffected.
+
+The HUD and results show the actual match preset. After a solo match, optional **Too easy / About right / Too hard** buttons save local playtest feedback alongside match statistics. **Open Local Playtest Reports** opens the folder; nothing uploads automatically. Presets have automated comparison coverage, but **human difficulty tuning is still pending**. See [the playtest guide](docs/DIFFICULTY_PLAYTEST.md) for the actual simulation results and a human testing plan.
 
 ## A dependable creature journey
 
@@ -18,7 +24,7 @@ Combat now reports confirmed shield and hull damage separately. Camera-relative 
 
 Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
 
-Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.28.
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.30.
 
 ## Start here: flight school
 
@@ -56,7 +62,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.29 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.29.0)** and choose:
+The v0.30 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.30.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -561,3 +567,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.29 validation
 
 319 local checks passed across the complete three-planet loop, G/C capture input, planet expeditions, creature battles, progression, sanctuary forms, wilderness, tutorial and menu suites, plus 22 backend tests. Tests cover failed capture/delivery saves, pod rollback, reload recovery, seed cargo, bot destruction, duplicate delivery and schema 4 migration. A native Linux planet/HUD render was inspected; the existing two GPU texture-leak messages remain during shutdown. Windows GUI and human playtesting remain untested.
+
+### v0.30 validation
+
+185 local Godot checks passed across difficulty, menu, solo balance, Fleet War, tutorial, combat feedback and progression suites, plus 22 backend tests. All three presets completed automated 10v10 comparison battles; actual metrics and limitations are in docs/DIFFICULTY_PLAYTEST.md. Native Linux menu/settings/results views were inspected. These checks do not replace human calibration or Windows hands-on playtesting.

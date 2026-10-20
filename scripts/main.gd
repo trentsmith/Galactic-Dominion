@@ -7,6 +7,7 @@ var sanctuary_scene: SanctuaryGarden
 var surface: PlanetExpedition
 var parked_roam: FreeRoamMatch
 var battle: BattleMatch
+var difficulty := "standard"
 var sensitivity := 0.0025
 var inverted := false
 var fullscreen := false
@@ -41,6 +42,7 @@ func _ready() -> void:
  profile = PlayerProfile.new(profile_path)
  profile.load_profile()
  settings.load("user://settings.cfg")
+ difficulty = SoloDifficulty.valid(str(settings.get_value("gameplay","difficulty","standard")))
  sensitivity = settings.get_value("controls", "sensitivity", 0.0025)
  inverted = settings.get_value("controls", "invert_y", false)
  fullscreen = settings.get_value("display", "fullscreen", false)
@@ -105,6 +107,7 @@ func start_battle(size_per_team: int = 3) -> void:
   battle.queue_free()
  battle = BattleMatch.new()
  battle.team_size = size_per_team
+ battle.difficulty = difficulty
  battle.profile = profile
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
@@ -160,14 +163,33 @@ func show_settings(paused: bool) -> void:
  center.theme = CartoonStyle.ui_theme()
  center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  menu.add_child(center)
+ var scroll := ScrollContainer.new()
+ scroll.custom_minimum_size=Vector2(460,minf(600,get_viewport().get_visible_rect().size.y-80))
+ scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+ center.add_child(scroll)
  var column := VBoxContainer.new()
  column.custom_minimum_size = Vector2(420, 0)
- column.add_theme_constant_override("separation", 20)
- center.add_child(column)
+ column.add_theme_constant_override("separation", 16)
+ scroll.add_child(column)
  var label := Label.new()
- label.text = "FLIGHT SETTINGS"
+ label.text = "GAME SETTINGS"
  label.add_theme_font_size_override("font_size", 30)
  column.add_child(label)
+ var difficulty_label := Label.new()
+ difficulty_label.text="SOLO BATTLE DIFFICULTY"
+ difficulty_label.add_theme_font_size_override("font_size",13)
+ column.add_child(difficulty_label)
+ var difficulty_dropdown := difficulty_choice(column)
+ var description := Label.new()
+ description.text = SoloDifficulty.PRESETS[difficulty].description
+ description.custom_minimum_size.x=420
+ description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ column.add_child(description)
+ difficulty_dropdown.item_selected.connect(func(index):description.text=SoloDifficulty.PRESETS[SoloDifficulty.IDS[index]].description)
+ var scope := Label.new()
+ scope.text = "Solo 3v3 / 10v10 · applies to your next battle"
+ scope.add_theme_font_size_override("font_size",13)
+ column.add_child(scope)
  var value := Label.new()
  value.text = "Mouse sensitivity: %.2f" % (sensitivity * 1000)
  column.add_child(value)
@@ -212,6 +234,7 @@ func show_settings(paused: bool) -> void:
  _button(column, "BACK", func(): show_menu(paused))
 
 func _save_settings() -> void:
+ settings.set_value("gameplay","difficulty",difficulty)
  settings.set_value("audio", "volume", volume)
  settings.set_value("controls", "sensitivity", sensitivity)
  settings.set_value("controls", "invert_y", inverted)
@@ -379,3 +402,17 @@ func return_from_sanctuary_trip() -> void:
  sanctuary_scene=null
  if is_instance_valid(parked_roam):return_from_planet()
  else:show_planets()
+
+func difficulty_choice(parent: Control) -> OptionButton:
+ var choice := OptionButton.new()
+ choice.name = "DifficultyChoice"
+ for id in SoloDifficulty.IDS:
+  choice.add_item(SoloDifficulty.title(id))
+  choice.get_popup().set_item_tooltip(choice.item_count-1,SoloDifficulty.PRESETS[id].description)
+ choice.select(SoloDifficulty.IDS.find(difficulty))
+ choice.tooltip_text = "Enemy AI for your next solo Fleet Royale or Fleet War. Online, free roam and training are unchanged."
+ choice.item_selected.connect(func(index):
+  difficulty = SoloDifficulty.IDS[index]
+  _save_settings())
+ parent.add_child(choice)
+ return choice

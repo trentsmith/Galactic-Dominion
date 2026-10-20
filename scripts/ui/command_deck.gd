@@ -38,7 +38,7 @@ func _ready() -> void:
  row.add_child(scroll)
  var column := VBoxContainer.new()
  column.custom_minimum_size.x = 422
- column.add_theme_constant_override("separation",6)
+ column.add_theme_constant_override("separation",5)
  scroll.add_child(column)
  _label(column,"G A L A C T I C   D O M I N I O N",13,MINT)
  var title := _label(column,"Ready when\nyou are." if paused else "A galaxy\nof your own.",46,INK)
@@ -51,7 +51,9 @@ func _ready() -> void:
   var quick := HBoxContainer.new();quick.add_theme_constant_override("separation",10);column.add_child(quick)
   _button(quick,"PeacefulButton","PEACEFUL FLIGHT",func():host.start_free_roam(true),32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
   _button(quick,"OnlineButton","ONLINE PLAY",host.show_online,32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  _label(column,"CHOOSE YOUR NEXT ADVENTURE",11,MUTED)
+  var battle_options := HBoxContainer.new();column.add_child(battle_options)
+  _label(battle_options,"SOLO BATTLE AI  ",11,MUTED)
+  host.difficulty_choice(battle_options)
   var modes := GridContainer.new();modes.columns=2;modes.add_theme_constant_override("h_separation",10);modes.add_theme_constant_override("v_separation",8);column.add_child(modes)
   _mode(modes,"TutorialButton","Replay flight school" if host.settings.get_value("tutorial","flight_completed",false) else "Start here: flight school","Learn to fly · safe practice",host.start_tutorial)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)
@@ -120,7 +122,7 @@ func _button(parent: Node,id: String,content: String,callback: Callable,height: 
  parent.add_child(button);return button
 
 func _mode(parent: Node,id: String,title: String,detail: String,callback: Callable) -> void:
- var button:=_button(parent,id,title+"\n"+detail,callback,50)
+ var button:=_button(parent,id,title+"\n"+detail,callback,48)
  button.custom_minimum_size.x=204;button.alignment=HORIZONTAL_ALIGNMENT_LEFT
  button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 

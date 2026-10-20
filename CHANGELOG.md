@@ -1,3 +1,7 @@
+# v0.30 — Solo AI Difficulty
+
+Add saved Relaxed/Standard/Veteran presets for solo 3v3 and 10v10, behavioral tuning, HUD/results labels, optional local playtest reports, and a human testing guide. Preserve online/free-roam/training/planet rules. Fix offscreen damage-arrow triangulation uncovered by automated comparisons. Human calibration remains pending.
+
 # v0.29 — Dependable Creature Loop
 
 Persist secured animal/seed transport atomically with capture expenditure and sanctuary delivery. Add schema 5 migration, stable hunt tracking, post-scan passive curiosity, home navigation and actionable refusal messages. Preserve unbanked-survey loss on bot destruction.

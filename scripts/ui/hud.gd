@@ -64,6 +64,7 @@ func show_results() -> void:
 Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(battle.elapsed) % 60]
  detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  detail.custom_minimum_size.x = 600
+ if battle.network_role=="offline" and not battle.training and not battle is FreeRoamMatch and not battle is ExplorationMatch:detail.text += "\nDifficulty: "+SoloDifficulty.title(battle.difficulty)
  layout.add_child(detail)
  layout.move_child(detail,1)
  var explanation := Label.new()
@@ -73,6 +74,8 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
  explanation.custom_minimum_size.x = 600
  explanation.add_theme_font_size_override("font_size",13)
  column.add_child(explanation)
+ if battle.network_role=="offline" and not battle.training and not battle is FreeRoamMatch and not battle is ExplorationMatch:
+  _playtest_feedback(column)
  var stats := Label.new()
  stats.text = "SHIP                      KILLS    DAMAGE    ACCURACY
 "
@@ -113,3 +116,19 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
  menu.custom_minimum_size.y = 42
  menu.pressed.connect(battle.get_parent().return_to_menu)
  layout.add_child(menu)
+
+func _playtest_feedback(column: VBoxContainer) -> void:
+ var status := Label.new()
+ status.text = "Optional: how did the enemy difficulty feel?"
+ column.add_child(status)
+ var row := HBoxContainer.new();column.add_child(row)
+ for option in [["Too easy","too_easy"],["About right","about_right"],["Too hard","too_hard"]]:
+  var button := Button.new();button.text=option[0];button.name="Rate_"+option[1]
+  button.pressed.connect(func():
+   var error := DifficultyPlaytest.save(battle,option[1])
+   status.text = "Feedback saved on this PC. Thank you!" if error==OK else "Could not save feedback. You can keep playing.")
+  row.add_child(button)
+ var open := Button.new();open.text="OPEN LOCAL PLAYTEST REPORTS"
+ open.pressed.connect(func():OS.shell_open(ProjectSettings.globalize_path("user://playtests")))
+ column.add_child(open)
+ if DifficultyPlaytest.save(battle)!=OK:status.text="Could not save the local report. Check folder permissions; you can keep playing."

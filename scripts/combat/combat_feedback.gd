@@ -128,7 +128,7 @@ func direction_label(world_position: Vector3) -> String:
 func indicator_direction(world_position: Vector3) -> Vector2:
  var local := battle.camera.global_basis.inverse() * (world_position - battle.pilot.ship.global_position)
  var projected := Vector2(local.x,-local.y)
- if projected.length()<absf(local.z)*.3:return Vector2.DOWN if local.z>0 else Vector2.UP
+ if projected.length()<maxf(.001,absf(local.z)*.3):return Vector2.DOWN if local.z>0 else Vector2.UP
  return projected.normalized()
 
 func count_incoming() -> int:

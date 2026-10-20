@@ -3,6 +3,8 @@ func _initialize() -> void:call_deferred("run")
 func run() -> void:
  var main: Node=load("res://scenes/main.tscn").instantiate();main.profile_path="user://solo-skirmish-test.json";root.add_child(main)
  await process_frame
+ var args:=OS.get_cmdline_user_args()
+ if "--difficulty" in args:main.difficulty=SoloDifficulty.valid(args[args.find("--difficulty")+1])
  main.start_battle(10 if "--fleet-war" in OS.get_cmdline_user_args() else 3)
  var battle: BattleMatch=main.battle;battle.max_duration=90
  battle.pilot.set_physics_process(false);battle.pilot.ship.player_controlled=false
@@ -17,7 +19,7 @@ func run() -> void:
    enemy_damage+=ship.damage_dealt
    if not ship.alive:enemies_destroyed+=1
  var success:=allied_damage>0 and enemy_damage>0 and enemies_destroyed>0
- print("SOLO_SKIRMISH_RESULT elapsed=%.1f winner=%d enemies_destroyed=%d allied_damage=%.1f enemy_damage=%.1f"%[battle.elapsed,battle.winner,enemies_destroyed,allied_damage,enemy_damage])
+ print("SOLO_SKIRMISH_RESULT difficulty=%s elapsed=%.1f winner=%d enemies_destroyed=%d allied_damage=%.1f enemy_damage=%.1f"%[battle.difficulty,battle.elapsed,battle.winner,enemies_destroyed,allied_damage,enemy_damage])
  if not success:push_error("Skirmish must exercise combat from both fleets and destroy at least one AI opponent")
  main.queue_free();await process_frame
  print("SOLO_SKIRMISH_PASS" if success else "SOLO_SKIRMISH_FAIL");quit(0 if success else 1)

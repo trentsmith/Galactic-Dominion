@@ -44,7 +44,7 @@ func _draw() -> void:
   if candidate.alive and candidate.team != ship.team: opponents += 1
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
- text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "FLEET WAR  /  10v10" if battle.team_size == 10 else "FLEET ROYALE  /  VANGUARD", MUTED, 13)
+ text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
  text(Vector2(42, 93), "ALLIES %d / HOSTILES %d" % [battle.living(battle.local_team()), opponents], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
  var exploring := battle is ExplorationMatch
@@ -178,6 +178,7 @@ func _draw_target_card(target: CombatShip, ship: CombatShip) -> void:
 func _draw_feedback(reticle: Vector2) -> void:
  if not is_instance_valid(feedback):return
  var center := size/2
+ reticle = feedback_anchor(reticle)
  for impact in feedback.directions:
   var direction := feedback.indicator_direction(impact.position)
   var tangent := Vector2(-direction.y,direction.x)
@@ -202,3 +203,7 @@ func _draw_feedback(reticle: Vector2) -> void:
  if ship.health.hull<=ship.health.max_hull*.25 and ship.alive:
   draw_rect(Rect2(Vector2.ZERO,Vector2(size.x,5)),Color(1,.3,.2,.7))
   text(Vector2(42,size.y-213),"CRITICAL HULL · %s SWITCH / 5 RETREAT" % ("F1–F10" if battle.team_size==10 else "F1–F3"),Color(1,.45,.3),13)
+
+func feedback_anchor(projected: Vector2) -> Vector2:
+ # Offscreen/behind-camera weapon projections can be enormous during ship changes.
+ return projected if projected.is_finite() and Rect2(Vector2.ZERO,size).has_point(projected) else size/2

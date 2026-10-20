@@ -3,6 +3,8 @@ extends Node3D
 signal ended(winner, reason)
 
 const CLASSES = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+var difficulty := "standard"
+var playtest_path := ""
 var training := false
 var team_size := 3
 var elimination_only := false
@@ -28,6 +30,7 @@ func _init() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _ready() -> void:
+ difficulty = SoloDifficulty.valid(difficulty)
  battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
  # Network protocol remains six slots; Fleet War is an offline mode.
  team_size = 10 if team_size == 10 and network_role == "offline" else 3
@@ -61,10 +64,7 @@ func _ready() -> void:
    if preconfigured_stats.size() == team_size * 2:
     ship.stats = preconfigured_stats[team_index * team_size + slot]
    if team_index == 1 and network_role == "offline":
-    ship.stats = ship.stats.duplicate(true)
-    ship.stats.hull*=.85;ship.stats.shield*=.85
-    ship.stats.laser_cooldown*=1.15;ship.stats.missile_cooldown*=1.15
-    ship.stats.crew_id = ""
+    ship.stats = SoloDifficulty.enemy_stats(ship.stats,"standard" if training else difficulty)
     ship.crew_name = "AI pilot"
    ship.team = team_index
    ship.fleet_slot = slot
@@ -81,8 +81,7 @@ func _ready() -> void:
      ship.weapons.secondary.speed=220.0;ship.weapons.secondary.turn_rate=4.5
      ship.weapons.aim_assist_dot=.97;ship.targeting.lock_duration=.8
     else:
-     ship.health.regen_rate*=.5
-     ship.brain.retreat_duration=3.5;ship.brain.burst_duration=2;ship.brain.burst_pause=.65
+     SoloDifficulty.configure_enemy(ship,"standard" if training else difficulty)
    ship.eliminated.connect(_on_eliminated)
    if team_index == 0:
     fleet.ships.append(ship)

@@ -9,6 +9,9 @@ var commanded_target: CombatShip
 var state := State.FOLLOW
 var alert_time := 0.0
 var retarget_timer := 0.0
+var reaction_interval := .6
+var aim_lead := 1.0
+var fire_dot := .975
 var retreat_latch := false
 var retreat_duration:=INF
 var retreat_elapsed:=0.0
@@ -25,7 +28,7 @@ func tick(delta: float) -> void:
  patrol_time += delta
  retarget_timer -= delta
  if retarget_timer <= 0.0:
-  retarget_timer = 0.6
+  retarget_timer = reaction_interval
   _find_target()
  var enemy := ship.targeting.target
  var destination := ship.global_position
@@ -54,9 +57,9 @@ func tick(delta: float) -> void:
   if distance < 50.0:
    state = State.EVADE
    destination = ship.global_position + ship.global_basis.x * (80.0 if ship.fleet_slot % 2 == 0 else -80.0) - ship.global_basis.z * 60.0
-  var aim := ship.global_position.direction_to(enemy.global_position + enemy.velocity * distance / ship.weapons.primary.speed)
+  var aim := ship.global_position.direction_to(enemy.global_position + enemy.velocity * aim_lead * distance / ship.weapons.primary.speed)
   var firing_window:=burst_pause<=0 or fmod(patrol_time+ship.fleet_slot*.4,burst_duration+burst_pause)<burst_duration
-  if firing_window and (-ship.global_basis.z).dot(aim) > 0.975 and distance < 650.0:
+  if firing_window and (-ship.global_basis.z).dot(aim) > fire_dot and distance < 650.0:
    ship.weapons.fire()
   if firing_window and ship.targeting.locked() and distance < 500.0:
    ship.weapons.fire(true)

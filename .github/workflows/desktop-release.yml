@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-29-dependable-creature-loop]
+    branches: [phase-30-solo-difficulty]
   workflow_dispatch:
 permissions:
   contents: write
@@ -63,10 +63,10 @@ jobs:
         run: |
           godot --headless --path . --script res://tests/sanctuary_forms_test.gd
           godot --headless --path . --script res://tests/creature_army_test.gd
+          godot --headless --path . --script res://tests/difficulty_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/combat_feedback_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/tutorial_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/fleet_war_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60 -- --fleet-war
           godot --headless --path . --script res://tests/solo_balance_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/planet_creature_battle_test.gd
@@ -83,6 +83,14 @@ jobs:
           python3 tests/test_army_network.py
           GD_TEST_COMPANION=crew_orbitot GD_TEST_VARIANT=variant_orbitot GD_TEST_HULL=skirmisher python3 tests/test_free_roam_network.py
           GD_TEST_COMPANION=crew_glimbloom GD_TEST_VARIANT=variant_glimbloom GD_TEST_HULL=guardian python3 tests/test_free_roam_network.py
+      - name: Compare all three solo 10v10 presets
+        run: |
+          for preset in relaxed standard veteran; do
+            godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60 -- --fleet-war --difficulty "$preset" > /tmp/preset.log 2>&1
+            cat /tmp/preset.log
+            grep SOLO_SKIRMISH_PASS /tmp/preset.log
+            if grep -E 'SCRIPT ERROR|ERROR:' /tmp/preset.log; then exit 1; fi
+          done
       - name: Verify packaged multiplayer server
         run: GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_network_integration.py
       - uses: actions/upload-artifact@v4
@@ -93,8 +101,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.29.0
+          tag=v0.30.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.29 — Dependable Creature Loop' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.30 — Solo AI Difficulty' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber
