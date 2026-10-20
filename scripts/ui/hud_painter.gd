@@ -4,6 +4,7 @@ extends Control
 const CYAN := Color(0.25, 0.85, 1)
 const MUTED := Color(0.55, 0.67, 0.8)
 const RED := Color(1, 0.35, 0.3)
+var feedback: CombatFeedback
 var battle: BattleMatch
 var font: Font
 
@@ -109,11 +110,10 @@ func _draw() -> void:
    if free_roam and candidate != target and ship.position.distance_to(candidate.position) > 1400: continue
    _draw_ship_marker(candidate, candidate == target)
  if is_instance_valid(target) and target.alive:
-  var info := "%s  /  %dm" % [target.callsign.to_upper(), int(ship.global_position.distance_to(target.global_position))]
-  text(center + Vector2(-120, 95), info, RED, 15)
-  text(center + Vector2(-120, 118), "MISSILE LOCK" if ship.targeting.locked() else "ACQUIRING  %d%%" % int(ship.targeting.lock_time / ship.targeting.lock_duration * 100), CYAN if ship.targeting.locked() else MUTED, 13)
+  _draw_target_card(target,ship)
  else:
   text(center + Vector2(-110, 95), "TAB  /  ACQUIRE TARGET", MUTED, 14)
+ _draw_feedback(reticle)
  if ship.outside_time > 0:
   draw_rect(Rect2(Vector2.ZERO, size), Color(1, 0.2, 0.1, 0.10))
   text(Vector2(width / 2 - 190, 120), "OUTSIDE SAFE ZONE  /  RETURN TO CENTER", RED, 18)
@@ -140,9 +140,13 @@ func _draw_ship_marker(ship: CombatShip, selected: bool) -> void:
  var radius := 20.0 if selected else 8.0
  draw_rect(Rect2(screen - Vector2.ONE * radius, Vector2.ONE * radius * 2), color, false, 1.5)
  if ship.team != battle.local_team():
-  draw_rect(Rect2(screen + Vector2(-25, -radius - 14), Vector2(50, 4)), Color(0.1, 0.1, 0.15))
-  draw_rect(Rect2(screen + Vector2(-25, -radius - 14), Vector2(50 * ship.health.hull / ship.health.max_hull, 4)), RED)
-  draw_rect(Rect2(screen + Vector2(-25, -radius - 20), Vector2(50 * ship.health.shield / ship.health.max_shield, 3)), CYAN)
+  var length := 90.0 if selected else 64.0
+  var origin := screen + Vector2(-length/2,-radius-23)
+  draw_rect(Rect2(origin-Vector2(2,2),Vector2(length+4,18)),Color(.01,.015,.025,.95))
+  draw_rect(Rect2(origin,Vector2(length,5)),Color(.1,.16,.22))
+  draw_rect(Rect2(origin,Vector2(length*clampf(ship.health.shield/maxf(1,ship.health.max_shield),0,1),5)),CYAN)
+  draw_rect(Rect2(origin+Vector2(0,8),Vector2(length,6)),Color(.2,.08,.08))
+  draw_rect(Rect2(origin+Vector2(0,8),Vector2(length*clampf(ship.health.hull/maxf(1,ship.health.max_hull),0,1),6)),Color(1,.65,.35))
  if selected:
   text(screen + Vector2(25, -8), ship.stats.class_name_text, color, 12)
 
@@ -152,3 +156,49 @@ func _draw_location(at: Vector3, name_text: String, color: Color, ship: CombatSh
  if screen.x < 20 or screen.x > size.x - 20 or screen.y < 20 or screen.y > size.y - 20: return
  draw_circle(screen, 9, color, false, 1.5)
  text(screen + Vector2(14, 0), "%s / %dm" % [name_text, int(ship.position.distance_to(at))], color, 12)
+
+func _draw_target_card(target: CombatShip, ship: CombatShip) -> void:
+ var at := Vector2(size.x/2-230,size.y-158)
+ panel(Rect2(at,Vector2(460,106)))
+ text(at+Vector2(16,22),"%s / %s / %dm" % [target.callsign,target.stats.class_name_text,int(ship.global_position.distance_to(target.global_position))],Color.WHITE,14)
+ var hull_percent := int(100*target.health.hull/maxf(1,target.health.max_hull))
+ text(at+Vector2(16,45),"HULL %d%% · %d / %d" % [hull_percent,ceil(target.health.hull),target.health.max_hull],Color(1,.75,.45),13)
+ draw_rect(Rect2(at+Vector2(16,52),Vector2(204,7)),Color(.16,.08,.08))
+ draw_rect(Rect2(at+Vector2(16,52),Vector2(204*clampf(target.health.hull/maxf(1,target.health.max_hull),0,1),7)),Color(1,.65,.35))
+ text(at+Vector2(240,45),"SHIELD %d / %d" % [ceil(target.health.shield),target.health.max_shield],CYAN,13)
+ draw_rect(Rect2(at+Vector2(240,52),Vector2(204,7)),Color(.08,.15,.2))
+ draw_rect(Rect2(at+Vector2(240,52),Vector2(204*clampf(target.health.shield/maxf(1,target.health.max_shield),0,1),7)),CYAN)
+ var lock_fraction := clampf(ship.targeting.lock_time/maxf(.01,ship.targeting.lock_duration),0,1)
+ var lock_status := "LOCK READY · PRESS M" if ship.targeting.locked() else "LOCK %d%% · KEEP TARGET AHEAD" % int(lock_fraction*100)
+ if ship.targeting.locked() and ship.weapons.missile_remaining>0:lock_status = "LOCK HELD · MISSILE RELOAD %.1fs" % ship.weapons.missile_remaining
+ text(at+Vector2(16,81),lock_status,CYAN,13)
+ draw_rect(Rect2(at+Vector2(16,90),Vector2(428,4)),Color(.08,.15,.2))
+ draw_rect(Rect2(at+Vector2(16,90),Vector2(428*lock_fraction,4)),Color(.5,1,.75))
+
+func _draw_feedback(reticle: Vector2) -> void:
+ if not is_instance_valid(feedback):return
+ var center := size/2
+ for impact in feedback.directions:
+  var direction := feedback.indicator_direction(impact.position)
+  var tangent := Vector2(-direction.y,direction.x)
+  var point := reticle+direction*112
+  var color := Color(1,.4,.25) if impact.hull else CYAN
+  color.a = clampf(float(impact.remaining)/1.2,0,1)
+  draw_colored_polygon(PackedVector2Array([point+direction*14,point-direction*2+tangent*10,point-direction*2-tangent*10]),color)
+ if feedback.damage_remaining>0:
+  text(center+Vector2(-145,-85),feedback.damage_label,Color(1,.6,.4),15)
+ if feedback.hit_remaining>0:
+  var color := Color(1,.8,.4) if feedback.hit_hull else CYAN
+  for side in [-1.0,1.0]:
+   for vertical in [-1.0,1.0]:
+    draw_line(reticle+Vector2(side*19,vertical*19),reticle+Vector2(side*26,vertical*26),color,2)
+  text(reticle+Vector2(28,-25),"-%d %s" % [ceil(feedback.hit_amount),"HULL HIT" if feedback.hit_hull else "SHIELD HIT"],color,13)
+ if feedback.incoming_count>0:
+  panel(Rect2(center+Vector2(-230,-150),Vector2(460,38)))
+  text(center+Vector2(-210,-125),"INCOMING MISSILE ×%d · BOOST + STRAFE" % feedback.incoming_count,Color(1,.5,.3),17)
+ if feedback.notice_remaining>0:
+  text(center+Vector2(-215,163),feedback.notice,feedback.notice_color,14)
+ var ship := battle.pilot.ship
+ if ship.health.hull<=ship.health.max_hull*.25 and ship.alive:
+  draw_rect(Rect2(Vector2.ZERO,Vector2(size.x,5)),Color(1,.3,.2,.7))
+  text(Vector2(42,size.y-213),"CRITICAL HULL · %s SWITCH / 5 RETREAT" % ("F1–F10" if battle.team_size==10 else "F1–F3"),Color(1,.45,.3),13)

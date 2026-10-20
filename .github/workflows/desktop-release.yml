@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-27-flight-school]
+    branches: [phase-28-combat-feedback]
   workflow_dispatch:
 permissions:
   contents: write
@@ -63,6 +63,7 @@ jobs:
         run: |
           godot --headless --path . --script res://tests/sanctuary_forms_test.gd
           godot --headless --path . --script res://tests/creature_army_test.gd
+          godot --headless --path . --script res://tests/combat_feedback_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/tutorial_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/fleet_war_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60 -- --fleet-war
@@ -90,8 +91,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.27.0
+          tag=v0.28.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.27 — Guided Flight School' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.28 — Clearer Combat Feedback' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

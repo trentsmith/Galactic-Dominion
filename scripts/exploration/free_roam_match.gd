@@ -1,6 +1,7 @@
 class_name FreeRoamMatch
 extends BattleMatch
 signal encounter_won(attacker, victim, event_id)
+signal ship_replaced(index: int)
 signal travel_requested(index)
 signal army_requested(action, argument)
 signal landing_requested(index)
@@ -295,7 +296,7 @@ func _physics_process(delta: float) -> void:
   update_auras()
   if not peaceful: war.tick(delta)
   for vessel in ships:
-   if not peaceful and vessel.alive and world.hazard_at(vessel.position): vessel.health.damage(delta * 5, null)
+   if not peaceful and vessel.alive and world.hazard_at(vessel.position): vessel.health.damage(delta * 5, null, "ion storm")
   for ship in ships:
    var protection := maxf(0, float(ship.get_meta("spawn_protection", 0)) - delta)
    ship.set_meta("spawn_protection", protection)
@@ -501,6 +502,7 @@ func replace_pilot_ship(index: int, stats: ShipStats, callsign: String, crew_nam
   ship.set_physics_process(false)
   ship.collision_layer = 0
   ship.collision_mask = 0
+ ship_replaced.emit(index)
 
 func army_action(owner: int, ship: CombatShip, action: String, argument: int = 0) -> String:
  if network_role == "client": return "Orders require the host."

@@ -25,5 +25,5 @@ func tick(delta: float) -> void:
  for index in ship.get_slide_collision_count():
   var collision := ship.get_slide_collision(index)
   if collision.get_collider() is StaticBody3D and ship.velocity.length() > 15.0:
-   ship.health.damage(8.0 * delta, null)
+   ship.health.damage(8.0 * delta, null, "collision")
    ship.velocity = ship.velocity.slide(collision.get_normal()) * 0.8

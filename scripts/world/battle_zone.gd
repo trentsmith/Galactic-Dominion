@@ -42,6 +42,6 @@ func tick(delta: float, ships: Array[CombatShip]) -> void:
    continue
   if ship.global_position.length() > radius or (start_radius > 600.0 and elapsed >= 510.0):
    ship.outside_time += delta
-   ship.health.damage((8.0 + ship.outside_time * 2.0) * delta, null)
+   ship.health.damage((8.0 + ship.outside_time * 2.0) * delta, null, "battle zone")
   else:
    ship.outside_time = 0.0

@@ -1,6 +1,14 @@
-# Galactic Dominion — Guided Flight School
+# Galactic Dominion — Clearer Combat Feedback
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Understand the fight
+
+Combat now reports confirmed shield and hull damage separately. Camera-relative arrows and front/rear/left/right/above/below labels identify attacking ships; collisions, ion storms and the shrinking battle zone use labelled environmental warnings. Shield collapse and critical hull have distinct messages and sounds. Switching ships clears the previous vessel's directional warnings.
+
+Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
+
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.28.
 
 ## Start here: flight school
 
@@ -38,7 +46,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.27 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.27.0)** and choose:
+The v0.28 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.28.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -535,3 +543,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.27 validation
 
 167 checks passed locally across tutorial, menu, Fleet War, solo balance, smoke and progression suites, plus 22 backend tests. Tutorial checks include a real laser hit, successful missile locking/launching, completion persistence, replay, retry and skip. The lesson panel was inspected in an actual native Linux render. That scripted renderer reported two GPU texture leaks during shutdown; Windows GUI and human usability playtests remain untested.
+
+### v0.28 validation
+
+246 headless checks passed locally across combat feedback, tutorial, Fleet War, solo balance, smoke, progression, menu, free roam and exploration suites. All 22 backend tests and an actual two-client authenticated combat integration passed; both clients observed replicated confirmed damage events. Native Linux HUD/results renders were inspected. Two GPU texture-leak messages remain during renderer shutdown as in v0.27. Windows GUI, human sound preference and human playtesting remain untested.

@@ -26,6 +26,7 @@ var snapshot_clock := 0.0
 var army_snapshot_clock := 0.0
 var send_clock := 0.0
 var desired_states: Array = []
+var pending_feedback: Array[Dictionary] = []
 var pending_peers: Dictionary = {}
 var client_lobby: Dictionary = {}
 var loading_peers: Dictionary = {}
@@ -89,14 +90,14 @@ func _peer_connected(id: int) -> void:
 func _connected() -> void:
  loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.27.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.28.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.27.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.28.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -241,10 +242,14 @@ func request_start(mode: String = "royale") -> void:
   ship_totals.append(Vector2.ZERO)
  if arena is FreeRoamMatch:
   arena.encounter_won.connect(_roam_encounter_won)
+  arena.ship_replaced.connect(func(index):arena.ships[index].health.damaged.connect(_queue_feedback.bind(index)))
  for index in range(6):
   arena.ships[index].callsign = names[index]
   arena.ships[index].crew_name = crew_names[index]
   arena.ships[index].player_controlled = slot_owners[index] != 0
+ pending_feedback.clear()
+ for index in range(arena.ships.size()):
+  arena.ships[index].health.damaged.connect(_queue_feedback.bind(index))
  for ship in arena.ships:
   ship.brain.command = "attack"
  arena.ended.connect(_server_finished)
@@ -365,7 +370,9 @@ func ship_event(action: String, argument: int = 0) -> void:
     return
   match action:
    "target": ship.targeting.cycle()
-   "missile": ship.weapons.fire(true)
+   "missile":
+    if not ship.weapons.fire(true):
+     combat_notice.rpc_id(sender,"MISSILE RELOADING" if ship.weapons.missile_remaining>0 else "SELECT A TARGET WITH TAB" if not is_instance_valid(ship.targeting.target) else "KEEP TARGET AHEAD TO LOCK")
    "ability": ship.activate_ability()
    "command":
     var commands := ["follow", "attack", "defend", "regroup", "retreat"]
@@ -456,16 +463,18 @@ func _physics_process(delta: float) -> void:
      metrics[owner].kills += maxf(0, totals.x - ship_totals[index].x)
      metrics[owner].damage += maxf(0, totals.y - ship_totals[index].y)
     ship_totals[index] = totals
-    states.append({"position": ship.position, "rotation": ship.basis.get_rotation_quaternion(), "velocity": ship.velocity, "hull": ship.health.hull, "shield": ship.health.shield, "boost": ship.movement.boost_energy, "boosting": ship.movement.boost_requested, "alive": ship.alive, "laser": ship.weapons.laser_remaining, "missile": ship.weapons.missile_remaining, "ability": ship.ability_remaining, "recharge": ship.ability_cooldown, "target": arena.ships.find(ship.targeting.target), "lock": ship.targeting.lock_time, "flash": ship.muzzle_flash})
+    states.append({"position": ship.position, "rotation": ship.basis.get_rotation_quaternion(), "velocity": ship.velocity, "hull": ship.health.hull, "shield": ship.health.shield, "boost": ship.movement.boost_energy, "boosting": ship.movement.boost_requested, "alive": ship.alive, "laser": ship.weapons.laser_remaining, "missile": ship.weapons.missile_remaining, "ability": ship.ability_remaining, "recharge": ship.ability_cooldown, "target": arena.ships.find(ship.targeting.target), "lock": ship.targeting.lock_time, "flash": ship.muzzle_flash, "taken":Vector3(ship.health.shield_damage,ship.health.hull_damage,ship.health.environment_damage)})
    var bullets: Array = []
    for child in arena.get_children():
     if child is SpaceProjectile:
-     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color, "style": child.spec.impact_style})
+     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color, "style": child.spec.impact_style,"target":arena.ships.find(child.target)})
    for id in members:
     if _connected_peer(id):
      if arena is FreeRoamMatch and army_snapshot_clock >= 0.2:
       receive_army.rpc_id(id, arena.army.snapshot())
      receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
+     if not pending_feedback.is_empty():receive_feedback.rpc_id(id,pending_feedback)
+   pending_feedback.clear()
    if army_snapshot_clock >= 0.2: army_snapshot_clock = 0.0
  else:
   if not is_instance_valid(arena) or arena.finished:
@@ -516,10 +525,15 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   if state.alive and (state.shield < ship.health.shield or state.hull < ship.health.hull):
    SpaceEffects.burst(arena, ship.position, Color(0.15, 0.7, 1) if state.shield < ship.health.shield else Color(1, 0.45, 0.1), 4 if state.shield < ship.health.shield else 1.8)
   if ship == arena.pilot.ship:
-   if state.shield < ship.health.shield or state.hull < ship.health.hull:
-    SpaceAudio.play("shield")
-   if state.flash > 0 and not ship.muzzle_mesh.visible:
+   if state.missile > ship.weapons.missile_remaining + .1:
+    SpaceAudio.play("missile")
+   elif state.flash > 0 and not ship.muzzle_mesh.visible:
     SpaceAudio.play("laser")
+  var taken: Vector3 = state.get("taken",Vector3.ZERO)
+  ship.health.shield_damage = taken.x
+  ship.health.hull_damage = taken.y
+  ship.health.environment_damage = taken.z
+  ship.health.damage_received = taken.x+taken.y
   ship.health.hull = state.hull
   ship.health.shield = state.shield
   ship.velocity = state.velocity
@@ -543,6 +557,9 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   var mesh := MeshInstance3D.new()
   mesh.set_meta("network_projectile", true)
   mesh.set_meta("companion", bullet.get("companion", false))
+  mesh.set_meta("incoming_target",int(bullet.get("target",-1)))
+  mesh.set_meta("missile",bool(bullet.missile))
+  mesh.set_meta("team",int(bullet.team))
   var shape := SphereMesh.new()
   shape.radius = 0.28 if bullet.get("companion", false) else 0.32 if bullet.missile else 0.18
   shape.height = shape.radius * 2
@@ -569,7 +586,7 @@ func _server_finished(winner: int, reason: String) -> void:
  var message := reason + (" · Online rewards saved" if reply.has("data") else " · Reward save failed: " + str(reply.get("error", "unknown")))
  var statistics: Array = []
  for ship in arena.ships:
-  statistics.append({"kills": ship.kills, "damage": ship.damage_dealt, "shots": ship.shots, "hits": ship.hits})
+  statistics.append({"kills": ship.kills, "damage": ship.damage_dealt, "shots": ship.shots, "hits": ship.hits,"taken":Vector3(ship.health.shield_damage,ship.health.hull_damage,ship.health.environment_damage),"history":ship.health.damage_history,"alive":ship.alive,"hull":ship.health.hull,"shield":ship.health.shield})
  for id in members:
   if _connected_peer(id):
    var personal_message := message
@@ -587,6 +604,16 @@ func receive_result(winner: int, reason: String, statistics: Array) -> void:
    arena.ships[index].damage_dealt = float(statistics[index].damage)
    arena.ships[index].shots = int(statistics[index].shots)
    arena.ships[index].hits = int(statistics[index].hits)
+   var taken: Vector3 = statistics[index].get("taken",Vector3.ZERO)
+   arena.ships[index].health.shield_damage = taken.x
+   arena.ships[index].health.hull_damage = taken.y
+   arena.ships[index].health.environment_damage = taken.z
+   arena.ships[index].health.damage_history.assign(statistics[index].get("history",[]))
+   arena.ships[index].alive = bool(statistics[index].get("alive",arena.ships[index].alive))
+   arena.ships[index].health.hull = float(statistics[index].get("hull",arena.ships[index].health.hull))
+   arena.ships[index].health.shield = float(statistics[index].get("shield",arena.ships[index].health.shield))
+   arena.ships[index].health.dead = not arena.ships[index].alive
+   arena.ships[index].visible = arena.ships[index].alive
   arena.finish(winner, reason)
  await api.refresh()
 
@@ -790,3 +817,33 @@ func _set_peer_timeout(id: int,loading: bool) -> void:
  if not multiplayer.multiplayer_peer is ENetMultiplayerPeer:return
  var connection: ENetPacketPeer=(multiplayer.multiplayer_peer as ENetMultiplayerPeer).get_peer(id)
  if connection!=null:connection.set_timeout(32,60000 if loading else 5000,120000 if loading else 30000)
+
+func _queue_feedback(report: Dictionary, victim_index: int) -> void:
+ var event := report.duplicate(true)
+ event["victim"] = victim_index
+ var attacker := instance_from_id(int(event.attacker_id)) if int(event.attacker_id)>0 else null
+ event["attacker"] = arena.ships.find(attacker)
+ # A bounded cosmetic queue cannot affect authoritative damage or rewards.
+ pending_feedback.append(event)
+ if pending_feedback.size()>128:pending_feedback.pop_front()
+
+@rpc("authority", "call_remote", "reliable", 2)
+func receive_feedback(events: Array) -> void:
+ if not is_instance_valid(arena):return
+ for event in events:
+  var index := int(event.get("victim",-1))
+  if index<0 or index>=arena.ships.size():continue
+  var health := arena.ships[index].health
+  if int(event.sequence)<=health.damage_sequence:continue
+  health.damage_sequence = int(event.sequence)
+  var report: Dictionary = event.duplicate(true)
+  var attacker_index := int(event.get("attacker",-1))
+  report.attacker_id = arena.ships[attacker_index].get_instance_id() if attacker_index>=0 and attacker_index<arena.ships.size() else 0
+  health.damage_history.append(report)
+  if health.damage_history.size()>8:health.damage_history.pop_front()
+  # These notifications are visual only: never call health.damage on clients.
+  health.damaged.emit(report)
+
+@rpc("authority", "call_remote", "reliable")
+func combat_notice(message: String) -> void:
+ if is_instance_valid(arena):arena.hud.feedback.notify(message,Color(1,.8,.4))

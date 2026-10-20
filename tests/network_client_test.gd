@@ -11,6 +11,7 @@ var elapsed := 0.0
 var finished_wait := 0.0
 var completing := false
 var expected_clients := 2
+var feedback_seen := false
 
 func _initialize() -> void:
  call_deferred("run")
@@ -63,6 +64,8 @@ func _process(delta: float) -> bool:
   print("CLIENT_MATCH_STARTED")
   main.network.input_provider = func(): return {"thrust": Vector3(0, 0, -1), "steering": Vector2.ZERO, "roll": 0.0, "boost": false, "laser": true}
   main.network.ship_event.rpc_id(1, "target")
+ for ship in arena.ships:
+  if ship.health.damage_sequence>0 and not ship.health.damage_history.is_empty():feedback_seen = true
  if arena.pilot.ship.position.distance_to(initial_position) > 3:
   moved = true
  if arena.elapsed > 1 and not switch_sent:
@@ -81,11 +84,11 @@ func _process(delta: float) -> bool:
 
 func complete() -> void:
    var reply: Dictionary = await main.online_api.refresh()
-   if reply.has("data") and main.online_api.account.battles == 1 and moved and (switched if expected_clients == 2 else not switched):
-    print("NETWORK_CLIENT_PASS: authoritative movement, %s, results and persistent rewards" % ("switching" if expected_clients == 2 else "occupied-ship ownership protection"))
+   if reply.has("data") and main.online_api.account.battles == 1 and moved and feedback_seen and (switched if expected_clients == 2 else not switched):
+    print("NETWORK_CLIENT_PASS: authoritative movement, %s, results, confirmed combat feedback and persistent rewards" % ("switching" if expected_clients == 2 else "occupied-ship ownership protection"))
     main.network.disconnect_session()
     await create_timer(0.65).timeout
     quit(0)
    else:
-    push_error("NETWORK_CLIENT_FAIL: moved=%s switched=%s profile=%s" % [moved, switched, main.online_api.account.get("battles", -1)])
+    push_error("NETWORK_CLIENT_FAIL: moved=%s switched=%s feedback=%s profile=%s" % [moved, switched, feedback_seen, main.online_api.account.get("battles", -1)])
     quit(1)

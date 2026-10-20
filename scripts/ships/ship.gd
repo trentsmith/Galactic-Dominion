@@ -146,8 +146,6 @@ func _hit(shield_hit: bool) -> void:
  if hit_effect_remaining > 0.0:
   return
  hit_effect_remaining = 0.12
- if player_controlled:
-  SpaceAudio.play("shield")
  SpaceEffects.burst(get_parent(), global_position, Color(0.15, 0.7, 1.0) if shield_hit else Color(1, 0.45, 0.12), 4.0 if shield_hit else 1.8)
 
 func _destroy(attacker: CombatShip) -> void:

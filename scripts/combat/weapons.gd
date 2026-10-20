@@ -1,6 +1,7 @@
 class_name ShipWeapons
 extends Node
 signal fired(missile: bool)
+signal rejected(reason: String)
 
 var ship: CombatShip
 var primary: WeaponSpec
@@ -26,9 +27,12 @@ func tick(delta: float) -> void:
  missile_remaining = maxf(0.0, missile_remaining - delta)
 
 func fire(missile: bool = false) -> bool:
- if (missile_remaining if missile else laser_remaining) > 0.0 or not ship.alive:
+ if not ship.alive:return false
+ if (missile_remaining if missile else laser_remaining) > 0.0:
+  if missile:rejected.emit("MISSILE RELOADING")
   return false
  if missile and not ship.targeting.locked():
+  rejected.emit("SELECT A TARGET WITH TAB" if not is_instance_valid(ship.targeting.target) else "KEEP TARGET AHEAD TO LOCK")
   return false
  # Firing ends spawn protection so it cannot be used to attack invulnerably.
  if float(ship.get_meta("spawn_protection", 0)) > 0:

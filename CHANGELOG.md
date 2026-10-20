@@ -1,3 +1,7 @@
+# v0.28 — Clearer Combat Feedback
+
+Add confirmed damage-source reports, camera-relative hit warnings, shield/critical alerts, lock and incoming-missile cues, outgoing hit confirmation, larger target health displays, layered procedural sounds and factual battle recaps. Replicate cosmetic events without client damage and include final authoritative health/alive states in online results.
+
 # v0.27 — Guided Flight School
 
 Add ten action-driven safe flight/combat lessons, retry and skip controls, saved completion, replay and onward links to free roam or planet exploration. Training never awards collection rewards.
