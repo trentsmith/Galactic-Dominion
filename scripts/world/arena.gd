@@ -41,7 +41,7 @@ func _ready() -> void:
  stars.material_override = star_material
  add_child(stars)
  if open_space: return
- SpaceEnvironmentArt.planet(self,Vector3(-1100,-450,-1600),430,Color(0.04,0.25,0.75),float(arena_seed),true)
+ SpaceEnvironmentArt.planet(self,Vector3(-1100,-450,-1600)*maxf(1,battle_scale),430*maxf(1,battle_scale*.5),Color(0.04,0.25,0.75),float(arena_seed),true)
  for index in range(int(34 * battle_scale)):
   var position := Vector3(rng.randf_range(-420, 420), rng.randf_range(-160, 160), rng.randf_range(-320, 320))
   if absf(position.x) < 55 and absf(position.y) < 45:

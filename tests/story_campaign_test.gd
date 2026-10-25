@@ -28,6 +28,17 @@ func run() -> void:
  check(StoryCampaign.stage(main.profile)==1 and main.profile.sanctuary.materials.capture_pod==pods+2,"Accepting Astra's mission grants supplies once and points to Varkhoss")
  check(not StoryCampaign.accept(main.profile) and main.profile.sanctuary.materials.capture_pod==pods+2,"Repeated acceptance cannot farm pods")
  main.story_action();await process_frame
+ check(main.battle is FreeRoamMatch and main.surface==null,"Story begins in roaming space rather than silently teleporting to a planet")
+ var roam: FreeRoamMatch=main.battle
+ var tracker: StoryTracker=main.find_children("","StoryTracker",true,false)[0]
+ check(tracker.waypoint().text.contains("VARKHOSS"),"Roaming story exposes a named landing waypoint")
+ main.show_story();main.story_action()
+ check(main.battle==roam,"Reopening the objective resumes the same roaming fleet")
+ main.battle.pilot.ship.position=main.battle.army.worlds[0].position+Vector3(0,0,100)
+ main.battle.army.worlds[0].owner=2
+ check(main.battle.can_land(0),"Astra's exploration clearance avoids a conquest softlock")
+ check(main.land_from_roam(0),"Following the landing waypoint allows actual story ship landing")
+ await process_frame
  var e: PlanetExpedition=main.surface;freeze(e)
  check(not paused and StoryCampaign.stage(main.profile)==2 and e.definition.id=="varkhoss","Actual deployment records the planet visit and advances the goal")
  check(e.find_children("","StoryNPC",true,false).size()==1,"Milo has a field hologram near the landing ship")

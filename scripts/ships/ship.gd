@@ -2,6 +2,7 @@ class_name CombatShip
 extends CharacterBody3D
 signal eliminated(ship, attacker)
 
+var lightweight:=false
 var stats: ShipStats
 var team := 0
 var fleet_slot := 0
@@ -67,13 +68,14 @@ func _ready() -> void:
   add_child(companion)
 
 func _build_visual() -> void:
- SpaceModelFactory.ship(self, stats, team)
+ if lightweight:ArmadaArt.build(self)
+ else:SpaceModelFactory.ship(self, stats, team)
  for child in get_children():
   if child.has_meta("orbit_speed"):livery_orbits.append(child)
  engine_mesh = find_child("MainEngine",true,false)
  muzzle_mesh = find_child("MuzzleFlash",true,false)
  shield_mesh = find_child("ShieldShell",true,false)
- _build_component_visuals()
+ if not lightweight:_build_component_visuals()
 
 func _build_component_visuals() -> void:
  if stats.engine_style != "standard":
@@ -186,3 +188,20 @@ func redeploy(at: Vector3, protection_seconds: float = 8.0) -> void:
  weapons.laser_remaining = 0
  weapons.missile_remaining = 0
  set_meta("spawn_protection", protection_seconds)
+
+func promote_visual() -> void:
+ if not lightweight:return
+ lightweight=false
+ for child in get_children():
+  if child is MeshInstance3D:remove_child(child);child.queue_free()
+ livery_orbits.clear()
+ _build_visual()
+
+func demote_visual() -> void:
+ if lightweight or not bool(get_meta("armada_lod",false)):return
+ lightweight=true
+ for child in get_children():
+  if child is Node3D and not child is CollisionShape3D and child!=companion:
+   remove_child(child);child.queue_free()
+ livery_orbits.clear()
+ _build_visual()

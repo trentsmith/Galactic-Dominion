@@ -44,7 +44,7 @@ func _draw() -> void:
   if candidate.alive and candidate.team != ship.team: opponents += 1
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
- text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
+ text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "ARMADA 100v100" if battle.team_size==100 else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
  text(Vector2(42, 93), "ALLIES %d / HOSTILES %d" % [battle.living(battle.local_team()), opponents], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
  var exploring := battle is ExplorationMatch
@@ -64,10 +64,10 @@ func _draw() -> void:
  text(Vector2(width - 300, height - 87), "R   %s" % ship.stats.ability.to_upper(), CYAN, 15)
  text(Vector2(width - 300, height - 61), "ACTIVE %.1fs" % ship.ability_remaining if ship.ability_remaining > 0 else ("READY" if ship.ability_cooldown <= 0 else "RECHARGING %.1fs" % ship.ability_cooldown), MUTED, 13)
  text(Vector2(width - 300, height - 35), "ESC   PAUSE / SETTINGS", MUTED, 13)
- panel(Rect2(Vector2(width - 320, 22), Vector2(296, 58 + battle.fleet.ships.size() * 25)))
+ panel(Rect2(Vector2(width - 320, 22), Vector2(296, 58 + mini(10,battle.fleet.ships.size()) * 25)))
  text(Vector2(width - 300, 47), "FLEET  /  %s" % battle.fleet.current_command.to_upper(), CYAN, 16)
- for ally in battle.fleet.ships:
-  var y := 72.0 + ally.fleet_slot * 25.0
+ for ally in battle.fleet.ships.slice(0,10):
+  var y: float = 72.0 + ally.fleet_slot * 25.0
   var color := CYAN if ally == ship else MUTED
   text(Vector2(width - 300, y), "F%d  %s  %s" % [ally.fleet_slot + 1, ally.stats.class_name_text, "%d%%" % int(ally.health.hull / ally.health.max_hull * 100) if ally.alive else "LOST"], color, 14)
  text(Vector2(42, 128), "PILOT  /  " + ship.crew_name.to_upper(), MUTED, 13)
@@ -104,9 +104,13 @@ func _draw() -> void:
     var screen := battle.camera.unproject_position(position)
     draw_circle(screen, 12, Color(0.75, 0.4, 1), false, 2)
     text(screen + Vector2(15, 0), "SIGNAL %dm" % int(ship.global_position.distance_to(position)), CYAN, 13)
+ if is_instance_valid(battle.mega):
+  text(Vector2(42,180),battle.mega.description(ship),Color(1,.8,.4),13)
+  text(Vector2(42,203),"[ / ] TAKE OVER ANY SURVIVING ALLY",MUTED,13)
  var target := ship.targeting.target
  for candidate in battle.ships:
   if candidate.alive and candidate != ship:
+   if battle.team_size==100 and candidate!=target and ship.position.distance_to(candidate.position)>550:continue
    if free_roam and candidate != target and ship.position.distance_to(candidate.position) > 1400: continue
    _draw_ship_marker(candidate, candidate == target)
  if is_instance_valid(target) and target.alive:

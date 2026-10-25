@@ -58,6 +58,8 @@ func _ready() -> void:
   start_tutorial()
  elif "--free-roam" in arguments:
   start_free_roam()
+ elif "--armada" in arguments:
+  start_armada()
  elif "--fleet-war" in arguments:
   start_fleet_war()
  elif "--battle" in arguments:
@@ -100,6 +102,9 @@ func start_tutorial() -> void:
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
+
+func start_armada() -> void:
+ start_battle(100)
 
 func start_fleet_war() -> void:
  start_battle(10)
@@ -451,9 +456,15 @@ func story_action() -> void:
  match stage:
   0:StoryCampaign.accept(profile)
   1,2:
-   if is_instance_valid(surface):
-    if stage==1 and surface.definition.id=="varkhoss":StoryCampaign.visit(profile,"varkhoss")
+   if is_instance_valid(surface) and (stage==2 or surface.definition.id=="varkhoss"):
+    if stage==1 and not StoryCampaign.visit(profile,"varkhoss"):
+     story_layer.get_child(0).refresh();return
     close_story();return
+   if is_instance_valid(surface) and not story_can_travel():return
+   if is_instance_valid(battle) and battle is FreeRoamMatch:
+    close_story();return
+   if stage==1:
+    close_story();start_free_roam(true);return
    story_travel("planet");return
   3:StoryCampaign.debrief(profile)
   4:

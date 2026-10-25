@@ -1,3 +1,7 @@
+# v0.32 — Armada and Living Worlds
+
+Add experimental solo 100v100 with a larger arena, bounded reinforcement models, takeover across the full fleet and two finite-charge relic weapons. Keep the six-slot online protocol. Move the opening discovery into roaming flight with named landing/rescue/delivery waypoints and Varkhoss mission clearance. Refine nine species with patterned coats and distinctive anatomy, plus breathing/ear/tail motion. Replace Ny'Zaroth's toy-like head and floating mushrooms with an ossuary, irregular mineral ruins, roots, dusk sky and a watching eye. Bake procedural coats to glTF vertex colors for portable model exports.
+
 # v0.31 — The Lantern Signal
 
 Add an original seven-objective opening story, O journal, three NPC comms portraits, field engineer, lore/help dialogue and permanent-component crafting. Connect real visits, safe creature delivery, F1 fitting and a named Crimson patrol victory. Reserve mission parts, save schema 6 progression transactionally, prevent repeat story rewards and preserve online server flow.

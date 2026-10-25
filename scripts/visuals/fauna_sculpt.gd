@@ -122,6 +122,7 @@ static func build(parent: Node3D, definition: FaunaDefinition) -> Node3D:
   for side in [-1,1]:
    for i in range(3):
     ArtGeometry.sweep(root,[Vector3(side*.53,1.5,-.45+i*.25),Vector3(side*.64,1.22,-.40+i*.25),Vector3(side*.5,.94,-.35+i*.25)],[.035,.045,.015],c.darkened(.20),"ReefStripe")
+ FaunaIdentity.add(root,definition)
  soften_materials(root)
  return root
 

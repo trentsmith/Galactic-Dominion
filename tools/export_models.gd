@@ -12,12 +12,37 @@ func save_model(model: Node3D, basename: String) -> void:
  var packed := PackedScene.new()
  if packed.pack(model) != OK or ResourceSaver.save(packed,"res://art/models/"+basename+".tscn",ResourceSaver.FLAG_BUNDLE_RESOURCES) != OK:
   push_error("Could not save Godot model: "+basename);failures+=1
+ bake_fauna_coats(model)
  var document := GLTFDocument.new()
  var state := GLTFState.new()
  if document.append_from_scene(model,state) != OK or document.write_to_filesystem(state,"res://art/models/"+basename+".glb") != OK:
   push_error("Could not save GLB: "+basename);failures+=1
  model.queue_free()
  print("MODEL_EXPORTED "+basename)
+# Godot scenes retain the procedural skin. glTF receives a vertex-color bake.
+func bake_fauna_coats(node: Node) -> void:
+ for child in node.get_children():bake_fauna_coats(child)
+ if not node is MeshInstance3D or not node.material_override is ShaderMaterial:return
+ var shader: ShaderMaterial=node.material_override
+ if shader.shader!=preload("res://resources/shaders/fauna_skin.gdshader"):return
+ var coat: Color=shader.get_shader_parameter("coat")
+ var marking: Color=shader.get_shader_parameter("marking")
+ var pattern: float=shader.get_shader_parameter("pattern")
+ var mesh:=ArrayMesh.new()
+ for surface in range(node.mesh.get_surface_count()):
+  var arrays: Array=node.mesh.surface_get_arrays(surface)
+  var colors:=PackedColorArray()
+  for p in arrays[Mesh.ARRAY_VERTEX]:
+   var stripes:=pow(.5+.5*sin(p.z*18.+sin(p.y*9.)*1.8),12.)
+   var cell:=Vector3(fposmod(p.x*8.,1.)-.5,fposmod(p.y*8.,1.)-.5,fposmod(p.z*8.,1.)-.5)
+   var spots:=1.-smoothstep(.1,.24,cell.length())
+   var blend: float=spots if pattern<.5 else stripes
+   var belly: float=1.-smoothstep(.35,.95,p.y)
+   colors.append(coat.lerp(marking,clampf(blend*.42+belly*.45,0,.75)))
+  arrays[Mesh.ARRAY_COLOR]=colors;mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays)
+ var material:=StandardMaterial3D.new();material.vertex_color_use_as_albedo=true;material.roughness=.72;material.cull_mode=BaseMaterial3D.CULL_DISABLED
+ node.mesh=mesh;node.material_override=material
+
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://art/models"))
  for id in ["orbitot","glimbloom"]:

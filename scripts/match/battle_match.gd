@@ -3,6 +3,7 @@ extends Node3D
 signal ended(winner, reason)
 
 const CLASSES = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+var mega: MegaWeapons
 var story_mission := ""
 var difficulty := "standard"
 var playtest_path := ""
@@ -34,19 +35,21 @@ func _ready() -> void:
  difficulty = SoloDifficulty.valid(difficulty)
  battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
  # Network protocol remains six slots; Fleet War is an offline mode.
- team_size = 10 if team_size == 10 and network_role == "offline" else 3
- elimination_only = team_size == 10
+ team_size = team_size if team_size in [10,100] and network_role == "offline" else 3
+ elimination_only = team_size >= 10
  var arena := SpaceArena.new()
  arena.open_space = training
- arena.battle_scale = 1.7 if team_size == 10 else 1.0
+ arena.battle_scale = 4.0 if team_size==100 else 1.7 if team_size == 10 else 1.0
+ arena.star_radius=6500 if team_size==100 else 1700
  add_child(arena)
  zone = BattleZone.new()
- if team_size == 10:
+ if team_size >= 10:
   zone.start_radius = 1050.0
   zone.final_radius = 150.0
+ if team_size==100:zone.start_radius=3000;zone.final_radius=350
  add_child(zone)
  camera = Camera3D.new()
- camera.far = 4000.0
+ camera.far = 10000.0 if team_size==100 else 4000.0
  camera.current = true
  add_child(camera)
  pilot = PlayerPilot.new()
@@ -58,6 +61,8 @@ func _ready() -> void:
  for team_index in range(2):
   for slot in range(team_size):
    var ship := CombatShip.new()
+   ship.lightweight=team_size==100 and not (team_index==0 and slot<3)
+   ship.set_meta("armada_lod",ship.lightweight)
    ship.stats = profile.configured_stats(slot) if team_index == 0 and profile != null and slot < 3 else reinforcement_stats(slot)
    if team_index == 0 and profile != null and slot < 3:
     var crew := CollectionCatalog.find(str(profile.loadouts[slot].crew))
@@ -73,6 +78,8 @@ func _ready() -> void:
    ship.position = Vector3((slot - 1) * 40.0, slot * 12.0, 230.0 if team_index == 0 else -230.0)
    if team_size == 10:
     ship.position = Vector3((slot % 5 - 2) * 65.0, (slot / 5) * 65.0 - 32.5, (410.0 + (slot / 5) * 75.0) * (1 if team_index == 0 else -1))
+   if team_size==100:
+    ship.position=Vector3((slot%10-4.5)*105,(slot/10-4.5)*70,(1050+(slot/10)*32)*(1 if team_index==0 else -1))
    if team_index == 1:
     ship.rotation.y = PI
    add_child(ship)
@@ -90,9 +97,11 @@ func _ready() -> void:
  fleet.switch_to(0)
  pilot.ship.targeting.cycle()
  fleet.issue_command("attack" if network_role=="offline" else "follow")
- if team_size == 10:
+ if team_size >= 10:
   # Start separate dogfights instead of assigning nine escorts to one opponent.
   for ally in fleet.ships:ally.brain.commanded_target = null
+ if team_size==100:
+  mega=MegaWeapons.new();mega.battle=self;add_child(mega)
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)
@@ -117,6 +126,7 @@ func _physics_process(delta: float) -> void:
  if finished:
   return
  elapsed += delta
+ if is_instance_valid(mega):mega.tick(delta)
  update_auras()
  zone.tick(delta, ships)
  if elapsed >= max_duration and not elimination_only:

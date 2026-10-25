@@ -18,7 +18,15 @@ static func leaves(parent: Node3D, at: Vector3, color: Color, seed_value: int, s
 
 static func build(parent: Node3D, biome: String, at: Vector3, color: Color, glow: Color, style: int) -> Node3D:
  var root:=Node3D.new();root.position=at;root.rotation.y=style*.73;parent.add_child(root)
- if biome=="vampire" and style%3==0:
+ if biome=="eldritch":
+  for i in range(3):
+   var a: float=TAU*i/3+style*.31
+   var tip:=Vector3(cos(a)*.7,1.7+(style%4)*.35,sin(a)*.7)
+   var stalk:=ArtGeometry.sweep(root,[Vector3.ZERO,Vector3(cos(a)*.4,.8,sin(a)*.4),tip,tip+Vector3(.3,.35,-.1)],[.16,.13,.07,.005],Color(.16,.24,.23),"WhisperStalk")
+   EldritchArt.stone(stalk)
+   if i==0:
+    SpaceModelFactory.ball(root,tip,Vector3(.13,.2,.09),Color(.43,.65,.49),"WhisperBud",true)
+ elif biome=="vampire" and style%3==0:
   ArtGeometry.sweep(root,[Vector3.ZERO,Vector3(.35,1.3,0),Vector3(-.3,3,0),Vector3(.4,4.8,.2),Vector3(.2,6.6,0)],[.45,.34,.25,.15,.015],Color(.10,.055,.105),"TwistedTrunk")
   for side in [-1,1]:
    ArtGeometry.sweep(root,[Vector3(0,2.5,0),Vector3(side*.8,4,.1),Vector3(side*2,5.2,.1),Vector3(side*2.6,5.3,.4)],[.24,.17,.08,.01],Color(.14,.07,.13),"Branch")

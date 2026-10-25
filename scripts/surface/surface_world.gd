@@ -15,10 +15,16 @@ func _ready() -> void:
  var env:=Environment.new();env.background_mode=Environment.BG_COLOR;env.background_color=definition.sky_color
  env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
  env.ambient_light_color=definition.glow_color.lightened(.6);env.ambient_light_energy=.60
+ if definition.biome=="eldritch":env.ambient_light_color=Color(.39,.5,.48);env.ambient_light_energy=.42
+ if definition.biome=="eldritch":
+  var sky:=Sky.new();var sky_material:=ProceduralSkyMaterial.new()
+  sky_material.sky_top_color=Color(.005,.012,.018);sky_material.sky_horizon_color=Color(.075,.13,.135);sky_material.ground_horizon_color=Color(.075,.13,.135);sky_material.ground_bottom_color=Color(.01,.02,.025);sky_material.sky_energy_multiplier=.55
+  sky.sky_material=sky_material;env.sky=sky;env.background_mode=Environment.BG_SKY
  env.tonemap_mode=Environment.TONE_MAPPER_FILMIC
  env.fog_enabled=true;env.fog_light_color=definition.sky_color.lightened(.08);env.fog_density=.008 if not definition.aquatic else .018
  background.environment=env;add_child(background)
  var sun:=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-40,-30,0);sun.light_energy=1.15
+ if definition.biome=="eldritch":sun.light_energy=.7;sun.light_color=Color(.57,.69,.72)
  sun.shadow_enabled=true;sun.directional_shadow_max_distance=180
  sun.light_color=Color(.75,.85,1) if definition.biome!="vampire" else Color(1,.55,.6)
  add_child(sun)
@@ -95,19 +101,12 @@ func _landmarks() -> void:
    SurfaceArt.post(self,at,2,18,definition.ground_color.darkened(.3))
    SurfaceArt.ball(self,at+Vector3.UP*8,Vector3(3,1,3),definition.glow_color,true)
  else:
-  # A colossal, watching landform and pale cascading streams echo the living-world image.
-  var face:=Node3D.new();face.position=Vector3(0,15,-85);face.rotation.y=PI;add_child(face)
-  SurfaceArt.ball(face,Vector3.ZERO,Vector3(16,18,10),Color(.28,.27,.32))
-  for side in [-1,1]:
-   SurfaceArt.ball(face,Vector3(side*6,4,-8.2),Vector3(3,3,1.5),Color(.015,.025,.05))
-   SurfaceArt.ball(face,Vector3(side*6,4,-9.4),Vector3(1.1,1.5,.3),Color(.3,.9,1),true)
+  EldritchArt.build(self)
   for index in range(10):
    var at:=Vector3(sin(index*1.7)*65,14+index%4*5,-25-cos(index*2.1)*40)
-   SurfaceArt.ball(self,at,Vector3(5,2.2,4),Color(.21,.19,.29))
-   SurfaceArt.post(self,at+Vector3.UP*3,.8,6,Color(.35,.32,.42))
-  for index in range(14):
-   var x:=rng.randf_range(-85,85);var z:=rng.randf_range(-100,-45)
-   SurfaceArt.post(self,Vector3(x,8,z),1.2,rng.randf_range(12,30),Color(.28,.27,.33))
+   var shard:=SpaceModelFactory.mesh(self,SpaceEnvironmentArt.asteroid_mesh(910+index),at,Color(.18,.22,.22),"SuspendedOssuary")
+   shard.scale=Vector3(3,1.4,3);EldritchArt.stone(shard)
+   ArtGeometry.sweep(self,[at,at+Vector3(1,-4,.4),at+Vector3(-1,-7,1)],[.4,.17,.01],Color(.13,.2,.19),"HangingRoot")
   for side in [-1,1]:
    var stream:=SurfaceTool.new();stream.begin(Mesh.PRIMITIVE_TRIANGLES)
    for i in range(20):
@@ -116,5 +115,5 @@ func _landmarks() -> void:
     var b:=Vector3(side*(12+n*22),12-n*11,-78+n*38)
     for point in [a+Vector3(-1.5,0,0),b+Vector3(-1.5,0,0),a+Vector3(1.5,0,0),a+Vector3(1.5,0,0),b+Vector3(-1.5,0,0),b+Vector3(1.5,0,0)]:stream.add_vertex(point)
    stream.generate_normals()
-   var water:=SpaceModelFactory.mesh(self,stream.commit(),Vector3.ZERO,Color(.45,.85,.88),"PaleDreamStream",true)
+   var water:=SpaceModelFactory.mesh(self,stream.commit(),Vector3.ZERO,Color(.1,.34,.34),"PaleDreamStream",false)
    (water.material_override as StandardMaterial3D).cull_mode=BaseMaterial3D.CULL_DISABLED

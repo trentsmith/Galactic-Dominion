@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-31-lantern-signal-story]
+    branches: [phase-32-armada-and-living-worlds]
   workflow_dispatch:
 permissions:
   contents: write
@@ -63,6 +63,8 @@ jobs:
         run: |
           godot --headless --path . --script res://tests/sanctuary_forms_test.gd
           godot --headless --path . --script res://tests/creature_army_test.gd
+          godot --headless --path . --script res://tests/armada_test.gd --fixed-fps 60
+          godot --headless --path . --script res://tests/expansion_art_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/story_campaign_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/difficulty_test.gd --fixed-fps 60
           godot --headless --path . --script res://tests/combat_feedback_test.gd --fixed-fps 60
@@ -102,8 +104,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.31.0
+          tag=v0.32.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.31 — The Lantern Signal' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.32 — Armada and Living Worlds' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

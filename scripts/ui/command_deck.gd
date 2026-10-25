@@ -55,6 +55,7 @@ func _ready() -> void:
   var battle_options := HBoxContainer.new();column.add_child(battle_options)
   _label(battle_options,"SOLO BATTLE AI  ",11,MUTED)
   host.difficulty_choice(battle_options)
+  _button(battle_options,"ArmadaButton","100v100 ALPHA",host.start_armada,30).tooltip_text="Experimental solo Armada: 200 ships, relic mega weapons, larger arena. Graphics performance is hardware-dependent."
   var modes := GridContainer.new();modes.columns=2;modes.add_theme_constant_override("h_separation",10);modes.add_theme_constant_override("v_separation",8);column.add_child(modes)
   _mode(modes,"TutorialButton","Replay flight school" if host.settings.get_value("tutorial","flight_completed",false) else "Start here: flight school","Learn to fly · safe practice",host.start_tutorial)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)

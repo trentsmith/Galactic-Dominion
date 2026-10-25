@@ -1,10 +1,20 @@
-# Galactic Dominion — The Lantern Signal
+# Galactic Dominion — Armada and Living Worlds
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
+## Experimental 100v100 Armada
+
+Choose **100v100 ALPHA** beside the solo difficulty selector. One player and 99 AI allies face 100 AI enemies in a six-kilometre-diameter starting safe zone. The battlefield has more asteroids and wreckage, and the last fleet standing wins. The existing 3v3 and 10v10 modes remain separate. **This is solo, not 200-player networking.**
+
+Six glowing relics contain **Solar Lance** (an aligned, obstacle-blocked piercing beam) or **Gravity Nova** (a nearby enemy-damaging slowing pulse). Approach within 32m to collect three charges; press **B** to fire. Both teams' AI can collect and use them. Each shot has a 12-second recharge; relics respawn after 90 seconds. Relics belong to the current ship, disappear with it and never enter permanent inventory. Friendly ships are protected. **F1–F10** selects the first ten allies; **[ / ]** cycles through every living ally. Automatic takeover remains available after destruction.
+
+Reinforcements use lightweight hulls and promote to the full model on takeover, then return to lightweight geometry when released. Actual GPU performance needs human hardware testing. A 40-second headless simulation confirmed movement, weapon damage and losses on both sides; it is not a rendered frame-rate guarantee. Developer shortcut: `-- --armada`.
+
+Creature coats now have procedural patterns and species-specific anatomy, including antler blossoms, wing veins, reef whiskers, eye stalks and trailing membranes. Wild creatures breathe and move ears/tails. Ny'Zaroth has a ribbed ossuary, mineral skin, hanging roots, muted vegetation, dusk lighting and a distant watching eye. This remains procedural prototype art, not photorealistic production art.
+
 ## Begin your story
 
-Choose **Begin your story** on the command deck, or press **O** during solo play. **The Lantern Signal** is a seven-objective opening chapter: answer Commander Astra, discover Varkhoss Prime, scan and capture a new creature, deliver it through the landing ship, debrief with Warden Sera, craft and fit Engineer Milo's Sprint Drive to F1, then defeat the named Crimson patrol and return to Astra.
+Choose **Begin your story** on the command deck, or press **O** during solo play. The first discovery now starts in peaceful roaming space: follow the gold Varkhoss landing waypoint and press **L** near the outpost. Surface waypoints follow the tracked individual and then guide secured rescue cargo home. Astra grants exploration landing clearance on Varkhoss, avoiding a conquest requirement. **The Lantern Signal** is a seven-objective opening chapter: answer Commander Astra, discover Varkhoss Prime, scan and capture a new creature, deliver it through the landing ship, debrief with Warden Sera, craft and fit Engineer Milo's Sprint Drive to F1, then defeat the named Crimson patrol and return to Astra.
 
 The journal highlights your next step and offers NPC mission dialogue, world lore and practical help. Milo appears as a holographic field NPC near planetary landing sites. His workshop crafts permanent component blueprints from sanctuary materials; Sera reserves a one-time engine kit for the story. The Sprint Drive trades 6% hull for speed and acceleration. Fitting applies on the next deployment. The patrol uses at least Standard AI (or your selected Veteran), without changing your saved difficulty preference.
 
@@ -32,7 +42,7 @@ Combat now reports confirmed shield and hull damage separately. Camera-relative 
 
 Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
 
-Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.31.
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.32.
 
 ## Start here: flight school
 
@@ -70,7 +80,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.31 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.31.0)** and choose:
+The v0.32 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.32.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -583,3 +593,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.31 validation
 
 352 local Godot checks passed across ten story, creature, progression, combat, tutorial, menu and difficulty suites, plus 22 backend tests. The 42-check story suite covers the real discovery/capture/delivery/crafting/fitting/combat chain, save-failure rollback, migration, duplicate rewards, retry and online read-only behavior. Native Linux journal/workshop views were rendered and inspected. Windows GUI and human story usability testing remain pending.
+
+### v0.32 validation
+
+408 local Godot checks passed across thirteen Armada, story, art, landing/capture, creature combat, menu, difficulty and Fleet War suites, plus 22 backend tests. The 17-check Armada suite exercises 200 live ships, actual weapon damage, alignment and obstacle checks, AI relic use, finite charges, pickup cooldown, full-fleet takeover/model demotion and elimination. A final 2,400-frame run advanced 40 simulated seconds in 19.39 wall seconds (123.7 headless simulation frames per second), dealing 13,675.3 damage with 77 allied and 57 opposing survivors. This is a shared development machine result, not a rendered FPS or balance guarantee. Native Linux creature, abyss and Armada images were rendered and inspected; Windows GUI and human testing remain pending.

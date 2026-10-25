@@ -100,7 +100,14 @@ func hit(damage: float, nonlethal: bool=false) -> void:
   alive=false;visible=false;collision_layer=0;velocity=Vector3.ZERO;respawn_timer=30
 
 func _process(delta: float) -> void:
- if not alive:return
+ if not alive or not is_instance_valid(visual):return
  face_clock+=delta
  var closed:=fmod(face_clock,4.4)>4.26
  for eye in face_eyes:eye.scale.y=float(eye.get_meta("eye_open_y"))*(.08 if closed else 1.0)
+ var breath:=1.0+sin(face_clock*2.1)*.018
+ visual.scale=Vector3(1,breath,1)*definition.size
+ for child in visual.get_children():
+  var title:=str(child.name)
+  if title.begins_with("LeafEar"):child.rotation.z=sin(face_clock*1.5+child.position.x)*.12+signf(child.position.x)*-.5
+  elif title in ["FawnTail","PlumedTail"]:child.rotation.y=sin(face_clock*2.4)*.25
+  elif title.begins_with("VeilStreamer"):child.rotation.x=sin(face_clock*1.2+child.position.x)*.12

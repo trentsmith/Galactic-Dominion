@@ -3,7 +3,7 @@ extends RefCounted
 const TITLES := ["Answer Astra's signal","Discover Varkhoss Prime","Rescue a new creature","Debrief with Warden Sera","Upgrade your lead ship","Break the Crimson blockade","Return to Astra","The Lantern Signal complete"]
 const HINTS := [
  "Open Comms and agree to investigate the Lantern Signal. Two capture pods are supplied once.",
- "Deploy a bot to Varkhoss Prime. Your loaner Pixlet is available even without collectible crew.",
+ "Fly to the gold Varkhoss landing waypoint, then press L to land. O resumes the same flight. Your loaner Pixlet is available even without collectible crew.",
  "T tracks wildlife. Hold G within 12m to scan; weaken dangerous fauna to half health. C within 8m captures; E at the ship delivers to sanctuary.",
  "Speak with Sera about your rescue and accept her reserved engine-parts kit.",
  "Ask Milo to craft a Sprint Drive using the kit, then fit it to F1. An existing Sprint Drive also counts. +15% speed / -6% hull.",
@@ -108,5 +108,9 @@ static func dialogue(npc: String,topic: String,progress: int) -> String:
    _:return "A crafted component is a permanent blueprint you can fit to compatible fleet ships. Recipes consume sanctuary materials once. Sera's reserved kit pays for your first story Sprint Drive so you cannot spend those mission parts on another building. Fit it to F1 before taking on the patrol."
  match npc:
   "astra":return ["Commander, this is Astra. A Crimson relay is broadcasting a signal the Dominion wants buried. Help us find out why. I have authorized two capture pods for the expedition.","Varkhoss Prime is our first lead. Take Pixlet down to the frontier; keep your ship's departure route open.","Study the wildlife before you act. Sera believes the signal is changing how these creatures respond to our bots.","Your transport is safe. Let Sera examine what you brought home.","Milo needs a faster lead ship to slip through the relay's closing defense pattern.","The Crimson Interdiction Patrol has found our relay. This is a full fleet fight, not a survey. Upgrade first and expect at least Standard resistance.","The patrol is gone. The relay transmitted one final phrase: 'Return what you remember.' I will preserve it in the Archives. Archive this lead and I will release 75 salvage for your next expedition.","The archive points toward Pelagia's deep reefs, then Ny'Zaroth. We have an opening, not an answer. Keep your companions safe."][clampi(progress,0,7)]
-  "sera":return "You are building a refuge, not a trophy room. "+("Your new rescue is safe. I have reserved an engine-parts kit with Milo; take it before your next sortie." if progress>=3 else "Bring a newly captured creature to sanctuary through the landing ship. Ruby, our starter resident, still needs care too.")
-  _:return "Milo here. "+("Sera's kit is ready for the workshop. Craft the Sprint Drive, then fit it to your first ship. We need that speed for the relay approach." if progress>=4 else "Bring your first rescue home and speak with Sera. Until then, I can explain our component recipes.")
+  "sera":
+   if progress>=4:return "Your rescue has a home here. Keep exploring, and care for its habitat. Milo can help you prepare the fleet."
+   return "You are building a refuge, not a trophy room. "+("Your new rescue is safe. I have reserved an engine-parts kit with Milo; take it before your next sortie." if progress>=3 else "Bring a newly captured creature to sanctuary through the landing ship. Ruby, our starter resident, still needs care too.")
+  _:
+   if progress>=5:return "The Sprint Drive is fitted. Watch your hull: speed trades some reinforcement. The workshop stays open for your next upgrade."
+   return "Milo here. "+("Sera's kit is ready for the workshop. Craft the Sprint Drive, then fit it to your first ship. We need that speed for the relay approach." if progress>=4 else "Bring your first rescue home and speak with Sera. Until then, I can explain our component recipes.")

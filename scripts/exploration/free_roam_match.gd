@@ -532,4 +532,5 @@ func can_land(index: int) -> bool:
  var region: int=[0,2,3][index]
  var planet_at: Vector3=FreeRoamWorld.CENTERS[region]+Vector3(-1000,-600,-1400)
  var near_planet:=ship.position.distance_to(planet_at)<850
- return ship.alive and army.worlds[index].owner == ship.team and (ship.position.distance_to(army.worlds[index].position)<650 or near_planet) and safe_to_service(ship)
+ var clearance: bool=index==0 and profile!=null and profile.story.accepted and StoryCampaign.stage(profile) in [1,2]
+ return ship.alive and (army.worlds[index].owner == ship.team or clearance) and (ship.position.distance_to(army.worlds[index].position)<650 or near_planet) and safe_to_service(ship)

@@ -5,7 +5,7 @@ An original opening chapter linking the Crimson Dominion conflict to the Nexus A
 ## Play
 
 1. Choose Begin your story and accept Astra's mission (+2 capture pods, once).
-2. Deploy to Varkhoss Prime through the journal. O reopens comms.
+2. Follow the gold Varkhoss waypoint in roaming space. Approach its outpost within 650m, leave nearby combat and press L to land. The story grants exploration clearance without requiring conquest. O resumes the same fleet while you are already roaming.
 3. Find a wild creature. Hold G for two seconds within 12 metres with a clear view. Dangerous wildlife needs half health or lower; LMB is non-lethal. C captures within 8 metres, spending one pod.
 4. Return to the landing ship and press E within 10 metres to deliver. Capture alone does not complete the rescue; Ruby does not count.
 5. Open O and debrief with Sera. Her reserved kit funds the story Sprint Drive, even if other materials have been spent.

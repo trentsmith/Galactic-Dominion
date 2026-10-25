@@ -54,7 +54,7 @@ func refresh() -> void:
  speech=label(StoryCampaign.dialogue(npc,"mission",stage))
  message=label("Online flight continues. Local story actions require leaving online play." if readonly else host.profile.story_message,14)
  if readonly:return
- var actions:=["Accept Astra's mission (+2 pods)","Deploy to Varkhoss Prime","Continue rescue expedition","Accept Sera's reserved parts kit","Open Milo's workshop","Launch Crimson patrol encounter","Archive the signal (+75 salvage)","Explore the galaxy"]
+ var actions:=["Accept Astra's mission (+2 pods)","Follow Varkhoss waypoint in space","Continue rescue expedition","Accept Sera's reserved parts kit","Open Milo's workshop","Launch Crimson patrol encounter","Archive the signal (+75 salvage)","Explore the galaxy"]
  var action:=button(body,actions[stage],func():host.story_action())
  action.name="StoryObjectiveButton"
  if npc=="milo" or stage==4:
