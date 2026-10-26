@@ -5,11 +5,14 @@ var battle: BattleMatch
 var pickups: Array[Dictionary]=[]
 var loadouts: Dictionary={}
 var elapsed:=0.0
+var pickup_clock:=0.0
 var status:="B: MEGA WEAPON / find glowing relics in space"
 const LABELS=["SOLAR LANCE","GRAVITY NOVA"]
 func _ready() -> void:
- for i in range(6):
+ var count:=battle.sector_map.relics.size() if battle.sector_map!=null else 6
+ for i in range(count):
   var root:=Node3D.new();root.position=Vector3(cos(i*TAU/6)*380,(i%3-1)*95,sin(i*TAU/6)*380);add_child(root)
+  if battle.sector_map!=null:root.position=battle.sector_map.relics[i]
   var shape:=PrismMesh.new();shape.size=Vector3(12,22,12)
   SpaceModelFactory.mesh(root,shape,Vector3.ZERO,Color(1,.65,.15) if i%2==0 else Color(.6,.3,1),"RelicCore",true)
   var ring:=SpaceModelFactory.ring(root,Vector3.ZERO,18,.5,Color(.3,.85,1),"RelicOrbit",true);ring.rotation.x=PI/2
@@ -18,15 +21,21 @@ func _ready() -> void:
 func tick(delta: float) -> void:
  if battle.finished:return
  elapsed+=delta
+ pickup_clock-=delta
  for pickup in pickups:
   var actor: Node3D=pickup.actor
   actor.visible=elapsed>=float(pickup.ready)
   if not actor.visible:continue
   actor.rotate_y(delta*.4)
-  for ship in battle.ships:
+  if pickup_clock>0:continue
+  var candidates: Array=battle.spatial.nearby(actor.position,32) if battle.spatial!=null else battle.ships
+  for ship in candidates:
    if ship.alive and not loadouts.has(ship.get_instance_id()) and ship.position.distance_squared_to(actor.position)<32*32:
     grant(ship,int(pickup.kind));pickup.ready=elapsed+90;actor.visible=false;break
- for ship in battle.ships:
+ if pickup_clock<=0:pickup_clock=.2
+ for id in loadouts.keys():
+  var ship:=instance_from_id(id) as CombatShip
+  if not is_instance_valid(ship):loadouts.erase(id);continue
   if not ship.alive:loadouts.erase(ship.get_instance_id());continue
   if not ship.player_controlled and loadouts.has(ship.get_instance_id()):
    var target:=ship.targeting.target

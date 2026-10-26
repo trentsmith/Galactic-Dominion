@@ -103,13 +103,13 @@ func start_tutorial() -> void:
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
 
-func start_armada() -> void:
- start_battle(100)
+func start_armada(seed_value: int=0) -> void:
+ start_battle(200,"",seed_value)
 
 func start_fleet_war() -> void:
  start_battle(10)
 
-func start_battle(size_per_team: int = 3,mission: String = "") -> void:
+func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0) -> void:
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -119,6 +119,7 @@ func start_battle(size_per_team: int = 3,mission: String = "") -> void:
   battle.get_parent().remove_child(battle)
   battle.queue_free()
  battle = BattleMatch.new()
+ battle.map_seed=seed_value
  battle.team_size = size_per_team
  battle.difficulty = "veteran" if mission!="" and difficulty=="veteran" else "standard" if mission!="" else difficulty
  battle.story_mission = mission

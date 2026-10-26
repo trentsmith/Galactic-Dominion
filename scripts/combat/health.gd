@@ -56,7 +56,7 @@ func damage(amount: float, attacker: CombatShip, source: String = "weapon") -> v
  shield_damage += absorbed
  hull_damage += hull_loss
  var damage_source := source if is_instance_valid(attacker) or source != "weapon" else "environment"
- if damage_source in ["environment","battle zone","collision","ion storm"]:environment_damage += absorbed + hull_loss
+ if damage_source in ["environment","battle zone","collision","ion storm","stellar corona","black hole"]:environment_damage += absorbed + hull_loss
  damage_sequence += 1
  var report := {"sequence":damage_sequence,"shield":absorbed,"hull":hull_loss,
   "source":damage_source,

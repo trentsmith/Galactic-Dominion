@@ -1,20 +1,30 @@
-# Experimental Armada
+# Uncharted Armada — 200v200
 
-100 ships on each side, offline only. One human pilot can take over any surviving ally; the rest are AI. Existing online sessions remain six pilot slots. No new backend protocol is claimed.
+Choose DEPLOY ARMADA on the title screen, or use `-- --armada`. The match contains one human pilot, 199 AI allies and 200 AI enemies. Online remains six pilot slots. Existing solo 3v3, 10v10 and story modes remain separate.
 
-Choose 100v100 ALPHA beside the difficulty selector, or launch with `-- --armada`. F1–F10 selects the first ten allies; [ and ] cycles through all living allies. Commands 1–5 apply to the fleet. No respawns; the last fleet standing wins. The safe sphere begins at radius 3,000m, contracts and collapses after eight minutes using the existing elimination rules.
+## Sector and sensors
 
-Six relics begin near the central contested region. Approach within 32m to collect one if your ship has none. Each provides three charges and 12 seconds between shots. An exhausted relic disappears from the ship. The physical pickup reappears 90 seconds after collection. Equipment is tied to a particular live ship and never saved or traded. Both teams can acquire and use relics.
+The safe sphere begins at radius 5,200m. Each match picks a new seed and scatters forty ten-ship squadrons, sixteen asteroid fields (up to 448 collision asteroids), two stars, two black holes and eight relic sites. Terrain variants and materials are shared instead of generating a unique mesh for every rock. The seed is shown on the chart for diagnostics; tests can supply a seed to `start_armada(seed)`.
 
-- **Solar Lance:** B fires a 1,100m aligned beam with 16m target tolerance, dealing 130 damage per enemy in its path. Static obstacles block each target's damage. The beam can pierce multiple enemies; allies are protected. AI waits for alignment and a target within 900m.
-- **Gravity Nova:** B damages enemies within 140m for 80 damage and applies the existing brief gravity slow. Obstacles protect targets. Allies are protected.
+Enemies are initially beyond sensor range. Tab and AI target selection use an 1,100m range. J opens the X/Z chart: allied positions and mapped terrain are visible, enemy positions require local detection. Flight continues; J closes it. The chart closes automatically at the results screen. Sensors are range-based, not an asteroid-occlusion stealth simulation.
 
-Damage still passes through normal shields, hull and Guardian protection. These are powerful match pickups, not guaranteed kills. The HUD shows the active ship's relic, charges and recharge state.
+Stars influence ships within 650m, producing inward pull and sideways drift. Their 110m hot core deals 55 damage/second through normal shields and protection. Black holes pull within 800m; their 65m event horizon destroys ships. Hazards affect both teams; AI tries to avoid them. Drift is capped and decays outside fields, and boost can help escape. These are accessible arcade rules rather than orbital physics. Damage reports identify stellar corona and black hole causes.
 
-## Rendering and testing
+## Fleet and relics
 
-Reinforcements use bounded lightweight hull geometry. Taking control promotes that hull to the full model; leaving it restores the lightweight model. The original three fitted ships keep full geometry. HUD lists the first ten allies and limits distant unselected markers. All 200 ships still use real movement, health, AI and projectiles.
+F1–F10 selects the first ten allies; [ and ] cycles through all survivors. Commands 1–5 apply to the fleet. No respawns; the last fleet standing wins. The zone contracts and collapses after eight minutes under the existing elimination rules.
 
-The automated suite runs 2,400 live physics frames before checking weapons and takeover. Final local measurement: 40 simulated seconds in 19.39 wall seconds, 13,675.3 confirmed damage, 77 allied / 57 opposing survivors. This measures headless simulation on a shared development machine; it does not measure graphical frame rate, networking scale or human enjoyment.
+Approach a relic within 32m if the ship has none. B fires; three charges, 12 seconds between shots, pickup respawn after 90 seconds. Equipment belongs to that live ship and never enters permanent inventory. Both sides can collect and use it.
 
-Run `godot --headless --path . --script res://tests/armada_test.gd --fixed-fps 60`. Test actual Windows graphics, long matches, controller comfort and balance before treating Armada as production-ready. The art remains an original procedural prototype.
+- Solar Lance: aligned 1,100m beam, 16m target tolerance, 130 damage per enemy. Static obstacles block it and allies are protected. AI waits for alignment within 900m.
+- Gravity Nova: 80 damage and a brief slow to enemies within 140m, blocked by obstacles. Allies are protected.
+
+## Architecture and measured limits
+
+`ArmadaSector` owns seeded layouts, hazards, spawn/search points and gravity. `ArmadaChart` presents range-limited contacts. `BattleSpatialIndex` rebuilds alive-ship cells at 10 Hz with conservative margins; exact range tests follow. AI search, Guardian support and repairs use nearby candidates. Obstacle probes run about five times per second in Armada, with cached steering between probes. Relic proximity checks run five times per second and only loaded weapons need AI firing checks.
+
+`ArmadaArt` merges the authored class hull geometry into five shared meshes and team materials. Decorative transparent engine cards are omitted from the merged hull. Taking over promotes a reinforcement to its full model; releasing it restores the merged model. Main fitted ships retain full visuals. Armour palettes and panel wear are refined across ship classes.
+
+Local final benchmark: 2,400 physics frames / 40 simulated seconds in 30.21 wall seconds, 3,243.6 confirmed damage, 190 allied and 182 opposing survivors. This is headless simulation on a shared development machine. It does not measure GPU FPS, prove 400-player networking or replace human playtests.
+
+Run `godot --headless --path . --script res://tests/armada_test.gd --fixed-fps 60` and `res://tests/armada_sector_test.gd` for live combat and sector checks. Test actual Windows graphics, long matches and balance before treating this experimental mode as production-ready.

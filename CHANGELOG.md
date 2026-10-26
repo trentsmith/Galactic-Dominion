@@ -1,3 +1,7 @@
+# v0.33 — Uncharted Armada
+
+Promote 200v200 Armada to the main title action. Generate seeded 10.4km sectors with scattered squadrons, range-limited contacts, a sector chart, hundreds of collision asteroids, stellar drift and lethal black holes. Merge detailed reinforcement hulls per class, share materials, index nearby ships and cache obstacle probes. Refine hull palettes and fix a random-loot dependency in story tests. CI now rejects script errors even when Godot returns success.
+
 # v0.32 — Armada and Living Worlds
 
 Add experimental solo 100v100 with a larger arena, bounded reinforcement models, takeover across the full fleet and two finite-charge relic weapons. Keep the six-slot online protocol. Move the opening discovery into roaming flight with named landing/rescue/delivery waypoints and Varkhoss mission clearance. Refine nine species with patterned coats and distinctive anatomy, plus breathing/ear/tail motion. Replace Ny'Zaroth's toy-like head and floating mushrooms with an ossuary, irregular mineral ruins, roots, dusk sky and a watching eye. Bake procedural coats to glTF vertex colors for portable model exports.

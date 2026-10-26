@@ -3,6 +3,11 @@ extends Node3D
 signal ended(winner, reason)
 
 const CLASSES = [preload("res://resources/ships/interceptor.tres"), preload("res://resources/ships/skirmisher.tres"), preload("res://resources/ships/guardian.tres")]
+var sector_map: ArmadaSector
+var spatial: BattleSpatialIndex
+var map_seed:=0
+var broadphase_clock:=0.0
+var aura_clock:=0.0
 var mega: MegaWeapons
 var story_mission := ""
 var difficulty := "standard"
@@ -35,21 +40,28 @@ func _ready() -> void:
  difficulty = SoloDifficulty.valid(difficulty)
  battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
  # Network protocol remains six slots; Fleet War is an offline mode.
- team_size = team_size if team_size in [10,100] and network_role == "offline" else 3
+ team_size = team_size if team_size in [10,200] and network_role == "offline" else 3
  elimination_only = team_size >= 10
  var arena := SpaceArena.new()
- arena.open_space = training
- arena.battle_scale = 4.0 if team_size==100 else 1.7 if team_size == 10 else 1.0
- arena.star_radius=6500 if team_size==100 else 1700
+ arena.open_space = training or team_size>=100
+ arena.battle_scale = 1.7 if team_size == 10 else 1.0
+ arena.star_radius=12000 if team_size>=100 else 1700
+ if team_size>=100:
+  if map_seed==0:
+   var random:=RandomNumberGenerator.new();random.randomize();map_seed=random.randi_range(1,2147483646)
+  arena.arena_seed=map_seed
  add_child(arena)
  zone = BattleZone.new()
  if team_size >= 10:
   zone.start_radius = 1050.0
   zone.final_radius = 150.0
- if team_size==100:zone.start_radius=3000;zone.final_radius=350
+ if team_size>=100:zone.start_radius=ArmadaSector.RADIUS;zone.final_radius=350
  add_child(zone)
+ if team_size>=100:
+  spatial=BattleSpatialIndex.new()
+  sector_map=ArmadaSector.new();sector_map.battle=self;sector_map.seed_value=map_seed;add_child(sector_map)
  camera = Camera3D.new()
- camera.far = 10000.0 if team_size==100 else 4000.0
+ camera.far = 16000.0 if team_size>=100 else 4000.0
  camera.current = true
  add_child(camera)
  pilot = PlayerPilot.new()
@@ -61,7 +73,7 @@ func _ready() -> void:
  for team_index in range(2):
   for slot in range(team_size):
    var ship := CombatShip.new()
-   ship.lightweight=team_size==100 and not (team_index==0 and slot<3)
+   ship.lightweight=team_size>=100 and not (team_index==0 and slot<3)
    ship.set_meta("armada_lod",ship.lightweight)
    ship.stats = profile.configured_stats(slot) if team_index == 0 and profile != null and slot < 3 else reinforcement_stats(slot)
    if team_index == 0 and profile != null and slot < 3:
@@ -78,11 +90,14 @@ func _ready() -> void:
    ship.position = Vector3((slot - 1) * 40.0, slot * 12.0, 230.0 if team_index == 0 else -230.0)
    if team_size == 10:
     ship.position = Vector3((slot % 5 - 2) * 65.0, (slot / 5) * 65.0 - 32.5, (410.0 + (slot / 5) * 75.0) * (1 if team_index == 0 else -1))
-   if team_size==100:
-    ship.position=Vector3((slot%10-4.5)*105,(slot/10-4.5)*70,(1050+(slot/10)*32)*(1 if team_index==0 else -1))
-   if team_index == 1:
-    ship.rotation.y = PI
+   if team_size>=100:ship.position=sector_map.spawn_position(team_index,slot)
+   if team_index == 1:ship.rotation.y=PI
    add_child(ship)
+   if team_size>=100:
+    ship.look_at(Vector3.ZERO)
+    ship.brain.command="attack"
+    ship.brain.sensor_range=ArmadaSector.SENSOR;ship.brain.retarget_timer=float(slot%12)*.05
+    ship.targeting.selection_range=ArmadaSector.SENSOR;ship.targeting.enforce_range=true
    ships.append(ship)
    if network_role=="offline":
     if team_index==0:
@@ -94,17 +109,21 @@ func _ready() -> void:
    if team_index == 0:
     fleet.ships.append(ship)
     ship.eliminated.connect(fleet.on_eliminated)
+ if spatial!=null:spatial.rebuild(ships)
  fleet.switch_to(0)
  pilot.ship.targeting.cycle()
  fleet.issue_command("attack" if network_role=="offline" else "follow")
  if team_size >= 10:
   # Start separate dogfights instead of assigning nine escorts to one opponent.
   for ally in fleet.ships:ally.brain.commanded_target = null
- if team_size==100:
+ if team_size>=100:
   mega=MegaWeapons.new();mega.battle=self;add_child(mega)
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)
+ if sector_map!=null:
+  var layer:=CanvasLayer.new();layer.layer=8;add_child(layer)
+  var chart:=ArmadaChart.new();chart.battle=self;layer.add_child(chart)
  if network_role != "offline":
   pilot.set_physics_process(false)
   pilot.set_process_unhandled_input(false)
@@ -127,7 +146,13 @@ func _physics_process(delta: float) -> void:
   return
  elapsed += delta
  if is_instance_valid(mega):mega.tick(delta)
- update_auras()
+ if spatial!=null:
+  broadphase_clock-=delta
+  if broadphase_clock<=0:spatial.rebuild(ships);broadphase_clock=.1
+  sector_map.tick(delta)
+  aura_clock-=delta
+  if aura_clock<=0:update_auras();aura_clock=.1
+ else:update_auras()
  zone.tick(delta, ships)
  if elapsed >= max_duration and not elimination_only:
   var scores := [0.0, 0.0]
@@ -142,7 +167,7 @@ func update_auras() -> void:
   ship.health.protection = 1.0
  for guardian in ships:
   if guardian.alive and guardian.stats.ability == "aegis" and guardian.ability_remaining > 0.0:
-   for friend in ships:
+   for friend in spatial.nearby(guardian.position,90) if spatial!=null else ships:
     if friend.alive and friend.team == guardian.team and friend.global_position.distance_to(guardian.global_position) < 90.0:
      friend.health.protection = 0.45
 

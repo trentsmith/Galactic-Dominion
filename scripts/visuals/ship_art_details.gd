@@ -1,10 +1,10 @@
 class_name ShipArtDetails
 extends RefCounted
 ## Chamfered hard-surface spacecraft. No lathed hulls or petal wings.
-const STEEL:=Color(.19,.23,.28)
-const ARMOR:=Color(.54,.57,.59)
+const STEEL:=Color(.11,.18,.24)
+const ARMOR:=Color(.68,.74,.8)
 const DARK:=Color(.025,.035,.045)
-const COPPER:=Color(.65,.29,.10)
+const COPPER:=Color(.84,.47,.17)
 const ION:=Color(.22,.85,1)
 static var shapes: Dictionary={}
 static var halo_texture: ImageTexture
@@ -15,9 +15,9 @@ static func metal_texture() -> ImageTexture:
  var random:=RandomNumberGenerator.new();random.seed=2424
  for y in range(128):
   for x in range(128):
-   var value:=random.randf_range(.84,1.0)
-   if x%32==0 or y%64==0:value*=.65
-   if y%37==0 and x%64<19:value*=.74
+   var value:=random.randf_range(.94,1.0)
+   if x%32==0 or y%64==0:value*=.8
+   if y%37==0 and x%64<19:value*=.87
    image.set_pixel(x,y,Color(value,value,value))
  panel_texture=ImageTexture.create_from_image(image);return panel_texture
 static func enamel(node: MeshInstance3D,roughness: float=.46) -> void:

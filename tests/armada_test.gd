@@ -9,10 +9,10 @@ func check(value: bool,message: String) -> void:
 func run() -> void:
  var host=load("res://scenes/main.tscn").instantiate();host.profile_path="user://armada-%d.json"%Time.get_ticks_usec();root.add_child(host);await process_frame
  check(host.menu.find_child("ArmadaButton",true,false)!=null,"Experimental Armada has a command-deck entry")
- host.start_armada();await process_frame
+ host.start_armada(81337);await process_frame
  var battle: BattleMatch=host.battle
- check(battle.ships.size()==200 and battle.living(0)==100 and battle.living(1)==100,"100 real ships spawn on each side")
- check(battle.elimination_only and battle.zone.start_radius==3000 and battle.camera.far==10000,"Armada has a larger navigable arena and elimination rules")
+ check(battle.ships.size()==400 and battle.living(0)==200 and battle.living(1)==200,"200 real ships spawn on each side")
+ check(battle.elimination_only and battle.zone.start_radius==5200 and battle.camera.far==16000,"Armada has a larger navigable arena and elimination rules")
  check(battle.ships[150].lightweight and not battle.ships[0].lightweight,"Reinforcements use bounded hull geometry")
  var started:=Time.get_ticks_msec()
  var steps:=2400
@@ -29,7 +29,7 @@ func run() -> void:
  var player: CombatShip=battle.ships[0]
  player.alive=true;player.health.dead=false;player.health.configure(player.stats)
  player.position=Vector3(0,2100,0);player.rotation=Vector3.ZERO
- var enemy: CombatShip=battle.ships[100]
+ var enemy: CombatShip=battle.ships[200]
  enemy.alive=true;enemy.health.dead=false;enemy.health.max_hull=1000;enemy.health.hull=1000;enemy.health.max_shield=0;enemy.health.shield=0;enemy.position=Vector3(0,2100,-120)
  var ally: CombatShip=battle.ships[1];ally.alive=true;ally.position=Vector3(0,2100,-70)
  var ally_before:=ally.health.hull
@@ -56,7 +56,7 @@ func run() -> void:
  battle.mega.grant(player,1);before=enemy.health.hull
  check(battle.mega.fire(player) and enemy.health.hull==before-80 and enemy.movement.slow_remaining>0,"Gravity Nova damages and slows nearby enemies")
  battle.mega.loadouts.clear();player.position=battle.mega.pickups[0].actor.position
- battle.mega.pickups[0].ready=0;battle.mega.tick(.1)
+ battle.mega.pickups[0].ready=0;battle.spatial.rebuild(battle.ships);battle.mega.pickup_clock=0;battle.mega.tick(.1)
  check(battle.mega.loadouts.has(player.get_instance_id()) and not battle.mega.pickups[0].actor.visible,"A real proximity pickup grants charges and enters respawn cooldown")
  battle.ships[20].alive=true
  check(battle.fleet.switch_to(20) and not battle.ships[20].lightweight and battle.pilot.ship==battle.ships[20],"Taking over a reinforcement promotes its full ship model")
@@ -66,7 +66,7 @@ func run() -> void:
   if ship.team==1 and ship.alive:ship.health.damage(100000,player,"test")
  check(battle.finished and battle.winner==0,"Last fleet standing ends Armada with the correct winner")
  host.queue_free();await process_frame;await process_frame
- var online:=BattleMatch.new();online.network_role="server";online.team_size=100;root.add_child(online);await process_frame
+ var online:=BattleMatch.new();online.network_role="server";online.team_size=200;root.add_child(online);await process_frame
  check(online.team_size==3 and online.ships.size()==6 and online.mega==null,"Online sessions retain the existing six-slot protocol")
  online.queue_free();await process_frame
  print("ARMADA_TEST: %d checks, %d failures"%[checks,failures]);quit(1 if failures else 0)

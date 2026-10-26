@@ -1,16 +1,18 @@
-# Galactic Dominion — Armada and Living Worlds
+# Galactic Dominion — Uncharted Armada
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
 
-## Experimental 100v100 Armada
+## 200v200 Uncharted Armada
 
-Choose **100v100 ALPHA** beside the solo difficulty selector. One player and 99 AI allies face 100 AI enemies in a six-kilometre-diameter starting safe zone. The battlefield has more asteroids and wreckage, and the last fleet standing wins. The existing 3v3 and 10v10 modes remain separate. **This is solo, not 200-player networking.**
+**DEPLOY ARMADA / 200 v 200** is the main title-screen action. One human pilot and 199 AI allies face 200 AI enemies in a randomized sector with a 5,200m starting radius. This replaces the earlier 100v100 launch option; solo 3v3, 10v10 and the story remain available. Online play retains six pilot slots.
 
-Six glowing relics contain **Solar Lance** (an aligned, obstacle-blocked piercing beam) or **Gravity Nova** (a nearby enemy-damaging slowing pulse). Approach within 32m to collect three charges; press **B** to fire. Both teams' AI can collect and use them. Each shot has a 12-second recharge; relics respawn after 90 seconds. Relics belong to the current ship, disappear with it and never enter permanent inventory. Friendly ships are protected. **F1–F10** selects the first ten allies; **[ / ]** cycles through every living ally. Automatic takeover remains available after destruction.
+Each deployment generates new squadron spawns, sixteen asteroid fields, hundreds of physical asteroids, two stars, two black holes and eight relic sites. Opponents are initially beyond your sensors. **Tab** can only select contacts within **1,100m**. **J** opens an X/Z sector chart showing terrain, hazards, allies and locally detected enemies; it does not reveal the whole opposing fleet. Flight continues while the chart is open.
 
-Reinforcements use lightweight hulls and promote to the full model on takeover, then return to lightweight geometry when released. Actual GPU performance needs human hardware testing. A 40-second headless simulation confirmed movement, weapon damage and losses on both sides; it is not a rendered frame-rate guarantee. Developer shortcut: `-- --armada`.
+Stars pull ships inward and create sideways momentum; their hot cores cause labelled damage. Black holes have a larger pull zone and a lethal event horizon. Warnings identify nearby hazards. Boost away before reaching the core. Both teams face the same hazards, and AI attempts to steer around them. All physics are arcade gameplay rules.
 
-Creature coats now have procedural patterns and species-specific anatomy, including antler blossoms, wing veins, reef whiskers, eye stalks and trailing membranes. Wild creatures breathe and move ears/tails. Ny'Zaroth has a ribbed ossuary, mineral skin, hanging roots, muted vegetation, dusk lighting and a distant watching eye. This remains procedural prototype art, not photorealistic production art.
+Find Solar Lance or Gravity Nova relics within 32m; **B** fires three match-local charges with a 12-second recharge. Relics return after 90 seconds. **F1–F10** selects the first ten allies; **[ / ]** cycles through all survivors. The last fleet standing wins. The safe zone eventually collapses to prevent hiding.
+
+Detailed reinforcement hulls merge into shared class meshes and materials. A 10 Hz spatial index replaces repeated whole-fleet AI scans, obstacle probes are cached, nearby support/Guardian queries use the index, and relic checks run on a bounded interval. Controlled ships retain their full model and fitted appearance. These changes reduce redundant work; they do not establish a rendered FPS guarantee. See [Armada implementation and controls](docs/ARMADA.md).
 
 ## Begin your story
 
@@ -42,7 +44,7 @@ Combat now reports confirmed shield and hull damage separately. Camera-relative 
 
 Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
 
-Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.32.
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.33.
 
 ## Start here: flight school
 
@@ -80,7 +82,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.32 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.32.0)** and choose:
+The v0.33 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.33.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -597,3 +599,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.32 validation
 
 408 local Godot checks passed across thirteen Armada, story, art, landing/capture, creature combat, menu, difficulty and Fleet War suites, plus 22 backend tests. The 17-check Armada suite exercises 200 live ships, actual weapon damage, alignment and obstacle checks, AI relic use, finite charges, pickup cooldown, full-fleet takeover/model demotion and elimination. A final 2,400-frame run advanced 40 simulated seconds in 19.39 wall seconds (123.7 headless simulation frames per second), dealing 13,675.3 damage with 77 allied and 57 opposing survivors. This is a shared development machine result, not a rendered FPS or balance guarantee. Native Linux creature, abyss and Armada images were rendered and inspected; Windows GUI and human testing remain pending.
+
+### v0.33 validation
+
+444 local Godot checks passed across fourteen Armada, randomized sector, menu, combat, difficulty, story, flight, landing and ship-art suites, plus 22 backend tests. A seeded 400-ship run advanced 40 simulated seconds in 30.21 wall seconds (79.4 headless simulation frames/second), dealing 3,243.6 damage with 190 allied and 182 opposing survivors. The new sector suite covers reproducible/randomized layouts, safe spawns, hidden contacts, shared queries, actual drift, lethal black holes, stellar damage, merged meshes and chart/results behavior. Native Linux title, flight and chart views were inspected. Headless timings are not graphical FPS; Windows hands-on testing and human balance calibration remain pending.

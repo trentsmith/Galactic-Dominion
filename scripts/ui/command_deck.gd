@@ -41,11 +41,11 @@ func _ready() -> void:
  column.add_theme_constant_override("separation",5)
  scroll.add_child(column)
  _label(column,"G A L A C T I C   D O M I N I O N",13,MINT)
- var title := _label(column,"Ready when\nyou are." if paused else "A galaxy\nof your own.",46,INK)
+ var title := _label(column,"Ready when\nyou are." if paused else "ARMADA\n200 v 200",46,INK)
  title.add_theme_constant_override("line_spacing",-5)
  var online: bool = is_instance_valid(host.battle) and host.battle.network_role != "offline"
- _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "Find your crew. Explore strange worlds.\nMake a little home among the stars.",15,MUTED)
- var primary := _button(column,"ResumeButton" if paused else "StoryButton","RESUME FLIGHT   >" if paused else "STORY / "+StoryCampaign.TITLES[StoryCampaign.stage(host.profile)].to_upper()+"   >" if host.profile.story.accepted else "BEGIN YOUR STORY   >",host.resume if paused else host.show_story,52)
+ _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "A new sector every battle. 400 ships.\nGravity hazards. Enemies beyond your sensors.",15,MUTED)
+ var primary := _button(column,"ResumeButton" if paused else "ArmadaButton","RESUME FLIGHT   >" if paused else "DEPLOY ARMADA / 200 v 200   >",host.resume if paused else host.start_armada,52)
  _primary_style(primary)
  if not paused:
   var quick := HBoxContainer.new();quick.add_theme_constant_override("separation",10);column.add_child(quick)
@@ -55,7 +55,7 @@ func _ready() -> void:
   var battle_options := HBoxContainer.new();column.add_child(battle_options)
   _label(battle_options,"SOLO BATTLE AI  ",11,MUTED)
   host.difficulty_choice(battle_options)
-  _button(battle_options,"ArmadaButton","100v100 ALPHA",host.start_armada,30).tooltip_text="Experimental solo Armada: 200 ships, relic mega weapons, larger arena. Graphics performance is hardware-dependent."
+  _button(battle_options,"StoryButton","STORY / JOURNAL",host.show_story,30)
   var modes := GridContainer.new();modes.columns=2;modes.add_theme_constant_override("h_separation",10);modes.add_theme_constant_override("v_separation",8);column.add_child(modes)
   _mode(modes,"TutorialButton","Replay flight school" if host.settings.get_value("tutorial","flight_completed",false) else "Start here: flight school","Learn to fly · safe practice",host.start_tutorial)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)

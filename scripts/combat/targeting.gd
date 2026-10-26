@@ -6,12 +6,15 @@ var target: CombatShip
 var lock_time := 0.0
 var lock_duration:=1.2
 var selection_range := INF
+var enforce_range:=false
 
 func tick(delta: float) -> void:
  if not is_instance_valid(target) or not target.alive:
   target = null
   lock_time = 0.0
   return
+ if enforce_range and ship.position.distance_squared_to(target.position)>selection_range*selection_range:
+  select(null);return
  var direction := ship.global_position.direction_to(target.global_position)
  if (-ship.global_basis.z).dot(direction) > 0.90 and ship.global_position.distance_to(target.global_position) < 600.0:
   lock_time = minf(lock_duration, lock_time + delta)

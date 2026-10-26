@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-32-armada-and-living-worlds]
+    branches: [phase-33-randomized-armada]
   workflow_dispatch:
 permissions:
   contents: write
@@ -61,28 +61,38 @@ jobs:
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/sanctuary.log; then exit 1; fi
       - name: Verify friendship forms and army conquest
         run: |
-          godot --headless --path . --script res://tests/sanctuary_forms_test.gd
-          godot --headless --path . --script res://tests/creature_army_test.gd
-          godot --headless --path . --script res://tests/armada_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/expansion_art_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/story_campaign_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/difficulty_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/combat_feedback_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/tutorial_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/fleet_war_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/solo_balance_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/solo_skirmish_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/planet_creature_battle_test.gd
-          godot --headless --path . --script res://tests/world_war_test.gd
-          godot --headless --path . --script res://tests/starlight_art_test.gd
-          godot --headless --path . --script res://tests/command_deck_test.gd
-          godot --headless --path . --script res://tests/fleet_companions_test.gd
-          godot --headless --path . --script res://tests/universal_liveries_test.gd
-          godot --headless --path . --script res://tests/celestial_art_test.gd
-          godot --headless --path . --script res://tests/landing_hunt_test.gd
-          godot --headless --path . --script res://tests/creature_loop_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/planet_expedition_test.gd --fixed-fps 60
-          godot --headless --path . --script res://tests/capture_rescue_test.gd
+          verify_godot() {
+            test_name="$1"; shift
+            test_log="/tmp/${test_name}.log"
+            test_status=0
+            godot --headless --path . --script "res://tests/${test_name}_test.gd" "$@" > "$test_log" 2>&1 || test_status=$?
+            cat "$test_log"
+            if grep -E 'SCRIPT ERROR|ERROR:' "$test_log"; then return 1; fi
+            return "$test_status"
+          }
+          verify_godot sanctuary_forms
+          verify_godot creature_army
+          verify_godot armada_sector --fixed-fps 60
+          verify_godot armada --fixed-fps 60
+          verify_godot expansion_art --fixed-fps 60
+          verify_godot story_campaign --fixed-fps 60
+          verify_godot difficulty --fixed-fps 60
+          verify_godot combat_feedback --fixed-fps 60
+          verify_godot tutorial --fixed-fps 60
+          verify_godot fleet_war --fixed-fps 60
+          verify_godot solo_balance --fixed-fps 60
+          verify_godot solo_skirmish --fixed-fps 60
+          verify_godot planet_creature_battle
+          verify_godot world_war
+          verify_godot starlight_art
+          verify_godot command_deck
+          verify_godot fleet_companions
+          verify_godot universal_liveries
+          verify_godot celestial_art
+          verify_godot landing_hunt
+          verify_godot creature_loop --fixed-fps 60
+          verify_godot planet_expedition --fixed-fps 60
+          verify_godot capture_rescue
           python3 tests/test_army_network.py
           GD_TEST_COMPANION=crew_orbitot GD_TEST_VARIANT=variant_orbitot GD_TEST_HULL=skirmisher python3 tests/test_free_roam_network.py
           GD_TEST_COMPANION=crew_glimbloom GD_TEST_VARIANT=variant_glimbloom GD_TEST_HULL=guardian python3 tests/test_free_roam_network.py
@@ -104,8 +114,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.32.0
+          tag=v0.33.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.32 — Armada and Living Worlds' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.33 — Uncharted Armada' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

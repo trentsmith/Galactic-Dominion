@@ -44,7 +44,7 @@ func _draw() -> void:
   if candidate.alive and candidate.team != ship.team: opponents += 1
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
- text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "ARMADA 100v100" if battle.team_size==100 else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
+ text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "ARMADA %dv%d"%[battle.team_size,battle.team_size] if battle.team_size>=100 else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
  text(Vector2(42, 93), "ALLIES %d / HOSTILES %d" % [battle.living(battle.local_team()), opponents], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
  var exploring := battle is ExplorationMatch
@@ -107,10 +107,11 @@ func _draw() -> void:
  if is_instance_valid(battle.mega):
   text(Vector2(42,180),battle.mega.description(ship),Color(1,.8,.4),13)
   text(Vector2(42,203),"[ / ] TAKE OVER ANY SURVIVING ALLY",MUTED,13)
+  if battle.sector_map!=null:text(Vector2(42,225),battle.sector_map.warning(ship.position),Color(1,.7,.4),13)
  var target := ship.targeting.target
  for candidate in battle.ships:
   if candidate.alive and candidate != ship:
-   if battle.team_size==100 and candidate!=target and ship.position.distance_to(candidate.position)>550:continue
+   if battle.team_size>=100 and candidate!=target and ship.position.distance_to(candidate.position)>(ArmadaSector.SENSOR if candidate.team!=ship.team else 550):continue
    if free_roam and candidate != target and ship.position.distance_to(candidate.position) > 1400: continue
    _draw_ship_marker(candidate, candidate == target)
  if is_instance_valid(target) and target.alive:

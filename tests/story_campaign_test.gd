@@ -97,16 +97,17 @@ func run() -> void:
  check(StoryCampaign.stage(main.profile)==7,"Changing fittings after completion does not reopen old objectives")
  var restored:=PlayerProfile.new(path);restored.load_profile()
  check(restored.story.complete and restored.exploration_records.has("story.lantern_signal"),"Chapter completion and its lore discovery survive reload")
- var before: int=main.profile.sanctuary.materials.ore
- main.profile.sanctuary.materials.ore=0
- check(not StoryCampaign.craft(main.profile,"shield_recovery") and main.profile.story_message.contains("NEED MATERIALS"),"Workshop recipes explain insufficient materials")
- main.profile.sanctuary.materials.ore=before
- main.profile.sanctuary.materials.ore=10;main.profile.sanctuary.materials.bloom=10;main.profile.sanctuary.materials.fiber=10
- check(StoryCampaign.craft(main.profile,"shield_recovery") and main.profile.owns("shield_recovery") and main.profile.sanctuary.materials.ore==5 and main.profile.sanctuary.materials.bloom==7,"Non-story workshop recipes consume their actual materials")
- var sanctuary_reference: Dictionary=main.profile.sanctuary
- main.profile.save_blocked=true
- check(not StoryCampaign.craft(main.profile,"utility_reserve") and sanctuary_reference.materials.ore==5 and not main.profile.owns("utility_reserve"),"Failed regular crafting preserves live sanctuary references and ownership")
- main.profile.save_blocked=false
+ var workshop:=PlayerProfile.new(path+"-workshop")
+ var before: int=workshop.sanctuary.materials.ore
+ workshop.sanctuary.materials.ore=0
+ check(not StoryCampaign.craft(workshop,"shield_recovery") and workshop.story_message.contains("NEED MATERIALS"),"Workshop recipes explain insufficient materials")
+ workshop.sanctuary.materials.ore=before
+ workshop.sanctuary.materials.ore=10;workshop.sanctuary.materials.bloom=10;workshop.sanctuary.materials.fiber=10
+ check(StoryCampaign.craft(workshop,"shield_recovery") and workshop.owns("shield_recovery") and workshop.sanctuary.materials.ore==5 and workshop.sanctuary.materials.bloom==7,"Non-story workshop recipes consume their actual materials")
+ var sanctuary_reference: Dictionary=workshop.sanctuary
+ workshop.save_blocked=true
+ check(not StoryCampaign.craft(workshop,"utility_reserve") and sanctuary_reference.materials.ore==5 and not workshop.owns("utility_reserve"),"Failed regular crafting preserves live sanctuary references and ownership")
+ workshop.save_blocked=false
  var legacy: Dictionary=main.profile.to_dict();legacy.version=5;legacy.erase("story")
  var file:=FileAccess.open(path+"-legacy",FileAccess.WRITE);file.store_string(JSON.stringify(legacy));file.close()
  var migrated:=PlayerProfile.new(path+"-legacy");migrated.load_profile()

@@ -9,6 +9,8 @@ var commanded_target: CombatShip
 var state := State.FOLLOW
 var alert_time := 0.0
 var retarget_timer := 0.0
+var nav_timer:=0.0
+var nav_avoidance:=Vector3.ZERO
 var reaction_interval := .6
 var aim_lead := 1.0
 var fire_dot := .975
@@ -72,6 +74,8 @@ func tick(delta: float) -> void:
   ship.movement.boost_requested = false
  if not roaming and ship.global_position.length() > radius * 0.9:
   destination = Vector3.ZERO
+ var match_node:=ship.get_parent() as BattleMatch
+ if match_node!=null and match_node.sector_map!=null and not is_instance_valid(enemy) and command=="attack":destination=match_node.sector_map.search_position(ship,match_node.elapsed)
  SpaceNavigation.steer(ship, destination, delta)
  if state in [State.FOLLOW, State.REGROUP, State.DEFEND] and ship.global_position.distance_to(destination) < 18.0:
   ship.movement.thrust = Vector3.ZERO
@@ -85,12 +89,14 @@ func _formation() -> Vector3:
  return leader.global_position + leader.global_basis * Vector3(side * (24 + row * 10), 8 + (index % 3) * 12, row * 32)
 
 func _find_target() -> void:
- if command == "attack" and is_instance_valid(commanded_target) and commanded_target.alive:
+ if command == "attack" and is_instance_valid(commanded_target) and commanded_target.alive and ship.position.distance_squared_to(commanded_target.position)<=sensor_range*sensor_range:
   ship.targeting.select(commanded_target)
   return
  var best: CombatShip
  var score := INF
- for candidate in get_tree().get_nodes_in_group("ships"):
+ var match_node:=ship.get_parent() as BattleMatch
+ var candidates: Array=match_node.spatial.nearby(ship.position,sensor_range) if match_node!=null and match_node.spatial!=null else get_tree().get_nodes_in_group("ships")
+ for candidate in candidates:
   if not candidate.alive or candidate.team == ship.team:
    continue
   var distance: float = ship.global_position.distance_squared_to(candidate.global_position)

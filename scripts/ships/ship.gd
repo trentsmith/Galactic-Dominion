@@ -127,7 +127,9 @@ func _physics_process(delta: float) -> void:
  if not player_controlled:
   brain.tick(delta)
  if ability_remaining > 0.0 and stats.ability == "repair":
-  for ally in get_tree().get_nodes_in_group("ships"):
+  var match_node:=get_parent() as BattleMatch
+  var candidates: Array=match_node.spatial.nearby(position,90) if match_node!=null and match_node.spatial!=null else get_tree().get_nodes_in_group("ships")
+  for ally in candidates:
    if ally.alive and ally.team == team and global_position.distance_to(ally.global_position) < 90.0:
     ally.health.hull = minf(ally.health.max_hull, ally.health.hull + 3.0 * delta)
  movement.tick(delta)
@@ -173,6 +175,7 @@ func redeploy(at: Vector3, protection_seconds: float = 8.0) -> void:
  rotation = Vector3.ZERO
  velocity = Vector3.ZERO
  movement.slow_remaining = 0
+ movement.external_acceleration=Vector3.ZERO;movement.field_drift=Vector3.ZERO
  health.dead = false
  health.configure(stats)
  health.damage_received = 0
