@@ -24,14 +24,12 @@ var rng:=RandomNumberGenerator.new()
 var marker: Label3D
 func _ready() -> void:
  home=position;rng.seed=definition.id.hash()+int(position.x*17+position.z*23)
+ face_clock=rng.randf_range(0,4.4)
  health=definition.health;collision_layer=4;collision_mask=7
  var shape:=SphereShape3D.new();shape.radius=.85*definition.size
  var collision:=CollisionShape3D.new();collision.shape=shape;collision.position.y=.7;add_child(collision)
  visual=SurfaceArt.creature(self,definition);visual.scale=Vector3.ONE*definition.size
- for part in visual.get_children():
-  if part.has_meta("eye_open_y"):face_eyes.append(part)
-  elif str(part.name).begins_with("Pupil") or "Catchlight" in str(part.name):
-   part.set_meta("eye_open_y",part.scale.y);face_eyes.append(part)
+ face_eyes=FaunaFace.eyes(visual)
  set_meta("scan_id","fauna."+definition.id);set_meta("scan_name",definition.display_name)
  marker=Label3D.new();marker.billboard=BaseMaterial3D.BILLBOARD_ENABLED;marker.position=Vector3(0,2.8,0);marker.font_size=28;marker.pixel_size=.009
  marker.modulate=Color(1,.5,.4) if definition.damage>0 else Color(.6,1,.8);add_child(marker)
@@ -102,8 +100,7 @@ func hit(damage: float, nonlethal: bool=false) -> void:
 func _process(delta: float) -> void:
  if not alive or not is_instance_valid(visual):return
  face_clock+=delta
- var closed:=fmod(face_clock,4.4)>4.26
- for eye in face_eyes:eye.scale.y=float(eye.get_meta("eye_open_y"))*(.08 if closed else 1.0)
+ FaunaFace.blink(face_eyes,face_clock)
  var breath:=1.0+sin(face_clock*2.1)*.018
  visual.scale=Vector3(1,breath,1)*definition.size
  for child in visual.get_children():

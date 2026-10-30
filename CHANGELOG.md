@@ -1,3 +1,7 @@
+# v0.34 — Living Wildlife
+
+Refine nine species with surface-mounted eyes, lids, iris fibres, appropriate pupils and connected neutral muzzles. Replace painted cheeks and identical smiles; shorten bat ears, add natural hoof/muzzle anatomy and remove mammal ears from aquatic/eldritch species. Share organic skin materials and smooth blink logic across wild, deployed and sanctuary creatures. Bake coats into portable glTF colors with per-surface finishes; verify actual export/reload and provide a native portrait renderer.
+
 # v0.33 — Uncharted Armada
 
 Promote 200v200 Armada to the main title action. Generate seeded 10.4km sectors with scattered squadrons, range-limited contacts, a sector chart, hundreds of collision asteroids, stellar drift and lethal black holes. Merge detailed reinforcement hulls per class, share materials, index nearby ships and cache obstacle probes. Refine hull palettes and fix a random-loot dependency in story tests. CI now rejects script errors even when Godot returns success.

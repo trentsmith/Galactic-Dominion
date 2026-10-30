@@ -40,7 +40,7 @@ def main():
         if platform=='linux':(folder/name).chmod(0o755)
         cfg='[server]\napi_url='+json.dumps(args.api_url)+'\ncombat_host='+json.dumps(args.combat_host)+'\ncombat_port='+str(args.combat_port)+'\n'
         (folder/'server.cfg').write_text(cfg)
-        (folder/'PLAY.txt').write_text('Galactic Dominion v0.33 alpha\n\nRun '+name+'. Godot and Python are not required for players.\nChoose My Planet / Creature Sanctuary to raise your creatures, Planet Expeditions to explore with a little bot, Free Roam for solo spaceflight or Online to join your host.\nOnline progress is separate from local progress.\nSee https://github.com/trentsmith/Galactic-Dominion for controls and hosting.\n')
+        (folder/'PLAY.txt').write_text('Galactic Dominion v0.34 alpha\n\nRun '+name+'. Godot and Python are not required for players.\nChoose My Planet / Creature Sanctuary to raise your creatures, Planet Expeditions to explore with a little bot, Free Roam for solo spaceflight or Online to join your host.\nOnline progress is separate from local progress.\nSee https://github.com/trentsmith/Galactic-Dominion for controls and hosting.\n')
         if (ROOT/'GODOT_LICENSE.txt').exists():shutil.copy2(ROOT/'GODOT_LICENSE.txt',folder/'GODOT_LICENSE.txt')
         title='Windows' if platform=='windows' else 'Linux'
         package=out/f'Galactic-Dominion-{title}.zip';pack(folder,package);outputs.append(package)

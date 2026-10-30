@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-33-randomized-armada]
+    branches: [phase-34-living-wildlife]
   workflow_dispatch:
 permissions:
   contents: write
@@ -92,6 +92,7 @@ jobs:
           verify_godot landing_hunt
           verify_godot creature_loop --fixed-fps 60
           verify_godot planet_expedition --fixed-fps 60
+          verify_godot fauna_polish --fixed-fps 60
           verify_godot capture_rescue
           python3 tests/test_army_network.py
           GD_TEST_COMPANION=crew_orbitot GD_TEST_VARIANT=variant_orbitot GD_TEST_HULL=skirmisher python3 tests/test_free_roam_network.py
@@ -114,8 +115,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.33.0
+          tag=v0.34.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.33 — Uncharted Armada' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.34 — Living Wildlife' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

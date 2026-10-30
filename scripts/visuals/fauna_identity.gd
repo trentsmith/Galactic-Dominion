@@ -21,7 +21,6 @@ static func add(root: Node3D,d: FaunaDefinition) -> void:
     for row in range(3):
      var tuft:=SpaceModelFactory.mesh(root,SpaceModelFactory.petal_mesh(),Vector3(side*.55,1.2+row*.12,.2+row*.2),c.darkened(.2),"EmberRuff")
      tuft.scale=Vector3(.2,.35,.3);tuft.rotation.z=side*.75
-   SpaceModelFactory.ball(root,Vector3(0,1.73,-1.49),Vector3(.09,.13,.025),d.glow,"EmberBrow",true)
   "sporehopper":
    for i in range(7):
     var a:=TAU*i/7
@@ -54,6 +53,4 @@ static func add(root: Node3D,d: FaunaDefinition) -> void:
     ArtGeometry.sweep(root,[Vector3(x,.95,.4),Vector3(x*1.5,.6,1.3),Vector3(x*2,.9,2.1)],[.065,.04,.003],Color(.35,.63,.65),"VeilStreamer")
  for child in root.get_children():
   if child is MeshInstance3D and str(child.name) in ["FaunaBody","SculptedHead"]:
-   var mat:=ShaderMaterial.new();mat.shader=preload("res://resources/shaders/fauna_skin.gdshader")
-   mat.set_shader_parameter("coat",c.lightened(.1));mat.set_shader_parameter("marking",pale.lerp(d.glow,.2));mat.set_shader_parameter("pattern",float(d.id.hash()%2))
-   child.material_override=mat
+   child.material_override=FaunaSkin.material(d,str(child.name)=="SculptedHead")

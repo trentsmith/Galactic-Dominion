@@ -8,6 +8,7 @@ var units: Dictionary={}
 var exhausted: Dictionary={}
 var health_memory: Dictionary={}
 var ability_memory: Dictionary={}
+var visual_clock:=0.0
 var target: SurfaceFauna
 func residents() -> Array:
  return expedition.profile.sanctuary.residents
@@ -41,7 +42,7 @@ func deploy(id: int=-1) -> bool:
  var badge:=Label3D.new();badge.position.y=3;badge.billboard=BaseMaterial3D.BILLBOARD_ENABLED;badge.font_size=24;badge.pixel_size=.01;actor.add_child(badge)
  var stats:=CreatureCombat.attributes(resident)
  var hp: float=stats.hp
- units[key]={"actor":actor,"badge":badge,"resident":resident.duplicate(true),"hp":float(health_memory.get(key,hp)),"max_hp":hp,"cooldown":0.0,"power":5.0+int(resident.form_stage)*2,"style":definition.body_style,"stats":stats,"ability_cooldown":float(ability_memory.get(key,0)),"shield":0.0,"focus":0.0}
+ units[key]={"actor":actor,"eyes":FaunaFace.eyes(actor),"badge":badge,"resident":resident.duplicate(true),"hp":float(health_memory.get(key,hp)),"max_hp":hp,"cooldown":0.0,"power":5.0+int(resident.form_stage)*2,"style":definition.body_style,"stats":stats,"ability_cooldown":float(ability_memory.get(key,0)),"shield":0.0,"focus":0.0}
  badge.text="%s · Lv%d %s\n%d / %d"%[resident.name,stats.level,stats.affinity,int(units[key].hp),int(hp)]
  expedition.status_message="DEPLOYED / "+str(resident.name);return true
 func recall() -> void:
@@ -62,6 +63,7 @@ func attack() -> bool:
   expedition.status_message="CREATURE BATTLE / approach your hunt within 45m with a clear view.";return false
  target=chosen;expedition.status_message="CREATURE PARTY / attack "+chosen.definition.display_name;return true
 func _physics_process(delta: float) -> void:
+ visual_clock+=delta
  for key in ability_memory:
   if not units.has(key):ability_memory[key]=maxf(0,float(ability_memory[key])-delta)
  if expedition.finished or not expedition.bot.alive:
@@ -72,6 +74,7 @@ func _physics_process(delta: float) -> void:
  for key in units.keys():
   var unit: Dictionary=units[key]
   var actor: Node3D=unit.actor
+  FaunaFace.blink(unit.eyes,visual_clock+float(key)*.47)
   unit.cooldown=maxf(0,unit.cooldown-delta)
   unit.ability_cooldown=maxf(0,unit.ability_cooldown-delta);unit.focus=maxf(0,unit.focus-delta)
   var destination:=expedition.bot.global_position+Vector3(cos(key)*3,0,sin(key)*3)

@@ -1,12 +1,11 @@
-Galactic Dominion v0.33 — Uncharted Armada
+Galactic Dominion v0.34 — Living Wildlife
 
-- Main title-screen action: DEPLOY ARMADA / 200 v 200. One human pilot, 199 AI allies, 200 AI enemies. Existing solo modes remain; online stays six pilot slots.
-- New randomized sectors: scattered squadrons, 10.4km starting safe-zone diameter, sixteen asteroid fields, hundreds of physical asteroids, two stars, two black holes and eight relic sites.
-- Enemies stay hidden beyond 1,100m sensors. J opens the sector chart, showing mapped hazards and local enemy contacts rather than every opponent.
-- Stars cause persistent drift and hot-core damage. Black-hole cores destroy ships. Warnings and combat reports identify the danger; AI tries to steer away.
-- Detailed class hulls merge into shared geometry. Shared spatial queries, cached obstacle probes and bounded relic scans reduce redundant simulation and rendering work. Full controlled hulls and fitted appearances remain.
-- Cleaner hull palettes/panel wear, stable story crafting tests, and stricter CI error detection.
+- More natural faces across all nine wildlife species: surface-mounted eyes, upper/lower lids, wet eye reflections, iris detail and species-specific pupils.
+- Lateral grazer/aquatic eyes, longer predator muzzles, neutral lips, nostrils and bat nasal anatomy. Remove shared painted cheeks, pasted smiles and mammalian ears from species that do not need them.
+- Softer organic coat patterns, subtle grain, muzzle shading and different skin finishes. Share materials and iris geometry.
+- Smooth, offset blinking for wild animals, deployed creatures and sanctuary residents. Mature growth forms inherit the same faces.
+- Portable model exports preserve facial geometry and receive baked coat colors. Existing gameplay stats, capture rules and save schema remain unchanged.
 
-Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Choose DEPLOY ARMADA. Tab targets detected enemies; J chart; B relic weapon; [ / ] cycles surviving allies. Update hosts and clients together to v0.33. Existing local save schema is unchanged.
+Extract Galactic-Dominion-Windows.zip and run GalacticDominion.exe. Choose Planet expeditions to inspect wildlife or Your little planet for sanctuary creatures. The 200v200 title action remains available. Update online hosts and clients together to v0.34.
 
-444 local Godot checks and 22 backend tests passed. A live 400-ship simulation and native Linux visual inspection were run. Headless simulation timing is not rendered FPS. This mode remains experimental: Windows graphics performance, human balance and long-session playtesting remain pending.
+400 local Godot checks and 22 backend tests passed. Nine species were exported and reloaded as glTF; native Linux base/mature portrait sheets were inspected. The art uses stylized naturalism and procedural meshes. Windows hands-on play and human visual-preference testing remain pending.

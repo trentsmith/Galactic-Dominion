@@ -7,6 +7,7 @@ var camera: Camera3D
 var scenery: Node3D
 var residents_root: Node3D
 var actors: Dictionary={}
+var resident_eyes: Dictionary={}
 var plant_actors: Array[Node3D]=[]
 var build_mode:=""
 var move_id:=0
@@ -53,9 +54,9 @@ func refresh_world() -> void:
    var ring:=SpaceModelFactory.ring(grid,Vector3(x*9,.1,z*9),3.8,.025,Color(.7,.95,1),"BuildPlot",true);ring.rotation=Vector3.ZERO
  grid.visible=not build_mode.is_empty() or move_id>0
  for child in residents_root.get_children():residents_root.remove_child(child);child.queue_free()
- actors.clear()
+ actors.clear();resident_eyes.clear()
  for resident in state.residents:
-  var actor:=SanctuaryFormArt.creature(residents_root,SanctuaryState.fauna(resident.species),resident.form_stage);actors[resident.id]=actor
+  var actor:=SanctuaryFormArt.creature(residents_root,SanctuaryState.fauna(resident.species),resident.form_stage);actors[resident.id]=actor;resident_eyes[resident.id]=FaunaFace.eyes(actor)
  plant_actors.clear()
  var slots: Array[Vector3]=[]
  for habitat in state.habitats:
@@ -94,6 +95,7 @@ func _process(delta: float) -> void:
  for resident in state.residents:
   var actor: Node3D=actors.get(resident.id)
   if not is_instance_valid(actor):continue
+  FaunaFace.blink(resident_eyes[resident.id],clock+float(resident.id)*.47)
   var center:=Vector3(0,1,16)
   for habitat in state.habitats:
    if habitat.id==resident.habitat:center=Vector3(habitat.x*9,.5,habitat.z*9)

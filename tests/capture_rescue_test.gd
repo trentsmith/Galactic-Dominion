@@ -98,8 +98,8 @@ func run() -> void:
  for planet in PlanetCatalog.WORLDS:
   for species in planet.fauna:
    var model:=SurfaceArt.creature(gallery,species)
-   check(model.find_children("EyeCatchlight*","MeshInstance3D",true,false).size()==2 and model.find_children("LittleCatchlight*","MeshInstance3D",true,false).size()==2,species.id+" has paired glossy eyes and two catchlights per eye")
-   check(model.find_children("RosyCheek*","MeshInstance3D",true,false).size()==2 and model.find_child("LittleSmile",true,false)!=null,species.id+" retains a smile and soft rosy cheeks")
+   check(model.find_children("EyeAnchor*","Node3D",true,false).size()==2 and model.find_children("UpperLid*","MeshInstance3D",true,false).size()==2,species.id+" has paired surface-mounted eyes and anatomical lids")
+   check(model.find_child("RosyCheek*",true,false)==null and model.find_child("LittleSmile",true,false)==null,species.id+" uses natural facial anatomy rather than painted cheeks and a smile")
    model.free()
  gallery.queue_free();main.queue_free();await process_frame;await process_frame
  for suffix in ["", ".bak", ".tmp"]:

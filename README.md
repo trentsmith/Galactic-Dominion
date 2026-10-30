@@ -1,6 +1,14 @@
-# Galactic Dominion — Uncharted Armada
+# Galactic Dominion — Living Wildlife
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## More natural creature faces
+
+All nine wildlife species now use surface-mounted eyes with upper/lower lids, reflective corneas, detailed irises and species-specific pupils. Stags have lateral eyes and horizontal pupils; prowlers have longer muzzles; bats have a nasal leaf and shorter ears; aquatic species use small lateral eyes and ventral mouths. Painted rosy cheeks and the shared cartoon smile are replaced by neutral facial anatomy. Eldritch creatures retain their own sensory structures.
+
+Coats have softer organic markings, fine surface variation, muzzle shading and different fur/aquatic/bell material finishes. Wild creatures, deployed companions and sanctuary residents share a smooth blink with timing offsets. Growth forms inherit the same face. Shared skin materials and cached iris geometry keep detail bounded. Portable glTF models receive baked coat colors and retain the real facial meshes.
+
+Choose **Planet expeditions** on the title screen to see wildlife, or **Your little planet** to view sanctuary residents. This pass uses stylized naturalism with original procedural geometry; fur strands, skeletal facial rigs and photorealistic scanned assets are not part of it. [Art and rendering notes](docs/CREATURE_ART.md).
 
 ## 200v200 Uncharted Armada
 
@@ -44,7 +52,7 @@ Combat now reports confirmed shield and hull damage separately. Camera-relative 
 
 Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
 
-Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.33.
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.34.
 
 ## Start here: flight school
 
@@ -82,7 +90,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.33 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.33.0)** and choose:
+The v0.34 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.34.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -603,3 +611,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.33 validation
 
 444 local Godot checks passed across fourteen Armada, randomized sector, menu, combat, difficulty, story, flight, landing and ship-art suites, plus 22 backend tests. A seeded 400-ship run advanced 40 simulated seconds in 30.21 wall seconds (79.4 headless simulation frames/second), dealing 3,243.6 damage with 190 allied and 182 opposing survivors. The new sector suite covers reproducible/randomized layouts, safe spawns, hidden contacts, shared queries, actual drift, lethal black holes, stellar damage, merged meshes and chart/results behavior. Native Linux title, flight and chart views were inspected. Headless timings are not graphical FPS; Windows hands-on testing and human balance calibration remain pending.
+
+### v0.34 validation
+
+400 local Godot checks passed across ten fauna polish, capture/delivery, sanctuary forms, creature combat, planet, wilderness, landing, art and story suites, plus 22 backend tests. The new 77-check suite verifies eyes against actual mesh surfaces, wet materials, nested blinking in wild/deployed/sanctuary creatures, growth-form inheritance and glTF export/reload for all nine species. Native Linux portrait sheets for base and mature forms were rendered and inspected. Windows GUI and human visual-preference testing remain pending.
