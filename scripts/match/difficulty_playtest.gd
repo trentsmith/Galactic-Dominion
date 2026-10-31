@@ -10,7 +10,7 @@ static func summary(battle: BattleMatch,rating: String = "unrated") -> Dictionar
   teams[ship.team].shots += ship.shots
   teams[ship.team].hits += ship.hits
   if ship.alive:teams[ship.team].survivors += 1
- return {"version":ProjectSettings.get_setting("application/config/version"),"mode":"%dv%d"%[battle.team_size,battle.team_size],"difficulty":SoloDifficulty.valid(battle.difficulty),"duration":snappedf(battle.elapsed,.01),"winner":battle.winner,"reason":battle.end_reason,"teams":teams,"rating":rating if rating in RATINGS else "unrated"}
+ return {"version":ProjectSettings.get_setting("application/config/version"),"mode":battle.mode_name(),"difficulty":SoloDifficulty.valid(battle.difficulty),"duration":snappedf(battle.elapsed,.01),"winner":battle.winner,"reason":battle.end_reason,"teams":teams,"rating":rating if rating in RATINGS else "unrated"}
 static func save(battle: BattleMatch,rating: String = "unrated") -> Error:
  var directory := ProjectSettings.globalize_path("user://playtests")
  var error := DirAccess.make_dir_recursive_absolute(directory)

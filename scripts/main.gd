@@ -10,6 +10,8 @@ var battle: BattleMatch
 var story_layer: CanvasLayer
 var story_previous_paused := false
 var story_previous_mouse := Input.MOUSE_MODE_VISIBLE
+var armada_allies:=200
+var armada_enemies:=200
 var difficulty := "standard"
 var sensitivity := 0.0025
 var inverted := false
@@ -46,6 +48,8 @@ func _ready() -> void:
  profile.load_profile()
  settings.load("user://settings.cfg")
  difficulty = SoloDifficulty.valid(str(settings.get_value("gameplay","difficulty","standard")))
+ armada_allies=ArmadaCombat.count(settings.get_value("armada","allies",200))
+ armada_enemies=ArmadaCombat.count(settings.get_value("armada","enemies",200))
  sensitivity = settings.get_value("controls", "sensitivity", 0.0025)
  inverted = settings.get_value("controls", "invert_y", false)
  fullscreen = settings.get_value("display", "fullscreen", false)
@@ -103,13 +107,24 @@ func start_tutorial() -> void:
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
 
-func start_armada(seed_value: int=0) -> void:
- start_battle(200,"",seed_value)
+func start_armada(seed_value: int=0,allies: int=0,enemies: int=0) -> void:
+ start_battle(ArmadaCombat.count(allies if allies>0 else armada_allies),"",seed_value,ArmadaCombat.count(enemies if enemies>0 else armada_enemies),true)
+
+func show_armada_setup() -> void:
+ if is_instance_valid(menu):menu.queue_free()
+ menu=CanvasLayer.new();menu.layer=10;add_child(menu)
+ var screen:=ArmadaSetup.new();screen.host=self;menu.add_child(screen)
+ Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+
+func launch_armada(allies: int,enemies: int) -> void:
+ armada_allies=ArmadaCombat.count(allies);armada_enemies=ArmadaCombat.count(enemies)
+ settings.set_value("armada","allies",armada_allies);settings.set_value("armada","enemies",armada_enemies);_save_settings()
+ start_armada(0,armada_allies,armada_enemies)
 
 func start_fleet_war() -> void:
  start_battle(10)
 
-func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0) -> void:
+func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0,opponents: int=0,armada: bool=false) -> void:
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -119,6 +134,7 @@ func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0)
   battle.get_parent().remove_child(battle)
   battle.queue_free()
  battle = BattleMatch.new()
+ battle.armada_mode=armada; battle.enemy_team_size=opponents
  battle.map_seed=seed_value
  battle.team_size = size_per_team
  battle.difficulty = "veteran" if mission!="" and difficulty=="veteran" else "standard" if mission!="" else difficulty
@@ -202,7 +218,7 @@ func show_settings(paused: bool) -> void:
  column.add_child(description)
  difficulty_dropdown.item_selected.connect(func(index):description.text=SoloDifficulty.PRESETS[SoloDifficulty.IDS[index]].description)
  var scope := Label.new()
- scope.text = "Solo 3v3 / 10v10 · applies to your next battle"
+ scope.text = "Solo fleet battles · applies to your next battle"
  scope.add_theme_font_size_override("font_size",13)
  column.add_child(scope)
  var value := Label.new()
@@ -425,7 +441,7 @@ func difficulty_choice(parent: Control) -> OptionButton:
   choice.add_item(SoloDifficulty.title(id))
   choice.get_popup().set_item_tooltip(choice.item_count-1,SoloDifficulty.PRESETS[id].description)
  choice.select(SoloDifficulty.IDS.find(difficulty))
- choice.tooltip_text = "Enemy AI for your next solo Fleet Royale or Fleet War. Online, free roam and training are unchanged."
+ choice.tooltip_text = "Enemy AI for your next solo Fleet Royale, Fleet War or Armada. Armada Standard/Veteran use full enemy durability. Online, free roam and training are unchanged."
  choice.item_selected.connect(func(index):
   difficulty = SoloDifficulty.IDS[index]
   _save_settings())

@@ -9,6 +9,7 @@ var secondary: WeaponSpec
 var laser_remaining := 0.0
 var missile_remaining := 0.0
 var overcharge := false
+var precise_intercept:=false
 var aim_assist_dot:=0.985
 
 func configure(stats: ShipStats) -> void:
@@ -56,8 +57,9 @@ func fire(missile: bool = false) -> bool:
  var target := ship.targeting.target
  if not missile and is_instance_valid(target) and target.alive:
   var distance := ship.global_position.distance_to(target.global_position)
-  var predicted := target.global_position + target.velocity * distance / spec.speed
-  var aim := ship.global_position.direction_to(predicted)
+  var origin:=ship.global_position-ship.global_basis.z*5
+  var predicted := Ballistics.aim_point(origin,target.global_position,target.velocity,spec.speed,spec.lifetime) if precise_intercept else target.global_position + target.velocity * distance / spec.speed
+  var aim := origin.direction_to(predicted) if precise_intercept else ship.global_position.direction_to(predicted)
   if projectile.direction.dot(aim) > aim_assist_dot:
    projectile.direction = aim
  ship.get_parent().add_child(projectile)

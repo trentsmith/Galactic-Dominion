@@ -12,6 +12,8 @@ var retarget_timer := 0.0
 var nav_timer:=0.0
 var nav_avoidance:=Vector3.ZERO
 var reaction_interval := .6
+var precise_aim:=false
+var stable_targets:=false
 var aim_lead := 1.0
 var fire_dot := .975
 var retreat_latch := false
@@ -55,15 +57,18 @@ func tick(delta: float) -> void:
  elif is_instance_valid(enemy) and enemy.alive and (ship.team == 1 or command == "attack" or alert_time > 0.0 or ship.global_position.distance_to(enemy.global_position) < (250.0 if command == "defend" else 420.0)):
   state = State.PURSUE
   var distance := ship.global_position.distance_to(enemy.global_position)
-  destination = enemy.global_position + enemy.velocity * 0.3
+  var origin:=ship.global_position-ship.global_basis.z*5
+  var lead_point:=Ballistics.aim_point(origin,enemy.global_position,enemy.velocity,ship.weapons.primary.speed,ship.weapons.primary.lifetime) if precise_aim else enemy.global_position+enemy.velocity*aim_lead*distance/ship.weapons.primary.speed
+  destination = lead_point if precise_aim else enemy.global_position + enemy.velocity * 0.3
   if distance < 50.0:
    state = State.EVADE
    destination = ship.global_position + ship.global_basis.x * (80.0 if ship.fleet_slot % 2 == 0 else -80.0) - ship.global_basis.z * 60.0
-  var aim := ship.global_position.direction_to(enemy.global_position + enemy.velocity * aim_lead * distance / ship.weapons.primary.speed)
+  var aim := origin.direction_to(lead_point) if precise_aim else ship.global_position.direction_to(lead_point)
+  var interceptable:=not precise_aim or Ballistics.intercept_time(enemy.global_position-origin,enemy.velocity,ship.weapons.primary.speed,ship.weapons.primary.lifetime)>=0
   var firing_window:=burst_pause<=0 or fmod(patrol_time+ship.fleet_slot*.4,burst_duration+burst_pause)<burst_duration
-  if firing_window and (-ship.global_basis.z).dot(aim) > fire_dot and distance < 650.0:
+  if firing_window and interceptable and ship.weapons.laser_remaining<=0 and (-ship.global_basis.z).dot(aim) > fire_dot and distance < 650.0 and (not precise_aim or clear_shot(lead_point)):
    ship.weapons.fire()
-  if firing_window and ship.targeting.locked() and distance < 500.0:
+  if firing_window and ship.weapons.missile_remaining<=0 and ship.targeting.locked() and distance < 500.0 and (not precise_aim or clear_shot(enemy.global_position)):
    ship.weapons.fire(true)
   if distance < 200.0 and ship.ability_cooldown <= 0.0:
    ship.activate_ability()
@@ -103,4 +108,16 @@ func _find_target() -> void:
   if distance < score and distance <= sensor_range * sensor_range:
    score = distance
    best = candidate
+ if stable_targets:
+  var current:=ship.targeting.target
+  if is_instance_valid(current) and current.alive and current.team!=ship.team:
+   var current_distance:=ship.position.distance_squared_to(current.position)
+   if current_distance<=sensor_range*sensor_range and (best==null or score>current_distance*.65):best=current
  ship.targeting.select(best)
+
+func clear_shot(at: Vector3) -> bool:
+ var origin:=ship.global_position-ship.global_basis.z*5
+ var query:=PhysicsRayQueryParameters3D.create(origin,at,3)
+ query.exclude=[ship.get_rid()]
+ var hit:=ship.get_world_3d().direct_space_state.intersect_ray(query)
+ return hit.is_empty() or (hit.collider is CombatShip and hit.collider.alive and hit.collider.team!=ship.team)

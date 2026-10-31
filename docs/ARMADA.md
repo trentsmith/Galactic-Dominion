@@ -1,12 +1,12 @@
 # Uncharted Armada — 200v200
 
-Choose DEPLOY ARMADA on the title screen, or use `-- --armada`. The match contains one human pilot, 199 AI allies and 200 AI enemies. Online remains six pilot slots. Existing solo 3v3, 10v10 and story modes remain separate.
+Choose ARMADA / CHOOSE YOUR FLEETS on the title screen. Enter 1–200 fighters per side. The allied count includes your ship; the others are AI. Presets, saved choices and replay support unequal matchups. `-- --armada` uses your saved counts. The default is 200v200. Online remains six pilot slots. Existing solo 3v3, 10v10 and story modes remain separate.
 
 ## Sector and sensors
 
 The safe sphere begins at radius 5,200m. Each match picks a new seed and scatters forty ten-ship squadrons, sixteen asteroid fields (up to 448 collision asteroids), two stars, two black holes and eight relic sites. Terrain variants and materials are shared instead of generating a unique mesh for every rock. The seed is shown on the chart for diagnostics; tests can supply a seed to `start_armada(seed)`.
 
-Enemies are initially beyond sensor range. Tab and AI target selection use an 1,100m range. J opens the X/Z chart: allied positions and mapped terrain are visible, enemy positions require local detection. Flight continues; J closes it. The chart closes automatically at the results screen. Sensors are range-based, not an asteroid-occlusion stealth simulation.
+Armada enemy targeting and full-durability Standard/Veteran tuning are described in [the AI notes](ARMADA_AI.md). Enemies are initially beyond sensor range. Tab and AI target selection use an 1,100m range. J opens the X/Z chart: allied positions and mapped terrain are visible, enemy positions require local detection. Flight continues; J closes it. The chart closes automatically at the results screen. Sensors are range-based, not an asteroid-occlusion stealth simulation.
 
 Stars influence ships within 650m, producing inward pull and sideways drift. Their 110m hot core deals 55 damage/second through normal shields and protection. Black holes pull within 800m; their 65m event horizon destroys ships. Hazards affect both teams; AI tries to avoid them. Drift is capped and decays outside fields, and boost can help escape. These are accessible arcade rules rather than orbital physics. Damage reports identify stellar corona and black hole causes.
 

@@ -62,6 +62,7 @@ func show_results() -> void:
  var detail := Label.new()
  detail.text = "%s
 Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(battle.elapsed) % 60]
+ detail.text+="\nFleet sizes: "+battle.mode_name() if battle.is_armada() else ""
  detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  detail.custom_minimum_size.x = 600
  if battle.network_role=="offline" and not battle.training and not battle is FreeRoamMatch and not battle is ExplorationMatch:detail.text += "\nDifficulty: "+SoloDifficulty.title(battle.difficulty)
@@ -107,11 +108,13 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
    host.show_hangar())
   layout.add_child(hangar)
  var replay := Button.new()
+ replay.name="ReplayBattleButton"
  replay.text = "DEPLOY AGAIN"
  replay.custom_minimum_size.y = 42
  if battle.story_mission=="crimson_interdiction":
   replay.text="RETURN TO ASTRA / STORY JOURNAL" if battle.winner==0 else "RETRY STORY ENCOUNTER"
   replay.pressed.connect(battle.get_parent().show_story if battle.winner==0 else battle.get_parent().start_story_encounter)
+ elif battle.is_armada():replay.pressed.connect(battle.get_parent().start_armada.bind(0,battle.team_size,battle.enemy_team_size))
  else:replay.pressed.connect(battle.get_parent().start_battle.bind(battle.team_size))
  layout.add_child(replay)
  var menu := Button.new()

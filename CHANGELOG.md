@@ -1,3 +1,7 @@
+# v0.35 — Custom Fleet Wars
+
+Add independent 1–200 fighter counts, presets, saved choices and asymmetric replay/reporting. Fix Armada steering/firing lead disagreement with a shared quadratic interception solver, retain targets for missile locks and reject obstructed shots. Give Standard/Veteran Armada enemies full durability and matching missiles; keep smaller modes and Relaxed separate. Validate moving-target hits and compare a matched-seed AI battle against v0.34.
+
 # v0.34 — Living Wildlife
 
 Refine nine species with surface-mounted eyes, lids, iris fibres, appropriate pupils and connected neutral muzzles. Replace painted cheeks and identical smiles; shorten bat ears, add natural hoof/muzzle anatomy and remove mammal ears from aquatic/eldritch species. Share organic skin materials and smooth blink logic across wild, deployed and sanctuary creatures. Bake coats into portable glTF colors with per-surface finishes; verify actual export/reload and provide a native portrait renderer.

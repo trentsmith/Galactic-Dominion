@@ -9,7 +9,7 @@ func check(value: bool,message: String) -> void:
 func run() -> void:
  var host=load("res://scenes/main.tscn").instantiate();host.profile_path="user://armada-%d.json"%Time.get_ticks_usec();root.add_child(host);await process_frame
  check(host.menu.find_child("ArmadaButton",true,false)!=null,"Experimental Armada has a command-deck entry")
- host.start_armada(81337);await process_frame
+ host.start_armada(81337,200,200);await process_frame
  var battle: BattleMatch=host.battle
  check(battle.ships.size()==400 and battle.living(0)==200 and battle.living(1)==200,"200 real ships spawn on each side")
  check(battle.elimination_only and battle.zone.start_radius==5200 and battle.camera.far==16000,"Armada has a larger navigable arena and elimination rules")
@@ -30,7 +30,7 @@ func run() -> void:
  player.alive=true;player.health.dead=false;player.health.configure(player.stats)
  player.position=Vector3(0,2100,0);player.rotation=Vector3.ZERO
  var enemy: CombatShip=battle.ships[200]
- enemy.alive=true;enemy.health.dead=false;enemy.health.max_hull=1000;enemy.health.hull=1000;enemy.health.max_shield=0;enemy.health.shield=0;enemy.position=Vector3(0,2100,-120)
+ enemy.alive=true;enemy.health.dead=false;enemy.health.protection=1;enemy.health.max_hull=1000;enemy.health.hull=1000;enemy.health.max_shield=0;enemy.health.shield=0;enemy.position=Vector3(0,2100,-120)
  var ally: CombatShip=battle.ships[1];ally.alive=true;ally.position=Vector3(0,2100,-70)
  var ally_before:=ally.health.hull
  battle.mega.loadouts.clear();battle.mega.grant(player,0)

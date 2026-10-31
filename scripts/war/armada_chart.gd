@@ -16,7 +16,7 @@ func detected(enemy: CombatShip) -> bool:
 func _draw() -> void:
  draw_rect(Rect2(Vector2.ZERO,size),Color(.008,.015,.03,.97))
  var font:=ThemeDB.fallback_font
- draw_string(font,Vector2(40,45),"ARMADA / 200 v 200 / SECTOR %d / J TO CLOSE"%battle.map_seed,HORIZONTAL_ALIGNMENT_LEFT,-1,24,Color(.6,.9,1))
+ draw_string(font,Vector2(40,45),"ARMADA / %s / SECTOR %d / J TO CLOSE"%[battle.mode_name(),battle.map_seed],HORIZONTAL_ALIGNMENT_LEFT,-1,24,Color(.6,.9,1))
  draw_string(font,Vector2(40,75),"Contacts are local sensor detections. Unseen enemies are not shown. Flight continues.",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color(.6,.7,.8))
  draw_arc(size*.5,minf(size.x,size.y)*.36,0,TAU,96,Color(.2,.35,.45))
  for field in battle.sector_map.fields:draw_circle(point(field),17,Color(.22,.29,.35,.5))

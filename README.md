@@ -1,6 +1,12 @@
-# Galactic Dominion — Living Wildlife
+# Galactic Dominion — Custom Fleet Wars
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Choose your Armada matchup
+
+The main **ARMADA / CHOOSE YOUR FLEETS** action opens separate number fields for **your fleet** and the **enemy fleet**. Each accepts 1–200 fighters. Your count includes the ship you pilot; the remaining ships are AI. Presets include 200v200, 200v50, 50v200 and 50v50. Counts are saved when launching and preserved by replay. The sector chart, HUD and match reports show the actual matchup. Online remains six pilot slots.
+
+Armada enemies now use a consistent predictive interception point for steering and firing, retain targets to avoid resetting missile locks, and check firing paths for obstacles and friendly ships. Standard/Veteran use full enemy durability and matching missile capabilities. Relaxed keeps its easier durability/reaction tuning; smaller 3v3/10v10 modes retain their own balance. For a stronger challenge choose **Veteran** or **50 allies versus 200 enemies**. [Actual comparison results and tuning notes](docs/ARMADA_AI.md).
 
 ## More natural creature faces
 
@@ -12,7 +18,7 @@ Choose **Planet expeditions** on the title screen to see wildlife, or **Your lit
 
 ## 200v200 Uncharted Armada
 
-**DEPLOY ARMADA / 200 v 200** is the main title-screen action. One human pilot and 199 AI allies face 200 AI enemies in a randomized sector with a 5,200m starting radius. This replaces the earlier 100v100 launch option; solo 3v3, 10v10 and the story remain available. Online play retains six pilot slots.
+**ARMADA / CHOOSE YOUR FLEETS** is the main title-screen action. The default 200v200 matchup has one human pilot and 199 AI allies facing 200 AI enemies in a randomized sector with a 5,200m starting radius. This replaces the earlier 100v100 launch option; solo 3v3, 10v10 and the story remain available. Online play retains six pilot slots.
 
 Each deployment generates new squadron spawns, sixteen asteroid fields, hundreds of physical asteroids, two stars, two black holes and eight relic sites. Opponents are initially beyond your sensors. **Tab** can only select contacts within **1,100m**. **J** opens an X/Z sector chart showing terrain, hazards, allies and locally detected enemies; it does not reveal the whole opposing fleet. Flight continues while the chart is open.
 
@@ -52,7 +58,7 @@ Combat now reports confirmed shield and hull damage separately. Camera-relative 
 
 Selected targets have numeric hull/shield values, percentages and a lock meter, with larger high-contrast bars over enemies. A lock-ready chime sounds on acquisition; an **incoming missile** warning only appears for hostile tracking missiles aimed at your current ship within 900 metres. Boost and strafe to evade; evasion is not guaranteed. Failed **M** launches explain whether you need a target, a lock or more reload time. Confirmed outgoing hits show a reticle marker and damage amount.
 
-Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.34.
+Original layered laser, missile, impact and warning sounds are synthesized locally, with bounded polyphony, alert throttling and the existing master-volume control. They need no external audio assets. Results show survivors, damage dealt/taken, environmental damage, final damage sources for lost ships, and the exact survival score for time-limit tiebreaks. Detailed reports scroll while replay/menu buttons stay visible. Online feedback is replicated from the server and never applies damage on clients. Update the server and players together to v0.35.
 
 ## Start here: flight school
 
@@ -90,7 +96,7 @@ Offline spaceflight now has 45 ships: your three ships, 21 patrols and 21 civili
 
 ## Download and play without Godot
 
-The v0.34 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.34.0)** and choose:
+The v0.35 alpha release is built automatically on GitHub. Open **[Downloads](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.35.0)** and choose:
 
 - **Galactic-Dominion-Windows.zip** for players: extract the ZIP and run `GalacticDominion.exe`. Godot and Python are not needed.
 - **Galactic-Dominion-Server-Windows.zip** for the host: extract it and double-click `Start-Server-Windows.bat`. The package includes a portable Python runtime and the exported game engine. Keep its window open.
@@ -615,3 +621,7 @@ Godot 4.6.3 import, 221 headless checks across Fleet War and existing combat/men
 ### v0.34 validation
 
 400 local Godot checks passed across ten fauna polish, capture/delivery, sanctuary forms, creature combat, planet, wilderness, landing, art and story suites, plus 22 backend tests. The new 77-check suite verifies eyes against actual mesh surfaces, wet materials, nested blinking in wild/deployed/sanctuary creatures, growth-form inheritance and glTF export/reload for all nine species. Native Linux portrait sheets for base and mature forms were rendered and inspected. Windows GUI and human visual-preference testing remain pending.
+
+### v0.35 validation
+
+242 local Godot checks passed across ten custom-Armada, live-Armada, sector, difficulty, combat, menu, tutorial, story and smaller-battle suites, plus 22 backend tests. The custom suite covers typed count input, exact 200v50 and 50v200 spawns, small fleets, saved choices, replay, actual moving-target laser impact, target retention and blocked shots. Matched-seed 90-second AI simulations increased enemy damage about 34% in one scenario; full metrics and limitations are in docs/ARMADA_AI.md. Native Linux setup UI was inspected at 720p; the renderer reported two existing GPU texture-cleanup messages at shutdown. Windows hands-on testing and human difficulty calibration remain pending.

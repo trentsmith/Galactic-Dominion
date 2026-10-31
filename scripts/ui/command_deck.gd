@@ -41,11 +41,11 @@ func _ready() -> void:
  column.add_theme_constant_override("separation",5)
  scroll.add_child(column)
  _label(column,"G A L A C T I C   D O M I N I O N",13,MINT)
- var title := _label(column,"Ready when\nyou are." if paused else "ARMADA\n200 v 200",46,INK)
+ var title := _label(column,"Ready when\nyou are." if paused else "ARMADA\nYour fleet war.",46,INK)
  title.add_theme_constant_override("line_spacing",-5)
  var online: bool = is_instance_valid(host.battle) and host.battle.network_role != "offline"
- _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "A new sector every battle. 400 ships.\nGravity hazards. Enemies beyond your sensors.",15,MUTED)
- var primary := _button(column,"ResumeButton" if paused else "ArmadaButton","RESUME FLIGHT   >" if paused else "DEPLOY ARMADA / 200 v 200   >",host.resume if paused else host.start_armada,52)
+ _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "Choose 1–200 fighters on each side.\nNew sectors. Stronger AI. Gravity hazards.",15,MUTED)
+ var primary := _button(column,"ResumeButton" if paused else "ArmadaButton","RESUME FLIGHT   >" if paused else "ARMADA / CHOOSE YOUR FLEETS   >",host.resume if paused else host.show_armada_setup,52)
  _primary_style(primary)
  if not paused:
   var quick := HBoxContainer.new();quick.add_theme_constant_override("separation",10);column.add_child(quick)

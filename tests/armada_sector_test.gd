@@ -24,8 +24,8 @@ func run() -> void:
  a.free();b.free();c.free()
  var host=load("res://scenes/main.tscn").instantiate();host.profile_path="user://sector-%d.json"%Time.get_ticks_usec();root.add_child(host);await process_frame
  var button:=host.menu.find_child("ArmadaButton",true,false) as Button
- check(button!=null and button.text.contains("200 v 200") and button.custom_minimum_size.y>=50,"The title screen prominently advertises 200v200")
- host.start_armada(81337);await process_frame
+ check(button!=null and button.text.contains("ARMADA") and button.custom_minimum_size.y>=50,"The title screen prominently offers configurable Armada")
+ host.start_armada(81337,200,200);await process_frame
  var battle: BattleMatch=host.battle
  battle.set_physics_process(false);battle.pilot.set_physics_process(false)
  for ship in battle.ships:ship.set_physics_process(false)
