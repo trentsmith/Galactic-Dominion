@@ -8,6 +8,7 @@ var ground:=false
 var caches: Array[Node3D]=[]
 var labels: Array[Label3D]=[]
 var generation:=-1
+var placement_pending:=false
 var progress:=0.0
 var active:=-1
 var message:=""
@@ -41,9 +42,8 @@ func refresh() -> void:
   SpaceModelFactory.ring(cache,Vector3(0,.6*scale_value,0),.65*scale_value,.03*scale_value,Color(1,.72,.2),"RecoveryBeacon",true)
   var label:=Label3D.new();label.text="COMPONENT SALVAGE\nHOLD K";label.position.y=2.3 if ground else 18;label.font_size=32;label.pixel_size=.012 if ground else .035;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED;label.visibility_range_end=65 if ground else 1000;cache.add_child(label);labels.append(label)
   cache.visible=not i in ComponentDiscovery.state(profile,context).opened
- call_deferred("settle_positions",generation)
+ placement_pending=true
 func settle_positions(expected_generation: int) -> void:
- await get_tree().physics_frame
  if not is_inside_tree() or generation!=expected_generation:return
  var shape:=SphereShape3D.new();shape.radius=.7 if ground else 9.0
  var query:=PhysicsShapeQueryParameters3D.new();query.shape=shape;query.collision_mask=1 if ground else 2
@@ -59,6 +59,7 @@ func settle_positions(expected_generation: int) -> void:
 func explorer() -> Node3D:
  return host.bot if ground else host.pilot.ship
 func _physics_process(delta: float) -> void:
+ if placement_pending:placement_pending=false;settle_positions(generation)
  tick(delta,Input.is_action_pressed("recover_component") and Input.mouse_mode==Input.MOUSE_MODE_CAPTURED and not get_tree().paused)
 func tick(delta: float,held: bool) -> void:
  if not is_local():return
