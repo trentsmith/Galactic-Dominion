@@ -1,10 +1,10 @@
-Galactic Dominion v0.37 — Nexus Fleet Campaign
+Galactic Dominion v0.38 — Orbiting Companions
 
-- Creature activities are disabled by default through a reversible feature switch. Scripts, resources, existing collections, sanctuary residents, captured cargo and the original biological story remain preserved.
-- The Fractured Relay replaces the default story: Astra's commission, 3v3 Crimson blockade, space salvage, lead-ship refit, 3v3 Eldritch encounter, mixed-faction 10v10 warfront and a one-time 100-salvage debrief.
-- Original Bloodforged and Dreaming Abyss hull models span all five ship classes. Win the first two commissions to unlock their fleet-wide cosmetic schematics. Campaign enemies use distinct faction stat tradeoffs.
-- Menu and chart focus on ships, stations and battles; surface/bot landing controls, pet rewards and orbiting companions are disabled. Online remains space-based; local campaign unlocks do not enter online inventories.
+- Restore orbiting ship companions, their original animations/AI attacks and bot crew selection/research/rewards.
+- Keep planet wildlife, capturing, sanctuary activities, surface landing and the biological campaign disabled. Their code and saved data remain preserved.
+- Keep Nexus faction ships, the Fractured Relay fleet campaign and space salvage. Animal-themed ship skins stay archived.
+- Companion and wildlife settings are now independent. Save schema stays at 8; v0.37 profiles remain compatible.
 
-Extract the Windows ZIP and run GalacticDominion.exe. Choose STORY / JOURNAL or press O. Back up saves before upgrading: schema 8 preserves old biological data but cannot be read by older executables. Update hosts/clients together to v0.37.
+Extract the Windows ZIP and run GalacticDominion.exe. Choose Fleet & collection, select a ship, then equip a discovered non-human bot in CREW. Orbitot and Glimbloom are researchable in the collection panel. Human officers do not produce an orbiting bot. Update online host/client together to v0.38.
 
-242 local Godot checks across eight suites and 23 backend tests passed. Native Linux menu, faction hull and journal rendering was inspected. Human balance calibration and Windows GUI testing remain pending. This is a playable alpha opening chapter, not a complete campaign.
+Local checks: 11 companion-restoration assertions, 30 fleet-campaign assertions and 23 backend tests passed. Automated build checks cover clients, servers and archived systems. Windows GUI and human balance playtesting remain pending.

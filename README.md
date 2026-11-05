@@ -4,9 +4,9 @@ A Godot 4.6.3 3D space-combat prototype with an original Nexus Archives fleet st
 
 ## Play the current build
 
-Download the Windows or Linux client from [v0.37](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.37.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 8, which older builds cannot read.
+Download the Windows or Linux client from [v0.38](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.38.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 8, which older builds cannot read.
 
-For source development, download/clone the `phase-37-nexus-fleet-campaign` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
+For source development, download/clone the `phase-38-orbiting-companions` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
 
 ## Start with Story / Journal
 
@@ -36,8 +36,8 @@ Both faction appearances work across Interceptor, Skirmisher, Guardian, Bomber a
 - **Fleet Royale / Fleet War:** 3v3 or 10v10 last-fleet-standing combat.
 - **Flight School:** safe interactive flight/combat tutorial.
 - **Free Roam / Peaceful Flight:** space exploration, signals, faction ships, stations and salvage recovery.
-- **Fleet & collection:** permanent hulls, components, human/alien officers and appearances. Pet collectibles are hidden and excluded from new random rewards while archived.
-- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.37. [Windows hosting](server/README.md).
+- **Fleet & collection:** permanent hulls, components, human/alien officers and appearances. Orbiting bot crew are selectable and eligible for rewards again; animal-themed ship skins remain archived.
+- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.38. [Windows hosting](server/README.md).
 
 ## Discover ship parts
 
@@ -49,9 +49,15 @@ Later cache odds: **legendary tier 1/4,096; mythic tier 1/65,536**. Four legenda
 
 W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse steering; Q/E roll; Shift boost. Left click laser, **M missiles**, R class ability, Tab target. F1–F3 switch lead ships; Fleet War supports F1–F10 and Armada additionally uses [ / ] to cycle survivors. 1–5 issue fleet commands. J star chart, G scan/service, K salvage recovery, O journal, H scenic HUD, Esc pause/menu. Online simulation continues while menus are open.
 
+## Orbiting companions are back
+
+In **Fleet & collection → Fleet Hangar**, select a ship and equip a discovered non-human bot in its **CREW** slot. Pixlet, Cinderbit, Lunaflutter, Orbitot and Glimbloom are available again. Orbitot and Glimbloom can also be researched through the collection panel. Human officers do not spawn an orbiting bot. Existing companion ownership and fitting data remain valid. Companions keep their existing orbital animation and AI attacks; the Nexus ship models and spaceship campaign remain active.
+
+The independent setting `gameplay/companions_enabled=true` enables orbiters while `gameplay/creatures_enabled=false` keeps planet animals out. Animal-themed ship skins remain archived, preserving the Nexus hull direction.
+
 ## Creatures are archived, not deleted
 
-Creature spawning, orbiting companions, surface landing, capturing, sanctuary activities and the biological story are disabled in the default release. Their scripts, scenes, resources and saved records remain intact. A single feature switch restores the archived mode for development; no data conversion is needed. [Restoration instructions and implementation](docs/NEXUS_FLEET_CAMPAIGN.md), [historical feature guide](docs/ARCHIVED_FEATURE_GUIDE.md).
+Wildlife spawning, surface landing, capturing, sanctuary activities and the biological story are disabled in the default release. Their scripts, scenes, resources and saved records remain intact. A single feature switch restores the archived mode for development; no data conversion is needed. [Restoration instructions and implementation](docs/NEXUS_FLEET_CAMPAIGN.md), [historical feature guide](docs/ARCHIVED_FEATURE_GUIDE.md).
 
 ## Validation
 

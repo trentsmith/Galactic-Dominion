@@ -18,7 +18,7 @@ func run() -> void:
  check(main.menu.find_child("StoryButton",true,false)!=null,"Fleet commission remains accessible")
  var excluded:=true
  for i in range(1000):excluded=excluded and GameFeatures.collectible_active(CollectionCatalog.roll(p._rng))
- check(excluded,"Default battle rewards exclude archived pet collectibles")
+ check(excluded,"Default battle rewards exclude archived animal-themed hulls")
  main.show_story();await frames()
  check(main.story_layer.get_child(0) is ShipStoryScreen,"Story opens the ship commission journal")
  p.save_blocked=true;check(not ShipCampaign.accept(p) and ShipCampaign.stage(p)==0,"Failed commission saves roll back acceptance")

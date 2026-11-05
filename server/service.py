@@ -19,7 +19,10 @@ ITEMS = {item['id']: item for item in CATALOG}
 # Keep archived inventory definitions for existing accounts; suppress new pet rewards.
 ARCHIVED_CREATURE_ITEMS = {'crew_pixlet','crew_cinderbit','crew_lunaflutter','crew_orbitot','crew_glimbloom','variant_cinderbit','variant_lunaflutter','variant_orbitot','variant_glimbloom'}
 def active_collectible(item):
-    return os.environ.get('GD_ENABLE_CREATURES') == '1' or item['id'] not in ARCHIVED_CREATURE_ITEMS
+    if os.environ.get('GD_ENABLE_CREATURES') == '1': return True
+    if item['kind'] == 'crew' and item['id'] in ARCHIVED_CREATURE_ITEMS:
+        return os.environ.get('GD_ENABLE_COMPANIONS', '1') == '1'
+    return item['id'] not in ARCHIVED_CREATURE_ITEMS
 
 DEFAULT_CLASSES = ['interceptor', 'skirmisher', 'guardian']
 CLASS_NAMES = dict(zip(DEFAULT_CLASSES + ['bomber', 'support'], ['Interceptor', 'Skirmisher', 'Guardian', 'Bomber', 'Support']))
@@ -360,7 +363,7 @@ class Store:
         return {'closed': mid}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.37'
+    server_version = 'GalacticDominion/0.38'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -371,7 +374,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.37.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.38.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:

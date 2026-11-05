@@ -104,7 +104,7 @@ func _build_preview() -> void:
  SpaceEnvironmentArt.planet(scene,Vector3(-8,-4,14),5,Color(.12,.29,.30),8.2,true)
  hero=Node3D.new();hero.name="YourFleetPreview";hero.position=Vector3(-3.6,.35,0);hero.rotation=Vector3(-.12,-.4,-.14);hero.scale=Vector3.ONE*.76;scene.add_child(hero)
  SpaceModelFactory.ship(hero,host.profile.configured_stats(0))
- if GameFeatures.creatures_enabled():
+ if GameFeatures.companions_enabled():
   var pet:=Node3D.new();pet.position=Vector3(-6.2,1.9,-.2);pet.rotation.y=.3;pet.scale=Vector3.ONE*.5;scene.add_child(pet)
   SpaceModelFactory.companion(pet,CollectionCatalog.find("crew_pixlet"))
  var camera:=Camera3D.new();camera.position=Vector3(0,2.3,-15);camera.fov=44;scene.add_child(camera);camera.look_at(Vector3(0,.65,0));camera.current=true

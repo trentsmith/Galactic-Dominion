@@ -1,5 +1,7 @@
 # Nexus fleet campaign and archived creatures
 
+**v0.38 update:** ship companions are restored independently through `gameplay/companions_enabled=true` (or `GD_ENABLE_COMPANIONS=1`). Wildlife stays disabled. The v0.37 suppression details below describe that earlier release; bot crew selection, research/reward eligibility and orbital animation/AI attacks are restored. Set `GD_ENABLE_COMPANIONS=0` to disable orbiters without changing wildlife. Python uses the same environment override, defaulting to enabled.
+
 ## Release scope
 
 v0.37 makes space ships and fleet combat the default experience. The Fractured Relay draws from the provided Crimson Dominion/Varkhoss Prime and Eldritch World/Ny'Zaroth lore. This is an original opening chapter with three actual ship encounters, recovery, fitting and NPC comms. It does not access a separate external Nexus archive service.

@@ -61,7 +61,7 @@ func _ready() -> void:
  add_child(brain)
  _build_visual()
  var crew := CollectionCatalog.find(stats.crew_id)
- if GameFeatures.creatures_enabled() and crew != null and crew.kind == "crew" and crew.species != "Human":
+ if GameFeatures.companions_enabled() and crew != null and crew.kind == "crew" and crew.species != "Human":
   companion = AlienCompanion.new()
   companion.ship = self
   companion.definition = crew

@@ -220,7 +220,8 @@ class FeatureGateTests(unittest.TestCase):
         import os
         from service import active_collectible
         with patch.dict(os.environ, {'GD_ENABLE_CREATURES': '0'}):
-            self.assertFalse(active_collectible(ITEMS['crew_pixlet']))
+            self.assertTrue(active_collectible(ITEMS['crew_pixlet']))
+            self.assertFalse(active_collectible(ITEMS['variant_orbitot']))
             self.assertTrue(active_collectible(ITEMS['crew_astra']))
             self.assertTrue(active_collectible(ITEMS['ship_guardian']))
         with patch.dict(os.environ, {'GD_ENABLE_CREATURES': '1'}):

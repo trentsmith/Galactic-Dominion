@@ -1,7 +1,7 @@
 config_version=5
 [application]
 config/name="Galactic Dominion"
-config/version="0.37.0"
+config/version="0.38.0"
 run/flush_stdout_on_print=true
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
@@ -178,3 +178,4 @@ worker_pool/max_threads=4
 
 [gameplay]
 creatures_enabled=false
+companions_enabled=true

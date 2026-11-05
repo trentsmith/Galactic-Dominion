@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-37-nexus-fleet-campaign]
+    branches: [phase-38-orbiting-companions]
   workflow_dispatch:
 permissions:
   contents: write
@@ -63,6 +63,12 @@ jobs:
           cat /tmp/sanctuary.log
           grep GALACTIC_SANCTUARY_READY /tmp/sanctuary.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/sanctuary.log; then exit 1; fi
+      - name: Verify orbiting companions without wildlife
+        run: |
+          godot --headless --path . --script res://tests/orbiting_restore_test.gd --fixed-fps 60 > /tmp/orbiting.log 2>&1
+          cat /tmp/orbiting.log
+          grep 'ORBITING_RESTORE_TEST: 11 checks, 0 failures' /tmp/orbiting.log
+          if grep -E 'SCRIPT ERROR|ERROR:' /tmp/orbiting.log; then exit 1; fi
       - name: Verify ship-only campaign and preserved records
         run: |
           godot --headless --path . --script res://tests/ship_campaign_test.gd --fixed-fps 60 > /tmp/ship-story.log 2>&1
@@ -130,8 +136,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.37.0
+          tag=v0.38.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.37 — Nexus Fleet Campaign' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.38 — Orbiting Companions' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber
