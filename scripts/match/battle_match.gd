@@ -92,9 +92,13 @@ func _ready() -> void:
    if team_index == 1 and network_role == "offline":
     ship.stats = ArmadaCombat.enemy_stats(ship.stats,difficulty) if is_armada() else SoloDifficulty.enemy_stats(ship.stats,"standard" if training else difficulty)
     ship.crew_name = "AI pilot"
+   if not GameFeatures.creatures_enabled() and team_index==1:
+    NexusFaction.configure(ship.stats,story_mission,slot)
    ship.team = team_index
    ship.fleet_slot = slot
    ship.callsign = ("Vanguard" if team_index == 0 else "Ravager") + " %d" % (slot + 1)
+   if story_mission.begins_with("nexus_") and team_index==1:
+    ship.callsign=("Abyss Vessel" if ship.stats.variant_style=="nexus_eldritch" else "Bloodforged Interdictor")+" %d"%(slot+1)
    ship.position = Vector3((slot - 1) * 40.0, slot * 12.0, 230.0 if team_index == 0 else -230.0)
    if team_size == 10:
     ship.position = Vector3((slot % 5 - 2) * 65.0, (slot / 5) * 65.0 - 32.5, (410.0 + (slot / 5) * 75.0) * (1 if team_index == 0 else -1))
@@ -219,6 +223,8 @@ func finish(team: int, reason: String) -> void:
   rewards = profile.settle_battle(battle_id, winner, kills, damage)
   if network_role=="offline" and story_mission=="crimson_interdiction" and winner==0:
    if not StoryCampaign.victory(profile):profile.story_message="Patrol cleared, but story progress was not saved. Retry the story encounter after fixing saving."
+  if network_role=="offline" and story_mission.begins_with("nexus_") and winner==0:
+   ShipCampaign.victory(profile,story_mission)
   reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, 2 if winner == 0 else 1]
  ended.emit(team, reason)
  if network_role != "server":

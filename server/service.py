@@ -16,6 +16,11 @@ from urllib.parse import urlparse, parse_qs
 
 CATALOG = json.loads((Path(__file__).parent / 'catalog.json').read_text())
 ITEMS = {item['id']: item for item in CATALOG}
+# Keep archived inventory definitions for existing accounts; suppress new pet rewards.
+ARCHIVED_CREATURE_ITEMS = {'crew_pixlet','crew_cinderbit','crew_lunaflutter','crew_orbitot','crew_glimbloom','variant_cinderbit','variant_lunaflutter','variant_orbitot','variant_glimbloom'}
+def active_collectible(item):
+    return os.environ.get('GD_ENABLE_CREATURES') == '1' or item['id'] not in ARCHIVED_CREATURE_ITEMS
+
 DEFAULT_CLASSES = ['interceptor', 'skirmisher', 'guardian']
 CLASS_NAMES = dict(zip(DEFAULT_CLASSES + ['bomber', 'support'], ['Interceptor', 'Skirmisher', 'Guardian', 'Bomber', 'Support']))
 SLOTS = ['engine', 'shield', 'weapon', 'utility', 'crew', 'variant']
@@ -283,7 +288,7 @@ class Store:
                     self._grant(p, prizes[uid], "Victory ship — permanent ownership")
                 for _ in range(2 if won else 1):
                     tier = rarity_for_ticket(secrets.randbelow(16384))
-                    item = secrets.choice([x for x in CATALOG if x['rarity'] == tier])['id']
+                    item = secrets.choice([x for x in CATALOG if x['rarity'] == tier and active_collectible(x)])['id']
                     duplicate = item in p['inventory']; self._grant(p, item, 'Authoritative online battle')
                     if duplicate: p['salvage'] += 15
                 self._save(db, uid, p); db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (uid, mid))
@@ -331,7 +336,7 @@ class Store:
             p['total_damage'] += damage; p['salvage'] += 60
             for _ in range(2):
                 tier = rarity_for_ticket(secrets.randbelow(16384))
-                item = secrets.choice([x for x in CATALOG if x['rarity'] == tier])['id']
+                item = secrets.choice([x for x in CATALOG if x['rarity'] == tier and active_collectible(x)])['id']
                 duplicate = item in p['inventory']; self._grant(p, item, 'Free-roam encounter discovery')
                 if duplicate: p['salvage'] += 15
             self._save(db, uid, p)
@@ -355,7 +360,7 @@ class Store:
         return {'closed': mid}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.36'
+    server_version = 'GalacticDominion/0.37'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -366,7 +371,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.36.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.37.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:

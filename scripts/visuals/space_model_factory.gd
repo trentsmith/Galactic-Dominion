@@ -155,6 +155,7 @@ static func companion(parent: Node3D, definition: CollectibleDefinition) -> Arra
  return eyes
 
 static func ship(parent: Node3D, stats: ShipStats, team: int = 0) -> void:
+ if not GameFeatures.creatures_enabled():NexusShipArt.build(parent,stats,team);return
  var accent := CYAN if team == 0 else Color(1,0.34,0.24)
  if stats.variant_style != "standard": accent = stats.color.lightened(0.25)
  var comet := stats.variant_style == "comet_pup"

@@ -1,3 +1,7 @@
+# v0.37 — Nexus Fleet Campaign
+
+Archive creature activities behind a reversible switch without deleting code or saved biological progress. Add an independent fleet commission chapter with 3v3 blockade/Abyss missions, recovery/refit progression and a mixed-faction 10v10 finale. Add original Crimson/Eldritch faction hull models for all five classes, campaign rewards and AI stat tradeoffs. Suppress default pet rendering/rewards/navigation; retain explicit legacy-mode regression coverage. Migrate to schema 8.
+
 # v0.36 — Hidden Components
 
 Add persistent solo space/surface component caches, deterministic saved rolls, atomic recovery and retry, duplicate salvage, repeatable twelve-cache batches, HUD bearings and six exploration-only relic schematics with visible fittings. Publish exact rarity odds and migrate saves to schema 7. Keep authoritative online inventories separate.

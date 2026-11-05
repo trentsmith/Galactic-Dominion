@@ -111,7 +111,7 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
  replay.name="ReplayBattleButton"
  replay.text = "DEPLOY AGAIN"
  replay.custom_minimum_size.y = 42
- if battle.story_mission=="crimson_interdiction":
+ if battle.story_mission=="crimson_interdiction" or battle.story_mission.begins_with("nexus_"):
   replay.text="RETURN TO ASTRA / STORY JOURNAL" if battle.winner==0 else "RETRY STORY ENCOUNTER"
   replay.pressed.connect(battle.get_parent().show_story if battle.winner==0 else battle.get_parent().start_story_encounter)
  elif battle.is_armada():replay.pressed.connect(battle.get_parent().start_armada.bind(0,battle.team_size,battle.enemy_team_size))

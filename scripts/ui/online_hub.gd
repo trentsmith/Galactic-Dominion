@@ -277,7 +277,7 @@ func _update_account() -> void:
  account_info.text = "%s  /  %d SALVAGE  /  %d DISCOVERIES  /  %d WINS IN %d MATCHES" % [api.account.commander_name, api.account.salvage, api.account.inventory.size(), api.account.wins, api.account.battles]
  for id in api.account.inventory:
   var definition := CollectionCatalog.find(str(id))
-  if definition == null:
+  if definition == null or not GameFeatures.collectible_active(definition):
    continue
   var index := inventory.item_count
   inventory.add_item("%s × %d  /  %s" % [definition.display_name, api.account.inventory[id].count, definition.rarity.to_upper()])
@@ -345,7 +345,9 @@ func _refresh_market() -> void:
  if reply.has("error"):
   status.text = str(reply.error)
   return
- market_entries = reply.data
+ market_entries = reply.data.filter(func(entry):
+  var item:=CollectionCatalog.find(str(entry.item))
+  return item==null or GameFeatures.collectible_active(item))
  market.clear()
  for entry in market_entries:
   var definition := CollectionCatalog.find(str(entry.item))
@@ -409,7 +411,7 @@ func _public_profile() -> void:
  var lines: PackedStringArray = [str(data.commander_name).to_upper(), "%d victories / %d battles  ·  %d kills  ·  %d damage" % [data.wins, data.battles, data.total_kills, data.total_damage], "FLEET  /  " + ", ".join(data.ship_classes), "DISCOVERY RECORDS"]
  for id in data.get("discovery_records", data.inventory):
   var definition := CollectionCatalog.find(str(id))
-  if definition != null:
+  if definition != null and GameFeatures.collectible_active(definition):
    var record: Dictionary = data.get("discovery_records", data.inventory)[id]
    var timestamp := int(record.get("discovered_at", 0))
    var found := "Fleet issue" if timestamp == 0 else Time.get_datetime_string_from_unix_time(timestamp).replace("T", " ") + " UTC"

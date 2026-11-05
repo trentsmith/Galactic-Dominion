@@ -53,7 +53,7 @@ func _ready() -> void:
  _build_fleet_tab()
  _build_collection_tab()
  _build_records_tab()
- message_label = _label("Find parts at gold salvage beacons in Free Roam and Planet Expeditions (hold K). Fit owned schematics here; rare relics are exploration-only.", 13, MUTED)
+ message_label = _label("Find parts at gold salvage beacons in solo Free Roam (hold K). Fit owned schematics here; rare relics are exploration-only.", 13, MUTED)
  message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  root.add_child(message_label)
  profile.changed.connect(_refresh)
@@ -240,6 +240,7 @@ func _refresh_collection() -> void:
  inventory_list.clear()
  var selected_index := -1
  for definition in CollectionCatalog.DEFINITIONS:
+  if not GameFeatures.collectible_active(definition):continue
   var owned := profile.owns(definition.id)
   var include := true
   match filter.selected:

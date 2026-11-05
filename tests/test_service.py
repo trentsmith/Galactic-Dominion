@@ -215,4 +215,15 @@ class AccountMarketTests(unittest.TestCase):
         self.assertNotIn('password_hash',p); self.assertNotIn('token',p); self.assertNotIn('user_id',p)
         self.assertIn('loadouts',p); self.assertIn('discovery_records',p)
 
+class FeatureGateTests(unittest.TestCase):
+    def test_archived_pet_rewards_preserve_definitions(self):
+        import os
+        from service import active_collectible
+        with patch.dict(os.environ, {'GD_ENABLE_CREATURES': '0'}):
+            self.assertFalse(active_collectible(ITEMS['crew_pixlet']))
+            self.assertTrue(active_collectible(ITEMS['crew_astra']))
+            self.assertTrue(active_collectible(ITEMS['ship_guardian']))
+        with patch.dict(os.environ, {'GD_ENABLE_CREATURES': '1'}):
+            self.assertTrue(active_collectible(ITEMS['crew_pixlet']))
+
 if __name__=='__main__': unittest.main(verbosity=2)

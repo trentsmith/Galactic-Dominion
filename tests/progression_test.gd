@@ -41,7 +41,7 @@ func run() -> void:
   for key in entry.modifiers:
    if not key in CollectionCatalog.MODIFIABLE_STATS or float(entry.modifiers[key]) <= 0:
     catalog_valid = false
- check(catalog_valid and ids.size() == 51, "Catalog has 51 unique, valid Resource definitions")
+ check(catalog_valid and ids.size() == 53, "Catalog has 53 unique, valid Resource definitions")
  var path := new_path("roundtrip")
  var profile := PlayerProfile.new(path)
  profile.load_profile()

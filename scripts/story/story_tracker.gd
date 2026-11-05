@@ -11,7 +11,7 @@ func _ready() -> void:
  marker=Label.new();marker.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;marker.custom_minimum_size.x=400;marker.size=Vector2(400,70);marker.mouse_filter=Control.MOUSE_FILTER_IGNORE;marker.add_theme_color_override("font_color",Color(1,.82,.38));marker.add_theme_constant_override("outline_size",5);marker.add_theme_color_override("font_outline_color",Color(.01,.015,.025));root.add_child(marker)
 func _process(_delta: float) -> void:
  if host.profile==null:return
- objective.text="O · STORY JOURNAL / "+StoryCampaign.TITLES[StoryCampaign.stage(host.profile)]
+ objective.text="O · STORY JOURNAL / "+(StoryCampaign.TITLES[StoryCampaign.stage(host.profile)] if GameFeatures.creatures_enabled() else ShipCampaign.TITLES[ShipCampaign.stage(host.profile)])
  objective.visible=not is_instance_valid(host.menu) and not is_instance_valid(host.story_layer)
  marker.visible=false
  if not objective.visible:return
@@ -28,6 +28,7 @@ func _process(_delta: float) -> void:
  marker.visible=true
 
 func waypoint() -> Dictionary:
+ if not GameFeatures.creatures_enabled():return {}
  if not host.profile.story.accepted:return {}
  var stage:=StoryCampaign.stage(host.profile)
  if stage==1 and is_instance_valid(host.battle) and host.battle is FreeRoamMatch:

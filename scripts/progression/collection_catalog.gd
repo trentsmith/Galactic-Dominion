@@ -2,6 +2,8 @@ class_name CollectionCatalog
 extends RefCounted
 
 const DEFINITIONS = [
+ preload("res://resources/collectibles/variant_nexus_crimson.tres"),
+ preload("res://resources/collectibles/variant_nexus_eldritch.tres"),
  preload("res://resources/collectibles/engine_solarweave.tres"),
  preload("res://resources/collectibles/shield_eclipse.tres"),
  preload("res://resources/collectibles/weapon_starforged.tres"),
@@ -68,7 +70,7 @@ static func find(id: String) -> CollectibleDefinition:
 static func for_slot(slot: String, ship_class: String = "") -> Array[CollectibleDefinition]:
  var output: Array[CollectibleDefinition] = []
  for entry in DEFINITIONS:
-  if entry.slot == slot and (entry.ship_class.is_empty() or entry.ship_class == ship_class):
+  if GameFeatures.collectible_active(entry) and entry.slot == slot and (entry.ship_class.is_empty() or entry.ship_class == ship_class):
    output.append(entry)
  return output
 
@@ -76,7 +78,7 @@ static func roll(rng: RandomNumberGenerator) -> CollectibleDefinition:
  var rarity := rarity_for_ticket(rng.randi_range(0, 16383))
  var pool: Array[CollectibleDefinition] = []
  for entry in DEFINITIONS:
-  if entry.rarity == rarity and not entry.discovery_only:
+  if entry.rarity == rarity and not entry.discovery_only and GameFeatures.collectible_active(entry):
    pool.append(entry)
  return pool[rng.randi_range(0, pool.size() - 1)]
 

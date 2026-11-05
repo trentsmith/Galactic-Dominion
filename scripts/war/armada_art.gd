@@ -7,10 +7,10 @@ static var engine_shape: BoxMesh
 static var flash_shape: SphereMesh
 static var shield_shape: SphereMesh
 static func build(ship: CombatShip) -> void:
- var key:=ship.stats.class_name_text
+ var key:=ship.stats.class_name_text+("/"+ship.stats.variant_style if not GameFeatures.creatures_enabled() else "")
  if not hulls.has(key):
   var source:=Node3D.new()
-  var stats: ShipStats=ship.stats.duplicate(true);stats.variant_style="standard";stats.crew_id=""
+  var stats: ShipStats=ship.stats.duplicate(true);stats.variant_style=ship.stats.variant_style if not GameFeatures.creatures_enabled() else "standard";stats.crew_id=""
   SpaceModelFactory.ship(source,stats,0)
   var surface:=SurfaceTool.new();surface.begin(Mesh.PRIMITIVE_TRIANGLES)
   merge(source,Transform3D.IDENTITY,surface)

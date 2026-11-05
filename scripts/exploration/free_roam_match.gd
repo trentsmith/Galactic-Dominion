@@ -112,6 +112,7 @@ func _create_encounter(region: int) -> void:
   ship.fleet_slot = slot
   ship.stats = CollectionCatalog.SHIP_TYPES.values()[(region + slot) % 5].duplicate(true)
   ship.stats.crew_id = ["crew_nyx", "crew_kael", "crew_orith", "crew_threx"][region % 4]
+  if not GameFeatures.creatures_enabled():NexusFaction.configure(ship.stats,"nexus_abyss" if region%4==3 else "",slot)
   ship.crew_name = CollectionCatalog.find(ship.stats.crew_id).display_name
   ship.callsign = ["Crimson Patrol", "Crimson Marauders", "Pelagian Wardens", "Eldritch Hunters"][region % 4] + " %d" % (slot + 1)
   ship.position = FreeRoamWorld.CENTERS[region] + Vector3(700 + slot * 35, slot * 20, -300)
@@ -240,24 +241,25 @@ func _build_roam_ui() -> void:
  war_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  war_status.custom_minimum_size.x = 550
  choices.add_child(war_status)
- var bot_picker := OptionButton.new()
- bot_picker.name="LandingBotPicker"
- var available: Array[CollectibleDefinition]=[]
- if profile!=null:available=PlanetCatalog.available_bots(profile)
- if available.is_empty():available.append(CollectionCatalog.find("crew_pixlet"))
- for item in available:
-  bot_picker.add_item("EXPLORER / "+item.display_name)
-  bot_picker.set_item_metadata(bot_picker.item_count-1,item.id)
- landing_bot_id=str(available[0].id)
- bot_picker.item_selected.connect(func(i):landing_bot_id=str(bot_picker.get_item_metadata(i)))
- choices.add_child(bot_picker)
- for index in range(3):
-  var land := Button.new()
-  land.text = "LAND SHIP + DEPLOY BOT / " + PlanetCatalog.WORLDS[index].display_name
-  land.disabled = network_role != "offline"
-  land.tooltip_text = "Solo: own this world and approach its outpost within 650m or the planet within 520m of its surface, outside combat. Your fitted ship lands with the chosen bot."
-  land.pressed.connect(func(): landing_requested.emit(index))
-  choices.add_child(land)
+ if GameFeatures.creatures_enabled():
+  var bot_picker := OptionButton.new()
+  bot_picker.name="LandingBotPicker"
+  var available: Array[CollectibleDefinition]=[]
+  if profile!=null:available=PlanetCatalog.available_bots(profile)
+  if available.is_empty():available.append(CollectionCatalog.find("crew_pixlet"))
+  for item in available:
+   bot_picker.add_item("EXPLORER / "+item.display_name)
+   bot_picker.set_item_metadata(bot_picker.item_count-1,item.id)
+  landing_bot_id=str(available[0].id)
+  bot_picker.item_selected.connect(func(i):landing_bot_id=str(bot_picker.get_item_metadata(i)))
+  choices.add_child(bot_picker)
+  for index in range(3):
+   var land := Button.new()
+   land.text = "LAND SHIP + DEPLOY BOT / " + PlanetCatalog.WORLDS[index].display_name
+   land.disabled = network_role != "offline"
+   land.tooltip_text = "Solo: own this world and approach its outpost within 650m or the planet within 520m of its surface, outside combat. Your fitted ship lands with the chosen bot."
+   land.pressed.connect(func(): landing_requested.emit(index))
+   choices.add_child(land)
  var note := Label.new()
  note.text = "You can also fly directly between stations. Warp and service require\nno hostiles within 650m and no recent damage. Warp preserves health."
  choices.add_child(note)
@@ -274,7 +276,7 @@ func toggle_chart() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if map_panel.visible else Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:
- if event.is_action_pressed("surface_land"):
+ if GameFeatures.creatures_enabled() and event.is_action_pressed("surface_land"):
   for index in range(3):
    if can_land(index):
     get_viewport().set_input_as_handled();landing_requested.emit(index);return
@@ -346,7 +348,7 @@ func _update_roam_ui(delta: float) -> void:
   if profile != null:
    profile.record_discovery("open.region.%d" % region, FreeRoamWorld.NAMES[region])
  var nearby: Dictionary = army.worlds[army.nearest_world(ship.position)]
- info.text = "%s  /  %dm TO STATION\n%s  /  %dm\n%s  /  CREATURE BATTLES ON PLANETS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), nearby.name, int(ship.position.distance_to(nearby.position)), "PEACEFUL FLIGHT" if peaceful else "NEXT RAID %ds" % maxi(0, ceili(war.countdown))]
+ info.text = "%s  /  %dm TO STATION\n%s  /  %dm\n%s  /  FLEET OPERATIONS" % [FreeRoamWorld.NAMES[region].to_upper(), int(ship.position.distance_to(FreeRoamWorld.CENTERS[region])), nearby.name, int(ship.position.distance_to(nearby.position)), "PEACEFUL FLIGHT" if peaceful else "NEXT RAID %ds" % maxi(0, ceili(war.countdown))]
  if not ship.alive:
   prompt.text = "SHIP LOST / REDEPLOYING AT NEAREST STATION"
   return
@@ -529,6 +531,7 @@ func survey_landmark(owner: int, ship: CombatShip) -> String:
  return ""
 
 func can_land(index: int) -> bool:
+ if not GameFeatures.creatures_enabled():return false
  if network_role != "offline" or index < 0 or index >= army.worlds.size() or not is_instance_valid(pilot.ship): return false
  var ship := pilot.ship
  var region: int=[0,2,3][index]

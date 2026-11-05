@@ -60,9 +60,9 @@ func _ready() -> void:
   _mode(modes,"TutorialButton","Replay flight school" if host.settings.get_value("tutorial","flight_completed",false) else "Start here: flight school","Learn to fly · safe practice",host.start_tutorial)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)
   _mode(modes,"FleetWarButton","Fleet War","10v10 · last fleet standing",host.start_fleet_war)
-  _mode(modes,"PlanetsButton","Planet expeditions","Meet the wild frontier",host.show_planets)
-  _mode(modes,"SanctuaryButton","Your little planet","Care, grow and belong",host.show_sanctuary)
-  _mode(modes,"HangarButton","Fleet & collection","Make every ship yours",host.show_hangar)
+  if GameFeatures.creatures_enabled():_mode(modes,"PlanetsButton","Planet expeditions","Meet the wild frontier",host.show_planets)
+  if GameFeatures.creatures_enabled():_mode(modes,"SanctuaryButton","Your little planet","Care, grow and belong",host.show_sanctuary)
+  _mode(modes,"HangarButton","Fleet & collection","Nexus faction hulls & fittings",host.show_hangar)
   _mode(modes,"SurveyButton","Discovery missions","Follow a distant signal",func():host.start_exploration(0))
   _mode(modes,"MarketButton","Galactic community","Online fleets & trading",host.show_online)
   var progress := _label(column,"%s  /  %d discoveries  /  %d salvage" % [host.profile.commander_name,host.profile.owned_count(),host.profile.salvage],12,MUTED)
@@ -81,12 +81,12 @@ func _ready() -> void:
  _button(footer,"ControlsButton","Flight controls",_show_controls,30).flat=true
  _button(footer,"QuitButton","Quit",func():get_tree().quit(),30).flat=true
  var right := Control.new();right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(right)
- var mark := _label(right,"E X P L O R E   /   C O L L E C T   /   B E L O N G",11,MINT)
+ var mark := _label(right,"N E X U S   /   F L E E T S   /   F R O N T I E R S",11,MINT)
  mark.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);mark.position=Vector2(-360,6)
  var caption := VBoxContainer.new();caption.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);caption.position=Vector2(-370,-105);caption.custom_minimum_size=Vector2(360,90);caption.add_theme_constant_override("separation",8);right.add_child(caption)
  _label(caption,"YOUR NEXT CHAPTER STARTS HERE",11,MINT)
  _label(caption,"A small ship.\nAn extraordinary universe.",25,INK)
- _label(caption,"Build a fleet, find a friend, follow your curiosity.",12,MUTED)
+ _label(caption,"Build a fleet. Follow the signal. Hold the relay.",12,MUTED)
 
 func _build_preview() -> void:
  var display := SubViewportContainer.new()
@@ -104,8 +104,9 @@ func _build_preview() -> void:
  SpaceEnvironmentArt.planet(scene,Vector3(-8,-4,14),5,Color(.12,.29,.30),8.2,true)
  hero=Node3D.new();hero.name="YourFleetPreview";hero.position=Vector3(-3.6,.35,0);hero.rotation=Vector3(-.12,-.4,-.14);hero.scale=Vector3.ONE*.76;scene.add_child(hero)
  SpaceModelFactory.ship(hero,host.profile.configured_stats(0))
- var pet:=Node3D.new();pet.position=Vector3(-6.2,1.9,-.2);pet.rotation.y=.3;pet.scale=Vector3.ONE*.5;scene.add_child(pet)
- SpaceModelFactory.companion(pet,CollectionCatalog.find("crew_pixlet"))
+ if GameFeatures.creatures_enabled():
+  var pet:=Node3D.new();pet.position=Vector3(-6.2,1.9,-.2);pet.rotation.y=.3;pet.scale=Vector3.ONE*.5;scene.add_child(pet)
+  SpaceModelFactory.companion(pet,CollectionCatalog.find("crew_pixlet"))
  var camera:=Camera3D.new();camera.position=Vector3(0,2.3,-15);camera.fov=44;scene.add_child(camera);camera.look_at(Vector3(0,.65,0));camera.current=true
 
 func _process(delta: float) -> void:
