@@ -75,7 +75,9 @@ func _build_visual() -> void:
  engine_mesh = find_child("MainEngine",true,false)
  muzzle_mesh = find_child("MuzzleFlash",true,false)
  shield_mesh = find_child("ShieldShell",true,false)
- if not lightweight:_build_component_visuals()
+ if not lightweight:
+  _build_component_visuals()
+  RelicComponentArt.build(self,stats)
 
 func _build_component_visuals() -> void:
  if stats.engine_style != "standard":

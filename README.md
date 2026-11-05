@@ -1,6 +1,16 @@
-# Galactic Dominion — Custom Fleet Wars
+# Galactic Dominion — Hidden Components
 
 A Godot 4.x 3D space game prototype with cute original cartoon ships, orbiting alien companions, offline/online free roam, Fleet Royale, exploration, a persistent fleet hangar, collectible crew, interchangeable components, rare appearances, server-hosted 3v3 combat, public online profiles and a player marketplace. Uses original procedural 3D meshes and GDScript. Validated with Godot 4.6.3. No plugins or paid assets are required. Offline modes require no network access.
+
+## Find and fit ship parts
+
+Explore solo **Free Roam** or any **Planet Expedition** for gold component-salvage beacons. Follow the bearing and distance, approach within **60m in space** or **6m on the ground**, and hold **K for two seconds** with a clear path. The first recovery guarantees an uncommon component. Each location has twelve caches; clearing them creates a new batch. Discoveries save immediately as permanent schematics, reusable across your fleet. Return to **Fleet Hangar** to fit them for the next deployment. Duplicates award 15 salvage. A failed save leaves the cache available to retry.
+
+Later caches independently offer a **1 in 4,096 legendary-tier chance** and **1 in 65,536 mythic-tier chance**. Four new legendary parts and two mythic parts are exclusive to these caches: they cannot be researched, crafted or rolled from ordinary battle rewards. Each has a stat tradeoff and visible fittings, compatible with all five ship classes. These chances are per recovery, without a pity guarantee; individual-part odds are rarer still. [Parts, exact odds and recovery rules](docs/COMPONENT_DISCOVERY.md).
+
+This recovery loop is **solo-only**. Online accounts and their inventory remain separate. Existing saves migrate to schema 7; keep a backup before upgrading because older builds cannot read the new schema.
+
+Validation: 365 local Godot checks across ten suites and 22 backend tests passed. Native Linux cache and hangar rendering were inspected. Existing GPU texture cleanup errors occurred at renderer shutdown. Human balance testing and Windows GUI testing remain pending.
 
 ## Choose your Armada matchup
 

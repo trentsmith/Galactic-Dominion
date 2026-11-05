@@ -96,6 +96,8 @@ func _ready() -> void:
  war = WorldWar.new()
  war.battle = self
  _build_roam_ui()
+ if network_role=="offline" and profile!=null:
+  var salvage:=ComponentSalvage.new();salvage.profile=profile;salvage.host=self;add_child(salvage)
  if network_role == "server":
   hud.visible = false
   map_panel.get_parent().visible = false

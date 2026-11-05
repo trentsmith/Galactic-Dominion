@@ -53,6 +53,7 @@ func _ready() -> void:
  wilderness=WildernessStream.new();wilderness.expedition=self;add_child(wilderness)
  party=CreatureParty.new();party.expedition=self;add_child(party)
  var engineer:=StoryNPC.new();engineer.npc_id="milo";engineer.position=Vector3(6,SurfaceWorld.height_at(6,2)+.2,2);add_child(engineer)
+ var salvage:=ComponentSalvage.new();salvage.profile=profile;salvage.host=self;salvage.ground=true;salvage.context=definition.id;add_child(salvage)
  hud=SurfaceHUD.new();hud.expedition=self;add_child(hud)
  cargo_animals.assign(profile.surface_transport.animals)
  cargo_seeds.assign(profile.surface_transport.seeds)

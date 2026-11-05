@@ -53,7 +53,7 @@ func _ready() -> void:
  _build_fleet_tab()
  _build_collection_tab()
  _build_records_tab()
- message_label = _label("Changes save automatically. Component schematics can be fitted to every ship; each crew member serves aboard one ship.", 13, MUTED)
+ message_label = _label("Find parts at gold salvage beacons in Free Roam and Planet Expeditions (hold K). Fit owned schematics here; rare relics are exploration-only.", 13, MUTED)
  message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  root.add_child(message_label)
  profile.changed.connect(_refresh)
@@ -275,7 +275,7 @@ func _refresh_detail() -> void:
  detail_column.add_child(portrait)
  detail_column.add_child(_label(definition.display_name.to_upper(), 23, definition.rarity_color()))
  detail_column.add_child(_label("%s  /  %s  %s" % [definition.rarity.to_upper(), definition.kind.to_upper(), definition.species], 14, MUTED))
- var desc := _label(definition.description, 16)
+ var desc := _label(definition.description+(("\n"+ComponentDiscovery.odds_text()) if definition.kind=="component" else ""), 16)
  desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  detail_column.add_child(desc)
  var bonus := _label(definition.modifier_text(), 14, CYAN)

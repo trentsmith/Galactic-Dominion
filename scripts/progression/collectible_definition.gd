@@ -13,6 +13,7 @@ extends Resource
 @export var color: Color = Color(0.25, 0.8, 1)
 @export var accent: Color = Color(0.8, 0.95, 1)
 @export var visual_style: String = "standard"
+@export var discovery_only: bool = false
 @export var starter: bool = false
 @export var research_cost: int = 0
 

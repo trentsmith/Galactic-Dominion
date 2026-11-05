@@ -30,7 +30,8 @@ func _ready() -> void:
  scene.add_child(fill)
  var camera := Camera3D.new()
  scene.add_child(camera)
- camera.position = Vector3(9, 6, -13)
+ camera.fov=42
+ camera.position = Vector3(8, 5, -11)
  camera.look_at(Vector3.ZERO)
  camera.current = true
 

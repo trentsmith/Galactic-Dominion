@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-35-armada-fleet-setup]
+    branches: [phase-36-component-discoveries]
   workflow_dispatch:
 permissions:
   contents: write
@@ -70,6 +70,8 @@ jobs:
             if grep -E 'SCRIPT ERROR|ERROR:' "$test_log"; then return 1; fi
             return "$test_status"
           }
+          verify_godot component_discovery --fixed-fps 60
+          verify_godot progression --fixed-fps 60
           verify_godot sanctuary_forms
           verify_godot creature_army
           verify_godot armada_sector --fixed-fps 60
@@ -116,8 +118,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.35.0
+          tag=v0.36.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.35 — Custom Fleet Wars' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.36 — Hidden Components' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

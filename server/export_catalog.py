@@ -9,9 +9,10 @@ for path in sorted((root/'resources/collectibles').glob('*.tres')):
         match=re.fullmatch(r'(\w+) = (.*)',line)
         if not match: continue
         key,value=match.groups()
-        if key not in ['id','display_name','kind','rarity','slot','species','ship_class','modifiers','starter','research_cost']: continue
+        if key not in ['id','display_name','kind','rarity','slot','species','ship_class','modifiers','starter','research_cost','discovery_only']: continue
         values[key]= ast.literal_eval(value) if value not in ['true','false'] else value == 'true'
     if 'id' not in values: raise ValueError(path)
+    if values.pop('discovery_only',False): continue
     output.append(values)
 (root/'server/catalog.json').write_text(json.dumps(output,indent=2)+'\n')
 print(f'Exported {len(output)} entries')

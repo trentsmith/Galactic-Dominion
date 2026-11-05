@@ -1,3 +1,7 @@
+# v0.36 — Hidden Components
+
+Add persistent solo space/surface component caches, deterministic saved rolls, atomic recovery and retry, duplicate salvage, repeatable twelve-cache batches, HUD bearings and six exploration-only relic schematics with visible fittings. Publish exact rarity odds and migrate saves to schema 7. Keep authoritative online inventories separate.
+
 # v0.35 — Custom Fleet Wars
 
 Add independent 1–200 fighter counts, presets, saved choices and asymmetric replay/reporting. Fix Armada steering/firing lead disagreement with a shared quadratic interception solver, retain targets for missile locks and reject obstructed shots. Give Standard/Veteran Armada enemies full durability and matching missiles; keep smaller modes and Relaxed separate. Validate moving-target hits and compare a matched-seed AI battle against v0.34.

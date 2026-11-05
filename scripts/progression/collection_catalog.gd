@@ -2,6 +2,13 @@ class_name CollectionCatalog
 extends RefCounted
 
 const DEFINITIONS = [
+ preload("res://resources/collectibles/engine_solarweave.tres"),
+ preload("res://resources/collectibles/shield_eclipse.tres"),
+ preload("res://resources/collectibles/weapon_starforged.tres"),
+ preload("res://resources/collectibles/utility_wayfinder.tres"),
+ preload("res://resources/collectibles/engine_voidwake.tres"),
+ preload("res://resources/collectibles/weapon_singularity.tres"),
+
  preload("res://resources/collectibles/variant_orbitot.tres"),
  preload("res://resources/collectibles/variant_glimbloom.tres"),
  preload("res://resources/collectibles/crew_orbitot.tres"),
@@ -69,7 +76,7 @@ static func roll(rng: RandomNumberGenerator) -> CollectibleDefinition:
  var rarity := rarity_for_ticket(rng.randi_range(0, 16383))
  var pool: Array[CollectibleDefinition] = []
  for entry in DEFINITIONS:
-  if entry.rarity == rarity:
+  if entry.rarity == rarity and not entry.discovery_only:
    pool.append(entry)
  return pool[rng.randi_range(0, pool.size() - 1)]
 

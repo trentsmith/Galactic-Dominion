@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectibleDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/progression/collectible_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "engine_solarweave"
+display_name = "Solarweave Drive"
+description = "Solo exploration salvage only. Legendary tier: 1 in 4096 later recoveries; four possible parts. Permanent schematic with a combat tradeoff."
+kind = "component"
+rarity = "legendary"
+slot = "engine"
+modifiers = {"speed": 1.18, "boost_regen": 1.18, "hull": 0.92}
+visual_style = "engine_solarweave"
+discovery_only = true
+research_cost = 0
+color = Color(1, 0.7, 0.2, 1)

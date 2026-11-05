@@ -41,7 +41,7 @@ func run() -> void:
   for key in entry.modifiers:
    if not key in CollectionCatalog.MODIFIABLE_STATS or float(entry.modifiers[key]) <= 0:
     catalog_valid = false
- check(catalog_valid and ids.size() == 45, "Catalog has 45 unique, valid Resource definitions")
+ check(catalog_valid and ids.size() == 51, "Catalog has 51 unique, valid Resource definitions")
  var path := new_path("roundtrip")
  var profile := PlayerProfile.new(path)
  profile.load_profile()
@@ -143,7 +143,7 @@ func run() -> void:
  main.show_hangar()
  await frames()
  var hangar: HangarScreen = main.menu.get_child(0)
- check(hangar.inventory_list.item_count == 45 and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
+ check(hangar.inventory_list.item_count == CollectionCatalog.DEFINITIONS.size() and is_instance_valid(hangar.preview.ship), "Hangar and 3D preview load with complete collection")
  check(get_nodes_in_group("ships").is_empty(), "Preview ships do not enter the combat target group")
  for index in range(3):
   hangar.selected_ship = index
