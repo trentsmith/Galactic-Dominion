@@ -12,11 +12,11 @@ func run() -> void:
  for definition in CollectionCatalog.DEFINITIONS:profile.acquire(definition.id,"Test fixture")
  profile.equip(1,"crew","");profile.equip(2,"crew","");profile.equip(0,"crew","")
  var variants := CollectionCatalog.for_slot("variant","Guardian")
- check(variants.size()==10,"All ten livery selections are available for Guardians")
+ check(variants.size()==12,"All twelve livery selections are available for Guardians")
  for hull in CollectionCatalog.SHIP_TYPES:
   check(profile.set_ship_class(0,hull),"The player can select "+hull)
   var base: ShipStats = CollectionCatalog.SHIP_TYPES[hull]
-  check(CollectionCatalog.for_slot("variant",base.class_name_text).size()==10,hull+" lists every livery")
+  check(CollectionCatalog.for_slot("variant",base.class_name_text).size()==variants.size(),hull+" lists every livery")
   for variant in variants:
    profile.equip(0,"crew","")
    var fitted := profile.equip(0,"variant",variant.id)
@@ -62,7 +62,7 @@ func run() -> void:
   var selected := -1
   for index in range(choice.item_count):
    if choice.get_item_metadata(index)=="variant_orbitot":selected=index
-  var valid := choice.item_count==10 and selected>=0
+  var valid := choice.item_count==variants.size() and selected>=0
   if selected>=0:choice.item_selected.emit(selected)
   check(valid and main.profile.configured_stats(0).variant_style=="orbitot",hull+" exposes all skins in the actual Hangar and applies the selected skin")
  main.queue_free()
