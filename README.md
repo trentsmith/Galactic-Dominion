@@ -4,7 +4,7 @@ A Godot 4.6.3 3D space-combat prototype with an original Nexus Archives fleet st
 
 ## Play the current build
 
-Download the Windows or Linux client from [v0.39](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.39.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 9, which older builds cannot read.
+Download the Windows or Linux client from [v0.39.1](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.39.1). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 9, which older builds cannot read.
 
 For source development, download/clone the `phase-39-nexus-story` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
 
@@ -39,7 +39,7 @@ Both faction appearances work across Interceptor, Skirmisher, Guardian, Bomber a
 - **Flight School:** safe interactive flight/combat tutorial.
 - **Free Roam / Peaceful Flight:** space exploration, signals, faction ships, stations and salvage recovery.
 - **Fleet & collection:** permanent hulls, components, human/alien officers and appearances. Orbiting bot crew are selectable and eligible for rewards again; animal-themed ship skins remain archived.
-- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.39. [Windows hosting](server/README.md).
+- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.39.1. [Windows hosting](server/README.md).
 
 ## Discover ship parts
 
@@ -63,4 +63,4 @@ Wildlife spawning, surface landing, capturing, sanctuary activities and the biol
 
 ## Validation
 
-320 local Godot checks across ten suites and 23 backend tests passed. These include 52 controlled narrative checks covering both endings, objective gating, range/occlusion, real health damage, escort movement/jamming, radio pause, save rollback, older-save migration and online read-only behavior. Native Linux journal and mission HUD rendering was inspected. Combat completions in tests are scripted; this is not human difficulty calibration or Windows GUI playtesting.
+321 local Godot checks across ten suites and 23 backend tests passed. These include 53 controlled narrative checks covering both endings, objective gating, range/occlusion, real health damage, escort movement/jamming, radio pause, save rollback, older-save migration and online read-only behavior. Native Linux journal and mission HUD rendering was inspected. Combat completions in tests are scripted; this is not human difficulty calibration or Windows GUI playtesting.

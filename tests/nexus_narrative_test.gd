@@ -92,6 +92,8 @@ func run() -> void:
  check(not ShipCampaign.choose(p,"preserve"),"A launched chapter cannot silently change its chosen protocol")
  var seal: BattleMatch=await open_sortie("nexus_warfront")
  check(seal.narrative.points.size()==3 and seal.ships.size()==20,"Seal produces three actual conduits in a 10v10 battle")
+ var commanders: Array=seal.ships.filter(func(ship):return ship.callsign.begins_with("Marshal Veyr"))
+ check(commanders.size()==1 and commanders[0].stats.variant_style=="nexus_crimson" and commanders[0].stats.ability=="aegis","Veyr consistently commands a Crimson Guardian in the mixed-faction warfront")
  clear_foes(seal);seal.pilot.ship.position=seal.narrative.points[0];seal.narrative.tick(2.1,true)
  check(not seal.finished and seal.narrative.completed_points.size()==1,"One conduit cannot stand in for all three phase links")
  secure_scans(seal)

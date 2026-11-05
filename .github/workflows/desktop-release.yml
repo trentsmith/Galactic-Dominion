@@ -79,7 +79,7 @@ jobs:
         run: |
           godot --headless --path . --script res://tests/nexus_narrative_test.gd --fixed-fps 60 > /tmp/narrative.log 2>&1
           cat /tmp/narrative.log
-          grep 'NEXUS_NARRATIVE_TEST: 52 checks, 0 failures' /tmp/narrative.log
+          grep 'NEXUS_NARRATIVE_TEST: 53 checks, 0 failures' /tmp/narrative.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/narrative.log; then exit 1; fi
       - name: Verify ship-only campaign and preserved records
         run: |
@@ -148,8 +148,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.39.0
+          tag=v0.39.1
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.39 — The Fractured Relay' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.39.1 — The Fractured Relay' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

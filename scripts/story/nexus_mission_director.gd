@@ -55,9 +55,13 @@ func _ready() -> void:
  if mission=="nexus_warfront" and choice=="preserve":
   goal=NexusMissionArt.beacon(self,archive_end,"ARCHIVE JUMP BEACON","JumpBeacon")
  var foes: Array=battle.ships.filter(func(s):return s.team==1)
- if not foes.is_empty():
-  foes[-1].callsign="Marshal Veyr / Iron Testament" if mission!="nexus_abyss" else "Mnemosyne / Last Warden"
-  foes[-1].health.max_hull*=1.15;foes[-1].health.hull=foes[-1].health.max_hull
+ var commander: CombatShip
+ for foe in foes:
+  if mission=="nexus_abyss":commander=foe
+  elif foe.stats.variant_style=="nexus_crimson" and (commander==null or foe.stats.ability=="aegis"):commander=foe
+ if commander!=null:
+  commander.callsign="Marshal Veyr / Iron Testament" if mission!="nexus_abyss" else "Mnemosyne / Last Warden"
+  commander.health.max_hull*=1.15;commander.health.hull=commander.health.max_hull
  refresh_status()
 func _physics_process(delta: float) -> void:
  tick(delta,Input.is_action_pressed("scan") and Input.mouse_mode==Input.MOUSE_MODE_CAPTURED)
