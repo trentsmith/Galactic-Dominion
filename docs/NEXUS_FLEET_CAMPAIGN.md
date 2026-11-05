@@ -1,29 +1,42 @@
-# Nexus fleet campaign and archived creatures
+# The Fractured Relay / v0.39
 
-**v0.38 update:** ship companions are restored independently through `gameplay/companions_enabled=true` (or `GD_ENABLE_COMPANIONS=1`). Wildlife stays disabled. The v0.37 suppression details below describe that earlier release; bot crew selection, research/reward eligibility and orbital animation/AI attacks are restored. Set `GD_ENABLE_COMPANIONS=0` to disable orbiters without changing wildlife. Python uses the same environment override, defaulting to enabled.
+## Narrative direction
 
-## Release scope
+The Lantern Network records refugee routes, not just strategic coordinates. Marshal Rhaz Veyr intends to erase a relay because a returned ship's transmission may spread through it. Sera recognizes the lost Mnemosyne and her brother Ilyan's navigation marks. Astra authorized the original expedition and concealed the orders. Milo turns the investigation into practical equipment and insists on an exit plan. The Unnumbered Choir may preserve the crew's memories, but the story does not pretend that memory proves identity or harmless intent.
 
-v0.37 makes space ships and fleet combat the default experience. The Fractured Relay draws from the provided Crimson Dominion/Varkhoss Prime and Eldritch World/Ny'Zaroth lore. This is an original opening chapter with three actual ship encounters, recovery, fitting and NPC comms. It does not access a separate external Nexus archive service.
+The climax asks what responsibility the commander will accept: Seal the local breach or Preserve a contained memory core. Both protect the relay and earn the same chapter reward. One leaves the voices beyond the passage; the other brings home evidence and a continuing containment duty. Different objectives, radio lines and epilogues make the choice playable. It is locked on first final-sortie launch. An older completed commander with no recorded choice may choose a protocol for their first enhanced finale replay.
 
-The Bloodforged and Dreaming Abyss appearances unlock from the first and second commission victories respectively, fit all five classes and retain their selected class abilities. Enemy campaign loadouts add faction tradeoffs: Crimson speed ×0.92, hull ×1.08, shield ×0.85, laser damage ×1.12; Eldritch speed ×1.12, hull ×0.90, shield ×0.80, shield regeneration ×1.40. These are encounter modifiers applied after ordinary difficulty tuning, not bonuses for owning cosmetic hulls. Standard/Veteran tuning still needs human playtesting.
+## Authored sorties
 
-## Reversible switch
+| Sortie | Fleet battle | Additional objective | Failure |
+|---|---|---|---|
+| Lanterns over Varkhoss | 3v3 Crimson blockade | Clear hostiles, then G for 3 seconds within 95m of the relay | Fleet lost, relay integrity zero, eight-minute deadline |
+| The ship that came home | 3v3 Eldritch wardens | Clear hostiles, then G for 4 seconds within 95m of Mnemosyne | Fleet lost or deadline; anomaly discharges cause real damage |
+| A door, not a weapon / Seal | 10v10 mixed fleet | G for 2 seconds at each of three conduits within 95m; clear all hostiles | Fleet lost or deadline |
+| A door, not a weapon / Preserve | 10v10 mixed fleet | Guide moving core within 150m to its beacon; clear all hostiles | Fleet lost, core destroyed or deadline |
 
-`GameFeatures.creatures_enabled()` reads **Project Settings → gameplay/creatures_enabled**, default **false**, from `project.godot`. Set it true and run the project to restore the legacy creature menu, surface landing, sanctuary, pet cosmetics/reward eligibility, companion rendering and The Lantern Signal story. Build again to distribute that configuration.
+All scans require clear scenery line of sight and reset when released/out of range. Nearby Interdictors drain the civilian relay through jamming (220m). The anomaly marks a 110m spherical field, warns for four seconds and then deals 12 damage to ships still inside, once per cycle; both teams face it. Preserve's core takes 35 guided, unjammed seconds to reach its beacon; enemies inside 110m stall and damage it. Escort distance follows the currently piloted ship, including fleet switching. Mission objects do not change combatant counts and are not extra targetable ships. The story zone contracts from 900m to 420m so mission goals remain reachable. Generic fleet rules are unchanged.
 
-For development/regression runs, the process environment variable `GD_ENABLE_CREATURES=1` enables the same switch. On a legacy self-hosted deployment, set that variable for both the Python service and the Godot server/client processes. This is an explicit development override, not an in-game settings toggle. Python uses the environment override for its pet reward pool; it does not read Godot Project Settings.
+The relay's optional 70%-integrity commendation pays 25 salvage once per commander. First mission wins grant the same permanent Sprint Drive/Bloodforged and Dreaming Abyss appearances as before. Faction appearances are cosmetic; encounter AI stat tradeoffs and class abilities remain separate. Story fights use at least Standard difficulty, retaining Veteran if selected. Human calibration is still needed.
 
-The scripts are guarded rather than commented out or deleted, so they continue to parse and their dependencies remain testable. The network server already excludes creature combatants from space; officer data is retained while orbiting visual companions are suppressed. The existing public marketplace remains available for ships/parts/officers; archived pet entries are hidden by the default client, with definitions retained for existing accounts and escrow.
+## Journal and radio
 
-## Saved data and rewards
+O opens a local pause. Online journals are read-only and never pause the server. The mission action and close control remain outside scrolling content. Briefing offers stage-specific dialogue from Astra, Sera and Milo, protocol consequences and concrete controls. Recordings show lines received during the current sortie and bounded saved debrief recordings. Decoded closing messages are delivered through results even if the radio queue had not displayed them before victory. Unheard chatter stays sealed. Dossiers unlock with campaign progress. Sortie record shows the last attempt, survivors, integrity, duration and replay buttons.
 
-Schema 8 adds **ship_story** alongside the existing **story** field. Old biological objectives, sanctuary residents/affection/habitats/materials, pending cargo, collectibles and fitted IDs remain saved. The new chapter starts independently on migration; an old chapter completion cannot skip ship fights. Default loadouts using an archived pet cosmetic render a faction hull without changing the saved cosmetic ID. Selecting an active replacement is an ordinary fitting action.
+Replay unlocks follow existing commission flags. Replays do not reset progress or repeat component commissions/chapter payout; normal battle settlement remains available. A previously unearned Lantern Keeper commendation can be earned once on a replay. Replaying a lost sortie does not undo an earlier ending or successful campaign milestone. A failed sortie replaces the last-attempt metrics, but recovered transmissions are merged and retained; the ending is stored separately.
 
-Faction schematics are local commission rewards; they do not enter online inventory. Ordinary cache rarity remains unchanged, and the two faction hulls cannot be obtained from the random cache component table. Components, hull appearance and mission AI stats remain separate data concerns.
+## Persistence and architecture
 
-Mission transactions snapshot campaign state, inventory, discovery records and salvage, restoring them if saving fails. Match settlement still runs through the existing battle system. A failed story save leaves the commission at its old objective so it can be retried. Repeating final debrief cannot mint another chapter reward. Back up saves before upgrading; old executables refuse schema 8.
+Schema 9 accepts prior schemas 1–8. Existing completion, fittings, inventory, creature progress and cargo remain intact. The original **story** dictionary remains independent. **ship_story** adds a whitelisted protocol, lock, ending, three bounded sortie reports and one commendation flag. Missing old fields receive safe defaults; no ending is invented for older completions. Back up saves before updating because older executables refuse schema 9.
+
+`NexusStoryData` owns authored text and mission definitions. `ShipCampaign` owns state, migration, choice/reward transactions and replay eligibility. `NexusMissionDirector` owns local objectives and delegates normal damage/fleet results to BattleMatch. `NexusComms` queues readable, deduplicated text radio without pausing combat. `NexusMissionArt` builds real scene objects. `ShipStoryScreen` and StoryTracker present this state. No networking or marketplace authority is added.
+
+A victory requires both hostile elimination and the mission objective. The generic finish path refuses premature success. Reports and commission rewards save atomically through the campaign transaction; a failed save restores that mutation and exposes retry status in results. Ordinary battle loot uses its existing separate settlement. Partial in-sortie progress is transient and restarts on retry; choices and completed milestones persist. Codex entries derive from verified milestones rather than repeated save writes.
+
+## Companions and archived wildlife
+
+`gameplay/companions_enabled=true` keeps orbiting bots active. `gameplay/creatures_enabled=false` keeps wildlife, surface capture, sanctuary activities and the biological story archived. Scripts, resources and saved residents remain preserved. For archived development mode, set gameplay/creatures_enabled true or launch processes with GD_ENABLE_CREATURES=1. Python uses that environment override for its reward eligibility. GD_ENABLE_COMPANIONS=0 independently disables orbiters; default is enabled.
 
 ## Validation
 
-`tests/ship_campaign_test.gd` runs 30 checks against the default shipping mode: navigation guards, reward filtering, real mission launches/results, loss/retry, wrong-mission rejection, cache recovery, fitting, both faction meshes for five classes, the 10v10 finale, save rollback, reward idempotence, reload, schema-seven migration and unchanged creature records. Legacy story/menu/component tests run with `GD_ENABLE_CREATURES=1` in CI. Native Linux captures were inspected; Windows GUI/human balance testing is not claimed.
+52 narrative checks exercise actual controller/raycast/health/escort paths in controlled battles, both endings, report/reward retry, radio pause/deduplication, migration, viewport placement and online read-only presentation. Nine regression suites bring local Godot checks to 320; 23 backend tests passed. Native Linux menu/journal/mission rendering was inspected. Scripted tests kill opponents deterministically to isolate objective rules; they do not claim human full-mission playtesting. Windows GUI, human difficulty and accessibility testing remain pending.

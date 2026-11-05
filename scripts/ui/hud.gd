@@ -107,13 +107,25 @@ Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(ba
    host.return_to_menu()
    host.show_hangar())
   layout.add_child(hangar)
+ if battle.narrative!=null:
+  var report_text:=Label.new();report_text.name="StoryDebrief";report_text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;report_text.custom_minimum_size.x=600
+  var report:=battle.narrative.report(battle.winner==0)
+  report_text.text=("REPLAY / Commission rewards are not repeated.\n" if battle.story_replay else "NEXUS SORTIE DEBRIEF\n")
+  report_text.text+=("Mnemosyne memory recovered · " if battle.story_mission=="nexus_abyss" and battle.winner==0 else "Memory recovery incomplete · " if battle.story_mission=="nexus_abyss" else "Relay/core integrity: %d%% · "%int(report.integrity))+"Fleet survivors: %d\n"%int(report.allies)
+  for id in report.heard:
+   if id in ["b_done","a_done","a_astra","w_done_seal","w_done_preserve"]:
+    var line: Array=NexusStoryData.RADIO[id];report_text.text+=str(NexusStoryData.character(line[0]).name)+": "+str(line[1])+"\n"
+  if battle.winner!=0:report_text.text+=NexusStoryData.RADIO.retry[1]+"\n"
+  if not battle.story_saved:report_text.text+="COMMISSION SAVE FAILED / retry the sortie after fixing saving.\n"
+  column.add_child(report_text)
  var replay := Button.new()
  replay.name="ReplayBattleButton"
  replay.text = "DEPLOY AGAIN"
  replay.custom_minimum_size.y = 42
  if battle.story_mission=="crimson_interdiction" or battle.story_mission.begins_with("nexus_"):
   replay.text="RETURN TO ASTRA / STORY JOURNAL" if battle.winner==0 else "RETRY STORY ENCOUNTER"
-  replay.pressed.connect(battle.get_parent().show_story if battle.winner==0 else battle.get_parent().start_story_encounter)
+  if battle.story_replay and battle.winner!=0:replay.pressed.connect(battle.get_parent().replay_ship_story.bind(battle.story_mission))
+  else:replay.pressed.connect(battle.get_parent().show_story if battle.winner==0 else battle.get_parent().start_story_encounter)
  elif battle.is_armada():replay.pressed.connect(battle.get_parent().start_armada.bind(0,battle.team_size,battle.enemy_team_size))
  else:replay.pressed.connect(battle.get_parent().start_battle.bind(battle.team_size))
  layout.add_child(replay)

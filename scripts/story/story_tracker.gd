@@ -28,7 +28,16 @@ func _process(_delta: float) -> void:
  marker.visible=true
 
 func waypoint() -> Dictionary:
- if not GameFeatures.creatures_enabled():return {}
+ if not GameFeatures.creatures_enabled():
+  if is_instance_valid(host.battle) and is_instance_valid(host.battle.narrative):return host.battle.narrative.waypoint()
+  if is_instance_valid(host.battle) and host.battle is FreeRoamMatch and ShipCampaign.stage(host.profile)==2:
+   for child in host.battle.get_children():
+    if child is ComponentSalvage:
+     var best: Node3D
+     for cache in child.caches:
+      if cache.visible and (best==null or cache.position.distance_squared_to(host.battle.pilot.ship.position)<best.position.distance_squared_to(host.battle.pilot.ship.position)):best=cache
+     if best!=null:return {"at":best.position,"from":host.battle.pilot.ship.position,"camera":host.battle.camera,"text":"MNEMOSYNE'S TRAIL / K WITHIN 60m"}
+  return {}
  if not host.profile.story.accepted:return {}
  var stage:=StoryCampaign.stage(host.profile)
  if stage==1 and is_instance_valid(host.battle) and host.battle is FreeRoamMatch:

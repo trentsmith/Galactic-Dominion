@@ -60,6 +60,8 @@ func _ready() -> void:
  show_menu()
  if "--tutorial" in arguments:
   start_tutorial()
+ elif "--story" in arguments:
+  show_story();print("GALACTIC_STORY_READY stage=%d"%ShipCampaign.stage(profile))
  elif "--free-roam" in arguments:
   start_free_roam()
  elif "--armada" in arguments:
@@ -124,7 +126,7 @@ func launch_armada(allies: int,enemies: int) -> void:
 func start_fleet_war() -> void:
  start_battle(10)
 
-func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0,opponents: int=0,armada: bool=false) -> void:
+func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0,opponents: int=0,armada: bool=false,replay_story: bool=false) -> void:
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -139,6 +141,7 @@ func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0,
  battle.team_size = size_per_team
  battle.difficulty = "veteran" if mission!="" and difficulty=="veteran" else "standard" if mission!="" else difficulty
  battle.story_mission = mission
+ battle.story_replay = replay_story
  battle.profile = profile
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
@@ -462,8 +465,8 @@ func show_story() -> void:
  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
  story_layer=CanvasLayer.new();story_layer.layer=30;story_layer.process_mode=Node.PROCESS_MODE_ALWAYS;add_child(story_layer)
  var screen: Control=StoryScreen.new() if GameFeatures.creatures_enabled() else ShipStoryScreen.new();screen.host=self;screen.readonly=online
- var stage:=StoryCampaign.stage(profile)
- screen.npc="sera" if stage in [2,3] else "milo" if stage==4 else "astra"
+ var stage: int=StoryCampaign.stage(profile) if GameFeatures.creatures_enabled() else ShipCampaign.stage(profile)
+ screen.npc=("sera" if stage in [2,3] else "milo" if stage==4 else "astra") if GameFeatures.creatures_enabled() else ("milo" if stage==3 else "sera" if stage in [4,5] else "astra")
  if is_instance_valid(surface) and surface.at_landing_ship():screen.npc="milo"
  story_layer.add_child(screen)
 
@@ -528,20 +531,44 @@ func start_story_encounter() -> bool:
   if ship.team==1:ship.callsign="Crimson Interdictor %d"%(ship.fleet_slot+1);ship.crew_name="Crimson Dominion pilot"
  return true
 
+func ship_story_busy() -> bool:
+ return is_instance_valid(battle) and battle.story_mission.begins_with("nexus_") and not battle.finished
+
 func ship_story_action() -> void:
  if is_instance_valid(battle) and battle.network_role!="offline":return
+ if ship_story_busy():close_story();return
  var step:=ShipCampaign.stage(profile)
  if step==0:ShipCampaign.accept(profile)
  elif step in [1,4,5]:
-  close_story();start_ship_story_encounter();return
- elif step in [2,7]:close_story();start_free_roam(true);return
+  if start_ship_story_encounter():close_story()
+  return
+ elif step in [2,7]:
+  close_story()
+  if not battle is FreeRoamMatch:start_free_roam(true)
+  return
  elif step==3:story_travel("hangar");return
  elif step==6:ShipCampaign.complete(profile)
  if is_instance_valid(story_layer):story_layer.get_child(0).refresh()
 
+func choose_ship_protocol(value: String) -> void:
+ if ship_story_busy() or (is_instance_valid(battle) and battle.network_role!="offline"):return
+ ShipCampaign.choose(profile,value)
+ if is_instance_valid(story_layer):story_layer.get_child(0).refresh()
+
+func replay_ship_story(mission: String) -> bool:
+ if ship_story_busy() or not ShipCampaign.can_replay(profile,mission):return false
+ return launch_ship_sortie(mission,true)
+
 func start_ship_story_encounter() -> bool:
- if is_instance_valid(battle) and battle.network_role!="offline":return false
  var step:=ShipCampaign.stage(profile)
  if not ShipCampaign.MISSIONS.has(step):return false
- start_battle(10 if step==5 else 3,ShipCampaign.MISSIONS[step])
+ return launch_ship_sortie(ShipCampaign.MISSIONS[step],false)
+
+func launch_ship_sortie(mission: String,replay: bool) -> bool:
+ if not NexusStoryData.MISSIONS.has(mission) or (is_instance_valid(battle) and battle.network_role!="offline"):return false
+ if mission=="nexus_warfront" and not ShipCampaign.lock_decision(profile):
+  if is_instance_valid(story_layer):story_layer.get_child(0).refresh()
+  return false
+ close_story()
+ start_battle(int(NexusStoryData.MISSIONS[mission].size),mission,0,0,false,replay)
  return true

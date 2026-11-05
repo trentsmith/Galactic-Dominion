@@ -4,23 +4,25 @@ A Godot 4.6.3 3D space-combat prototype with an original Nexus Archives fleet st
 
 ## Play the current build
 
-Download the Windows or Linux client from [v0.38](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.38.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 8, which older builds cannot read.
+Download the Windows or Linux client from [v0.39](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.39.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 9, which older builds cannot read.
 
-For source development, download/clone the `phase-38-orbiting-companions` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
+For source development, download/clone the `phase-39-nexus-story` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
 
 ## Start with Story / Journal
 
-Press **O** or choose **STORY / JOURNAL**. **The Fractured Relay** follows Commander Astra, Archivist Sera and Engineer Milo into the Crimson–Eldritch War:
+Press **O** or choose **STORY / JOURNAL**. **The Fractured Relay** now follows a frontier evacuation network caught between Marshal Veyr's Crimson fleet and the voices aboard a returned Eldritch ship. Sera is looking for her missing brother; Astra has concealed the expedition orders; Milo wants every journey to have a way home.
 
-1. Accept the Nexus fleet commission.
-2. Win the 3v3 Crimson blockade; unlock a Sprint Drive and Bloodforged hull.
-3. Recover a component cache in solo Free Roam.
-4. Fit an upgraded engine to F1 in Fleet Hangar.
-5. Win the 3v3 Dreaming Abyss encounter; unlock the Eldritch living hull.
-6. Win the mixed-faction 10v10 Rift Warfront.
-7. Debrief with Astra for a one-time 100-salvage reward.
+1. Accept Astra's commission.
+2. **Lanterns over Varkhoss, 3v3:** defeat the Interdictors, then hold **G for three seconds within 95m** of the civilian relay to transmit its routes. Nearby Interdictors jam and drain it. Preserve at least 70% integrity for a one-time Lantern Keeper commendation (+25 salvage). The commission unlocks the Sprint Drive and Bloodforged hull.
+3. Recover a component cache in solo Free Roam: **hold K for two seconds within 60m** of a gold beacon. A journal waypoint points to the nearest available cache.
+4. Fit a non-standard engine to F1 in Fleet Hangar. The Sprint Drive is already owned; fitting applies on launch.
+5. **The ship that came home, 3v3:** defeat Mnemosyne's wardens, avoid the four-second anomaly warning, then hold **G for four seconds within 95m** of the returned vessel. The decoded recording unlocks the living hull and reveals the missing expedition's fate.
+6. **A door, not a weapon, 10v10:** choose a fracture protocol before launch. **Seal** requires three conduit handshakes (G, two seconds within 95m). **Preserve** requires escorting a memory core to its beacon: stay within 150m and clear enemy jammers inside 110m. Both require the enemy fleet defeated. Launching locks your chapter's choice.
+7. Read your debrief, then archive the transmission with Astra for the one-time **100 salvage** reward and your route's epilogue.
 
-Losing does not advance the story. Retry from the results screen or journal. Mission wins are derived from real fleet-match results, not dialogue alone. Faction encounters use at least Standard AI; Veteran remains Veteran. This is a local opening chapter, not an online campaign or a complete galaxy-length story.
+In-flight radio never pauses combat. The journal has Briefing, Recordings, Nexus dossiers and Sortie record tabs. Completed missions can be replayed from Sortie record. Replays keep your progression and do not repeat commission unlocks or chapter payouts; ordinary battle salvage still applies. A first-time commendation may be earned on a replay.
+
+Your choice changes the final objective, transmissions and ending. This is a text-led solo opening chapter with three authored sorties, not a voiced cinematic campaign or an online story. Each sortie has an eight-minute deadline. Defeat leaves its objective retryable; save failures explain that progress was not recorded. Older completed saves retain their completion and can access enhanced replays without being paid twice. [Narrative, migration and controls](docs/NEXUS_FLEET_CAMPAIGN.md).
 
 ## Nexus faction ships
 
@@ -37,7 +39,7 @@ Both faction appearances work across Interceptor, Skirmisher, Guardian, Bomber a
 - **Flight School:** safe interactive flight/combat tutorial.
 - **Free Roam / Peaceful Flight:** space exploration, signals, faction ships, stations and salvage recovery.
 - **Fleet & collection:** permanent hulls, components, human/alien officers and appearances. Orbiting bot crew are selectable and eligible for rewards again; animal-themed ship skins remain archived.
-- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.38. [Windows hosting](server/README.md).
+- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.39. [Windows hosting](server/README.md).
 
 ## Discover ship parts
 
@@ -61,4 +63,4 @@ Wildlife spawning, surface landing, capturing, sanctuary activities and the biol
 
 ## Validation
 
-242 local Godot checks across eight suites passed, including 30 new ship-campaign checks and the archived story/menu suites with the switch enabled. 23 backend tests passed. Native Linux menu, faction hull and journal rendering was inspected. Automated checks do not establish human balance calibration or Windows GUI testing. This is an alpha prototype.
+320 local Godot checks across ten suites and 23 backend tests passed. These include 52 controlled narrative checks covering both endings, objective gating, range/occlusion, real health damage, escort movement/jamming, radio pause, save rollback, older-save migration and online read-only behavior. Native Linux journal and mission HUD rendering was inspected. Combat completions in tests are scripted; this is not human difficulty calibration or Windows GUI playtesting.

@@ -1,3 +1,7 @@
+# v0.39 — The Fractured Relay
+
+Replace checklist-only space story with authored relay, memory-decoding and Seal/Preserve finale objectives, a named antagonist and a personal expedition mystery. Add in-flight text comms, mission art/markers, anomaly warnings, persistent debriefs, optional commendation and two endings. Rebuild the journal around briefings, recordings, dossiers and replayable sorties. Preserve old completions and archived wildlife data; keep companions active. Guard story wins with objective completion and migrate to schema 9.
+
 # v0.38 — Orbiting Companions
 
 Separate orbiting ship companions from the wildlife feature switch. Restore live orbiters and bot crew selection/rewards while keeping surface fauna, capture, sanctuary activities and animal-themed hull skins archived. Preserve Nexus ships, fleet story and schema 8 saves. Add a default-mode regression suite for this separation.

@@ -10,6 +10,9 @@ var broadphase_clock:=0.0
 var aura_clock:=0.0
 var mega: MegaWeapons
 var story_mission := ""
+var story_replay:=false
+var story_saved:=true
+var narrative: NexusMissionDirector
 var difficulty := "standard"
 var playtest_path := ""
 var training := false
@@ -58,12 +61,16 @@ func _ready() -> void:
   if map_seed==0:
    var random:=RandomNumberGenerator.new();random.randomize();map_seed=random.randi_range(1,2147483646)
   arena.arena_seed=map_seed
+ if local_story():
+  arena.arena_seed=int(NexusStoryData.MISSIONS[story_mission].seed)
+  arena.planet_tint=NexusStoryData.MISSIONS[story_mission].tint
  add_child(arena)
  zone = BattleZone.new()
  if team_size >= 10:
   zone.start_radius = 1050.0
   zone.final_radius = 150.0
  if is_armada():zone.start_radius=ArmadaSector.RADIUS;zone.final_radius=350
+ if local_story():zone.start_radius=900;zone.final_radius=420;elimination_only=false
  add_child(zone)
  if is_armada():
   spatial=BattleSpatialIndex.new()
@@ -134,6 +141,8 @@ func _ready() -> void:
  hud = BattleHUD.new()
  hud.battle = self
  add_child(hud)
+ if local_story():
+  narrative=NexusMissionDirector.new();narrative.battle=self;add_child(narrative)
  if sector_map!=null:
   var layer:=CanvasLayer.new();layer.layer=8;add_child(layer)
   var chart:=ArmadaChart.new();chart.battle=self;layer.add_child(chart)
@@ -167,6 +176,8 @@ func _physics_process(delta: float) -> void:
   if aura_clock<=0:update_auras();aura_clock=.1
  else:update_auras()
  zone.tick(delta, ships)
+ if narrative!=null and elapsed>=max_duration:
+  narrative.timeout();return
  if elapsed >= max_duration and not elimination_only:
   var scores := [0.0, 0.0]
   for ship in ships:
@@ -187,6 +198,7 @@ func update_auras() -> void:
 func _on_eliminated(_ship: CombatShip, _attacker: CombatShip) -> void:
  if finished:
   return
+ if narrative!=null:narrative.check_end();return
  var allies := living(0)
  var enemies := living(1)
  if allies == 0 or enemies == 0:
@@ -202,9 +214,12 @@ func living(team: int) -> int:
 func finish(team: int, reason: String) -> void:
  if finished:
   return
+ if team==0 and narrative!=null and (living(1)>0 or not narrative.objectives_complete()):
+  narrative.message="Complete the mission objective and clear the enemy fleet.";narrative.message_time=4;return
  finished = true
  winner = team
  end_reason = reason
+ if narrative!=null:narrative.layer.hide();narrative.comms.set_process(false)
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
  # Freeze simulation for a stable results screen without pausing UI.
  for ship in ships:
@@ -223,8 +238,9 @@ func finish(team: int, reason: String) -> void:
   rewards = profile.settle_battle(battle_id, winner, kills, damage)
   if network_role=="offline" and story_mission=="crimson_interdiction" and winner==0:
    if not StoryCampaign.victory(profile):profile.story_message="Patrol cleared, but story progress was not saved. Retry the story encounter after fixing saving."
-  if network_role=="offline" and story_mission.begins_with("nexus_") and winner==0:
-   ShipCampaign.victory(profile,story_mission)
+  if narrative!=null:
+   var report:=narrative.report(winner==0)
+   story_saved=ShipCampaign.resolve(profile,story_mission,report,story_replay) if winner==0 else ShipCampaign.record_failure(profile,story_mission,report)
   reward_summary = "+%d salvage · %d discovery rolls" % [60 if winner == 0 else 30, 2 if winner == 0 else 1]
  ended.emit(team, reason)
  if network_role != "server":
@@ -243,3 +259,6 @@ func is_armada() -> bool:
  return armada_mode
 func mode_name() -> String:
  return "%dv%d"%[team_size,enemy_team_size if enemy_team_size>0 else team_size]
+
+func local_story() -> bool:
+ return network_role=="offline" and not GameFeatures.creatures_enabled() and profile!=null and NexusStoryData.MISSIONS.has(story_mission)

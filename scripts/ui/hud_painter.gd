@@ -44,7 +44,7 @@ func _draw() -> void:
   if candidate.alive and candidate.team != ship.team: opponents += 1
  panel(Rect2(Vector2(24, 22), Vector2(285, 84)))
  text(Vector2(42, 48), "GALACTIC DOMINION", CYAN, 19)
- text(Vector2(42, 72), "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "ARMADA "+battle.mode_name() if battle.is_armada() else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
+ text(Vector2(42, 72), "NEXUS STORY / "+battle.mode_name() if battle.narrative!=null else "FLIGHT SCHOOL / SAFE PRACTICE" if battle.training else "FREE ROAM / OPEN SPACE" if free_roam else "ARMADA "+battle.mode_name() if battle.is_armada() else "FLEET WAR 10v10 / " + SoloDifficulty.title(battle.difficulty).to_upper() if battle.team_size == 10 else "FLEET ROYALE / " + (SoloDifficulty.title(battle.difficulty).to_upper() if battle.network_role=="offline" else "ONLINE"), MUTED, 13)
  text(Vector2(42, 93), "ALLIES %d / HOSTILES %d" % [battle.living(battle.local_team()), opponents], Color.WHITE, 15)
  panel(Rect2(Vector2(width / 2 - 130, 22), Vector2(260, 61)))
  var exploring := battle is ExplorationMatch

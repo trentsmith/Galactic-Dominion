@@ -8,6 +8,15 @@ func check(ok: bool,message: String) -> void:
  if not ok:failures+=1
 func frames() -> void:
  await process_frame;await process_frame;await process_frame
+func secure(battle: BattleMatch) -> void:
+ for ship in battle.ships:
+  ship.set_physics_process(false)
+  if ship.team==1 and ship.alive:ship.health.damage(100000,null,"test battle")
+ battle.narrative.set_physics_process(false)
+ if battle.narrative.placement_pending:battle.narrative.place_clear();battle.narrative.placement_pending=false
+ for point in battle.narrative.points:
+  battle.pilot.ship.position=point
+  battle.narrative.tick(4.1,true)
 func run() -> void:
  check(not GameFeatures.creatures_enabled(),"Shipping defaults disable creatures reversibly")
  var path:="user://ship-campaign-%d.json"%Time.get_ticks_usec()
@@ -31,7 +40,7 @@ func run() -> void:
  check(enemies.all(func(s):return s.stats.variant_style=="nexus_crimson" and s.companion==null),"Crimson enemies use war hulls without orbiting creatures")
  main.battle.finish(1,"test defeat");await frames()
  check(ShipCampaign.stage(p)==1,"Losing the fleet fight allows retry without progress")
- main.start_story_encounter();await frames();main.battle.finish(0,"test win");await frames()
+ main.start_story_encounter();await frames();secure(main.battle);await frames()
  check(ShipCampaign.stage(p)==2 and p.owns("engine_sprint") and p.owns("variant_nexus_crimson"),"Blockade victory saves a Sprint Drive and Bloodforged hull")
  main.return_to_menu();await frames();main.show_story();main.ship_story_action();await frames()
  check(main.battle is FreeRoamMatch and not main.battle.can_land(0),"Recovery objective enters space without surface landing")
@@ -41,7 +50,7 @@ func run() -> void:
  check(p.equip(0,"engine","engine_sprint") and ShipCampaign.stage(p)==4,"Normal hangar fitting unlocks the Abyss encounter")
  main.start_story_encounter();await frames()
  check(main.battle.story_mission=="nexus_abyss" and main.battle.ships.filter(func(s):return s.team==1).all(func(s):return s.stats.variant_style=="nexus_eldritch"),"Ny'Zaroth encounter contains actual living-hull enemies")
- main.battle.finish(0,"test win");await frames()
+ secure(main.battle);await frames()
  check(ShipCampaign.stage(p)==5 and p.owns("variant_nexus_eldritch"),"Abyss victory unlocks the living faction hull")
  var fit_all:=true
  for key in CollectionCatalog.SHIP_TYPES:
@@ -51,9 +60,10 @@ func run() -> void:
    fit_all=fit_all and model.find_child("NexusLivingHull" if style=="nexus_eldritch" else "NexusBloodforgedHull",true,false)!=null and model.find_child("MuzzleFlash",true,false)!=null
    model.free()
  check(fit_all,"Both faction models build for all five ship classes")
+ ShipCampaign.choose(p,"seal")
  main.start_story_encounter();await frames()
  check(main.battle.ships.size()==20 and main.battle.story_mission=="nexus_warfront","Final commission launches a 10v10 fleet fight")
- main.battle.finish(0,"test win");await frames()
+ secure(main.battle);await frames()
  check(ShipCampaign.stage(p)==6,"Only winning the warfront enables final debrief")
  var salvage:=p.salvage;p.save_blocked=true
  check(not ShipCampaign.complete(p) and p.salvage==salvage and ShipCampaign.stage(p)==6,"Failed final reward saves preserve the retry")
