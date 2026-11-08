@@ -1,12 +1,12 @@
-# Galactic Dominion — Nexus Fleet Campaign
+# Galactic Dominion — Planetfall Returns
 
 A Godot 4.6.3 3D space-combat prototype with an original Nexus Archives fleet story, configurable 1–200 fighter fleets, five ship classes, persistent customization, extremely rare exploration components and self-hosted online spaceflight. Uses GDScript and procedural 3D assets; no paid assets or plugins required.
 
 ## Play the current build
 
-Download the Windows or Linux client from [v0.39.1](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.39.1). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Saves migrate to schema 9, which older builds cannot read.
+Download the Windows or Linux client from [v0.40.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.40.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Save schema remains 9, compatible with v0.39.1. Older pre-v0.39 builds cannot read it.
 
-For source development, download/clone the `phase-39-nexus-story` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
+For source development, download/clone the `phase-40-wildlife-return` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
 
 ## Start with Story / Journal
 
@@ -24,6 +24,14 @@ In-flight radio never pauses combat. The journal has Briefing, Recordings, Nexus
 
 Your choice changes the final objective, transmissions and ending. This is a text-led solo opening chapter with three authored sorties, not a voiced cinematic campaign or an online story. Each sortie has an eight-minute deadline. Defeat leaves its objective retryable; save failures explain that progress was not recorded. Older completed saves retain their completion and can access enhanced replays without being paid twice. [Narrative, migration and controls](docs/NEXUS_FLEET_CAMPAIGN.md).
 
+## Land, track and rescue wildlife
+
+**Planet expeditions** and **Wildlife sanctuary** are back on the main menu. Choose any of the three worlds, then deploy an owned bot or the loaner Pixlet. You can also fly to an owned planet/outpost in solo **Free Roam**, approach outside combat and press **L** to land. **Peaceful Flight** provides friendly world control and no raids. **J** opens the chart and explorer picker. Leaving the surface restores that same orbital session.
+
+On the ground, **T** tracks species, **G held for two seconds within 12m** scans, **LMB** stuns dangerous animals non-lethally and **C within 8m** captures a scanned, eligible creature. Dangerous fauna must reach half health first. Return to the landing ship and press **E within 10m** to deliver surveys and secured animals to the sanctuary. **B** switches the exploring bot at the ship; **F** gathers seeds. Your own creature party can be deployed with R, selected with N, ordered to attack with V and recalled with Z. Secured cargo remains saved; failed deliveries can be retried.
+
+Wildlife uses restrained anatomical faces: smaller lateral eyes, neutral side jaw seams and no decorative brow marks. Jellyfish have distributed sensory organs; wisps have no paired face. Fish keep lidless eyes. Sanctuary and mature forms inherit the same anatomy. **Orbiting bot faces, their animations/attacks, Nexus hulls and the Fractured Relay story are unchanged.** The restored surface loop is solo-only. [Planet restoration and face notes](docs/PLANETFALL_RETURN.md).
+
 ## Nexus faction ships
 
 **Varkhoss Prime / Crimson Dominion:** angular blood-red armor, jagged fins, reactor seams and siege pylons. Campaign enemies trade speed and shielding for stronger hulls and laser fire.
@@ -39,7 +47,7 @@ Both faction appearances work across Interceptor, Skirmisher, Guardian, Bomber a
 - **Flight School:** safe interactive flight/combat tutorial.
 - **Free Roam / Peaceful Flight:** space exploration, signals, faction ships, stations and salvage recovery.
 - **Fleet & collection:** permanent hulls, components, human/alien officers and appearances. Orbiting bot crew are selectable and eligible for rewards again; animal-themed ship skins remain archived.
-- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.39.1. [Windows hosting](server/README.md).
+- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.40.0. [Windows hosting](server/README.md).
 
 ## Discover ship parts
 
@@ -55,12 +63,12 @@ W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse steering; Q/
 
 In **Fleet & collection → Fleet Hangar**, select a ship and equip a discovered non-human bot in its **CREW** slot. Pixlet, Cinderbit, Lunaflutter, Orbitot and Glimbloom are available again. Orbitot and Glimbloom can also be researched through the collection panel. Human officers do not spawn an orbiting bot. Existing companion ownership and fitting data remain valid. Companions keep their existing orbital animation and AI attacks; the Nexus ship models and spaceship campaign remain active.
 
-The independent setting `gameplay/companions_enabled=true` enables orbiters while `gameplay/creatures_enabled=false` keeps planet animals out. Animal-themed ship skins remain archived, preserving the Nexus hull direction.
+The independent setting `gameplay/companions_enabled=true` enables orbiters while `gameplay/wildlife_enabled=true` restores planet animals without changing the ship story. Animal-themed ship skins remain archived, preserving the Nexus hull direction.
 
-## Creatures are archived, not deleted
+## Independent feature settings
 
-Wildlife spawning, surface landing, capturing, sanctuary activities and the biological story are disabled in the default release. Their scripts, scenes, resources and saved records remain intact. A single feature switch restores the archived mode for development; no data conversion is needed. [Restoration instructions and implementation](docs/NEXUS_FLEET_CAMPAIGN.md), [historical feature guide](docs/ARCHIVED_FEATURE_GUIDE.md).
+`gameplay/wildlife_enabled=true` restores surface landing, capturing and sanctuary care. `gameplay/companions_enabled=true` keeps orbital bots active. `gameplay/creatures_enabled=false` preserves the current Nexus story and hull art; that older bundled setting is a development/legacy-mode override, not the wildlife switch. The biological story remains preserved independently in saves. Animal-themed ship skins stay archived. See [implementation and compatibility](docs/PLANETFALL_RETURN.md).
 
 ## Validation
 
-321 local Godot checks across ten suites and 23 backend tests passed. These include 53 controlled narrative checks covering both endings, objective gating, range/occlusion, real health damage, escort movement/jamming, radio pause, save rollback, older-save migration and online read-only behavior. Native Linux journal and mission HUD rendering was inspected. Combat completions in tests are scripted; this is not human difficulty calibration or Windows GUI playtesting.
+513 local Godot checks across twelve suites and 23 backend tests passed. These include 42 new restoration checks across all three worlds, real capture/delivery paths, saved rescues, unchanged campaigns and companion faces; 77 face/material/glTF checks; and the existing narrative/capture/care suites. Native Linux wildlife portraits, restored menu, selector and landed scene were inspected. Automated interactions are scripted; human balance and Windows GUI testing remain pending.

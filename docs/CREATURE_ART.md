@@ -1,3 +1,11 @@
+# Wildlife art / current v0.40 update
+
+Planet wildlife now uses smaller, lateral eyes and neutral side jaw seams. Jellyfish have distributed rhopalia without a paired face; wisps have no facial eyes. Fish and sharks have lidless eyes and do not blink. Bat brow decoration is removed; mammal head/ear proportions are more restrained. Crawler/watcher feeding structures replace human-like mouth seams. Sanctuary growth emblems are positioned away from the face. Companion bot faces are unchanged.
+
+The wild, deployed-party and sanctuary models all use FaunaSculpt/FaunaFace. Growth forms inherit the same anatomy; glTF model packs regenerate from those builders. This is original stylized procedural art. See [restoration, anatomy and validation](PLANETFALL_RETURN.md).
+
+The earlier art notes below are historical and describe the v0.34 revision.
+
 # Living Wildlife art pass
 
 The aim is stylized naturalism: recognizable animal anatomy with fantasy species and friendly proportions. The same species IDs, combat attributes, capture distances and resident saves remain valid.

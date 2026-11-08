@@ -1,11 +1,11 @@
-Galactic Dominion v0.39.1 — The Fractured Relay
+Galactic Dominion v0.40 — Planetfall Returns
 
-- Rewrite the opening chapter around Sera's lost brother, Astra's concealed orders, Marshal Veyr's purge and the voices aboard Mnemosyne.
-- Give all three sorties distinct live objectives: transmit civilian routes, decode a returned living ship, then Seal three conduits or Preserve a moving archive core in a 10v10 finale. Both branches require the hostile fleet defeated; story sorties have an eight-minute deadline.
-- Add in-flight text radio, mission markers, anomaly warnings, core/relay integrity, stage-specific NPC dialogue, unlocked Nexus dossiers, recorded debriefs and two authored endings.
-- Rebuild the journal with a pinned mission action and Briefing / Recordings / Dossiers / Sortie record tabs. Replay completed missions, including from older completed saves, without repeating commission rewards. Earn the optional Lantern Keeper commendation once.
-- Keep orbiting companions enabled and wildlife archived. The original biological story and sanctuary data remain preserved. Online remains separate; these objectives are solo-only.
+- Restore solo planet landings, three wildlife expeditions, captures, sanctuary delivery/care and surface creature parties.
+- Keep the Nexus fleet story and ships active. An independent wildlife flag avoids reverting to the old cute ship art/biological campaign.
+- Revise planet animal faces only: smaller lateral eyes, neutral jaw lines, no decorative brows, species-appropriate feeding/sensory structures, no paired face on jellyfish or wisps. Wild, party and sanctuary growth models share the change.
+- Preserve orbiting/surface bot faces, their AI attacks, saved animals and existing progression. Save schema remains 9, compatible with v0.39.1.
+- Refuse ship-story travel when surface surveys still need delivery, and keep previous campaign progress separate from new wildlife trips.
 
-Extract the client ZIP and run the game. Choose STORY / JOURNAL or press O. In missions G interfaces within 95m; Free Roam salvage still uses K within 60m. The finale's protocol is locked at launch. Back up your save: schema 9 preserves prior progression but cannot be opened by older builds. Update online host/client together to v0.39.1.
+Extract the client ZIP and run the game. Choose Planet expeditions, or approach a planet in solo Peaceful Flight and press L. On the surface: T track; hold G within 12m to scan; C within 8m to capture; E at the landing ship delivers. Dangerous fauna needs weakening first. Visit Wildlife sanctuary to see rescued residents. Update online host/client together to v0.40.0; surface exploration remains solo-only.
 
-321 local Godot checks across ten suites and 23 backend tests passed. Both narrative branches were exercised with scripted enemy defeats and actual objective controllers. Native Linux journal/HUD rendering was inspected. Human full-mission balance testing and Windows GUI testing remain pending. This is a text-led alpha opening chapter, without recorded voiceover or cinematic cutscenes.
+513 local Godot checks across twelve suites and 23 backend tests passed, including all three landing/capture/delivery paths and glTF round-trips for revised wildlife. Native Linux portraits, menu, planet selector and landing rendering were inspected. Human balance and Windows GUI playtesting remain pending.

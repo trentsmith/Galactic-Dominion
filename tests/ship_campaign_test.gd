@@ -17,13 +17,26 @@ func secure(battle: BattleMatch) -> void:
  for point in battle.narrative.points:
   battle.pilot.ship.position=point
   battle.narrative.tick(4.1,true)
+func same_saved_state(a: Variant,b: Variant) -> bool:
+ if (a is float or a is int) and (b is float or b is int):return is_equal_approx(float(a),float(b))
+ if a is Dictionary and b is Dictionary:
+  if a.size()!=b.size():return false
+  for key in a:
+   if not b.has(key) or not same_saved_state(a[key],b[key]):return false
+  return true
+ if a is Array and b is Array:
+  if a.size()!=b.size():return false
+  for i in range(a.size()):
+   if not same_saved_state(a[i],b[i]):return false
+  return true
+ return a==b
 func run() -> void:
- check(not GameFeatures.creatures_enabled(),"Shipping defaults disable creatures reversibly")
+ check(not GameFeatures.creatures_enabled(),"The legacy bundled mode stays disabled for the Nexus story")
  var path:="user://ship-campaign-%d.json"%Time.get_ticks_usec()
  main=load("res://scenes/main.tscn").instantiate();main.profile_path=path;root.add_child(main);await frames()
  var p: PlayerProfile=main.profile
  var legacy:=p.story.duplicate(true);var sanctuary:=p.sanctuary.duplicate(true);var cargo:=p.surface_transport.duplicate(true)
- check(main.menu.find_child("PlanetsButton",true,false)==null and main.menu.find_child("SanctuaryButton",true,false)==null,"Creature activities are absent from default navigation")
+ check(main.menu.find_child("PlanetsButton",true,false)!=null and main.menu.find_child("SanctuaryButton",true,false)!=null,"Wildlife activities coexist with the Nexus story in navigation")
  check(main.menu.find_child("StoryButton",true,false)!=null,"Fleet commission remains accessible")
  var excluded:=true
  for i in range(1000):excluded=excluded and GameFeatures.collectible_active(CollectionCatalog.roll(p._rng))
@@ -43,8 +56,8 @@ func run() -> void:
  main.start_story_encounter();await frames();secure(main.battle);await frames()
  check(ShipCampaign.stage(p)==2 and p.owns("engine_sprint") and p.owns("variant_nexus_crimson"),"Blockade victory saves a Sprint Drive and Bloodforged hull")
  main.return_to_menu();await frames();main.show_story();main.ship_story_action();await frames()
- check(main.battle is FreeRoamMatch and not main.battle.can_land(0),"Recovery objective enters space without surface landing")
- check(main.battle.map_panel.find_child("LandingBotPicker",true,false)==null,"Star chart hides bot deployment")
+ check(main.battle is FreeRoamMatch and not main.battle.can_land(0),"Recovery starts in space and landing still requires a planetary approach")
+ check(main.battle.map_panel.find_child("LandingBotPicker",true,false)!=null,"Star chart offers restored planetary deployment")
  var result:=ComponentDiscovery.recover(p,"space",0)
  check(result.ok and ShipCampaign.stage(p)==3,"Actual cache recovery advances fleet preparation")
  check(p.equip(0,"engine","engine_sprint") and ShipCampaign.stage(p)==4,"Normal hangar fitting unlocks the Abyss encounter")
@@ -73,15 +86,16 @@ func run() -> void:
  var restored:=PlayerProfile.new(path);restored.load_profile()
  check(ShipCampaign.stage(restored)==7 and restored.owns("variant_nexus_eldritch"),"New campaign and faction unlocks survive reload")
  main.return_to_menu();await frames();main.show_planets();await frames()
- check(not is_instance_valid(main.surface),"Direct surface entry is safely disabled")
- main.show_sanctuary();await frames();check(not is_instance_valid(main.sanctuary_scene),"Direct sanctuary entry is safely disabled")
+ check(main.menu.get_child(0) is PlanetSelector,"Planet selection remains available after the Nexus story")
+ main.show_sanctuary();await frames();check(is_instance_valid(main.sanctuary_scene),"Sanctuary entry remains available after the Nexus story")
  ProjectSettings.set_setting("gameplay/creatures_enabled",true)
  check(GameFeatures.creatures_enabled() and GameFeatures.collectible_active(CollectionCatalog.find("crew_pixlet")),"One feature switch restores archived creature paths")
  ProjectSettings.set_setting("gameplay/creatures_enabled",false)
  # A schema-7 profile migrates independently of its old creature objective.
+ var saved_sanctuary:=p.sanctuary.duplicate(true)
  var migration:=p.to_dict();migration.version=7;migration.erase("ship_story")
  var file:=FileAccess.open(path+"-old",FileAccess.WRITE);file.store_string(JSON.stringify(migration));file.close()
  var old:=PlayerProfile.new(path+"-old");old.load_profile()
- check(ShipCampaign.stage(old)==0 and old.story==legacy and old.sanctuary==sanctuary,"Schema-seven migration preserves biological records without skipping the fleet story")
+ check(ShipCampaign.stage(old)==0 and old.story==legacy and same_saved_state(old.sanctuary,saved_sanctuary),"Schema-seven migration preserves biological records without skipping the fleet story")
  main.queue_free();await frames()
  print("SHIP_CAMPAIGN_TEST: %d checks, %d failures"%[checks,failures]);quit(1 if failures else 0)

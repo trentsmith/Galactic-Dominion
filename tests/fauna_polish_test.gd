@@ -28,7 +28,9 @@ func run() -> void:
    var anchors:=model.find_children("EyeAnchor*","Node3D",true,false)
    var head:=model.find_child("SculptedHead",true,false) as MeshInstance3D
    var skin:=head if head!=null else model.find_child("FaunaBody",true,false) as MeshInstance3D
-   var mounted:=anchors.size()==2
+   var count:=0 if d.body_style in ["jelly","wisp"] else 2
+   var lids:=0 if d.body_style in ["jelly","wisp","fish","shark"] else 2
+   var mounted:=anchors.size()==count
    var wet:=true
    for anchor in anchors:
     mounted=mounted and nearest_surface(skin,anchor.position)<.05
@@ -37,8 +39,8 @@ func run() -> void:
     wet=wet and material.roughness<.2 and material.next_pass==null and material.shading_mode==BaseMaterial3D.SHADING_MODE_PER_PIXEL
    check(mounted,d.id+" eyes touch the actual head/body surface rather than floating in front")
    check(wet,d.id+" uses reflective eye materials without flat unshaded eye stickers")
-   check(model.find_children("UpperLid*","MeshInstance3D",true,false).size()==2 and model.find_children("LowerLid*","MeshInstance3D",true,false).size()==2,d.id+" has upper and lower anatomical lids")
-   check(model.find_children("IrisFibres*","MeshInstance3D",true,false).size()==2 and model.find_child("RosyCheek*",true,false)==null and model.find_child("LittleSmile",true,false)==null,d.id+" has detailed irises without painted cheeks or a pasted smile")
+   check(model.find_children("UpperLid*","MeshInstance3D",true,false).size()==lids and model.find_children("LowerLid*","MeshInstance3D",true,false).size()==lids,d.id+" has species-appropriate lids or lidless sensory anatomy")
+   check(model.find_children("IrisFibres*","MeshInstance3D",true,false).size()==count and model.find_child("RosyCheek*",true,false)==null and model.find_child("LittleSmile",true,false)==null,d.id+" has detailed irises without painted cheeks or a pasted smile")
    var body:=model.find_child("FaunaBody",true,false) as MeshInstance3D
    check(body.material_override==FaunaSkin.material(d),d.id+" reuses the shared species skin material")
    var color:=FaunaSkin.bake_color(Vector3(.3,1.5,-1.1),body.material_override)
@@ -53,7 +55,7 @@ func run() -> void:
    var imported:=GLTFState.new();var reader:=GLTFDocument.new()
    var decoded:=exported and reader.append_from_file(path,imported)==OK
    var roundtrip: Node3D=reader.generate_scene(imported) if decoded else null
-   check(roundtrip!=null and roundtrip.find_children("EyeAnchor*","Node3D",true,false).size()==2 and roundtrip.find_children("UpperLid*","MeshInstance3D",true,false).size()==2,d.id+" exports and reloads as portable glTF with facial geometry intact")
+   check(roundtrip!=null and roundtrip.find_children("EyeAnchor*","Node3D",true,false).size()==count and roundtrip.find_children("UpperLid*","MeshInstance3D",true,false).size()==lids,d.id+" exports and reloads as portable glTF with facial geometry intact")
    if roundtrip!=null:roundtrip.free()
    if FileAccess.file_exists(path):DirAccess.remove_absolute(path)
  var host=load("res://scenes/main.tscn").instantiate();host.profile_path="user://polish-%d.json"%Time.get_ticks_usec();root.add_child(host);await process_frame

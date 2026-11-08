@@ -6,7 +6,7 @@ func check(ok: bool,message: String) -> void:
  checks+=1;print(("PASS: " if ok else "FAIL: ")+message)
  if not ok:failures+=1
 func run() -> void:
- check(GameFeatures.companions_enabled() and not GameFeatures.creatures_enabled(),"Companions are enabled independently of wildlife")
+ check(GameFeatures.companions_enabled() and not GameFeatures.creatures_enabled(),"Companions are enabled independently of the legacy story")
  var profile:=PlayerProfile.new("user://orbiting-restore-%d.json"%Time.get_ticks_usec());profile.load_profile()
  var all_available:=true
  for id in ["crew_pixlet","crew_cinderbit","crew_lunaflutter","crew_orbitot","crew_glimbloom"]:
@@ -23,9 +23,9 @@ func run() -> void:
  check(ship.find_child("NexusBloodforgedHull",true,false)!=null,"Restoring bots retains the Nexus ship design")
  check(not GameFeatures.collectible_active(CollectionCatalog.find("variant_orbitot")),"Animal-themed ship skins remain archived")
  var main: Node=load("res://scenes/main.tscn").instantiate();main.profile_path=profile.save_path;root.add_child(main);await process_frame;await process_frame
- check(main.menu.find_child("PlanetsButton",true,false)==null and main.menu.find_child("SanctuaryButton",true,false)==null,"Animal exploration and sanctuary activities remain absent")
+ check(main.menu.find_child("PlanetsButton",true,false)!=null and main.menu.find_child("SanctuaryButton",true,false)!=null,"Wildlife and sanctuary navigation are restored independently")
  main.start_free_roam(true);await process_frame
- check(not main.battle.can_land(0) and main.battle.map_panel.find_child("LandingBotPicker",true,false)==null,"Restoring orbiters does not enable animal expeditions or bot landing")
+ check(not main.battle.can_land(0) and main.battle.map_panel.find_child("LandingBotPicker",true,false)!=null,"Landing controls are available but still require approach clearance")
  check(is_instance_valid(main.battle.pilot.ship.companion),"Equipped companion also appears in peaceful Free Roam")
  main.return_to_menu();await process_frame;main.show_story();await process_frame
  check(main.story_layer.get_child(0) is ShipStoryScreen,"The spaceship campaign remains the active story")

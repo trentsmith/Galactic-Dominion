@@ -241,7 +241,7 @@ func _build_roam_ui() -> void:
  war_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  war_status.custom_minimum_size.x = 550
  choices.add_child(war_status)
- if GameFeatures.creatures_enabled():
+ if GameFeatures.wildlife_enabled():
   var bot_picker := OptionButton.new()
   bot_picker.name="LandingBotPicker"
   var available: Array[CollectibleDefinition]=[]
@@ -276,7 +276,7 @@ func toggle_chart() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if map_panel.visible else Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:
- if GameFeatures.creatures_enabled() and event.is_action_pressed("surface_land"):
+ if GameFeatures.wildlife_enabled() and event.is_action_pressed("surface_land"):
   for index in range(3):
    if can_land(index):
     get_viewport().set_input_as_handled();landing_requested.emit(index);return
@@ -531,11 +531,11 @@ func survey_landmark(owner: int, ship: CombatShip) -> String:
  return ""
 
 func can_land(index: int) -> bool:
- if not GameFeatures.creatures_enabled():return false
+ if not GameFeatures.wildlife_enabled():return false
  if network_role != "offline" or index < 0 or index >= army.worlds.size() or not is_instance_valid(pilot.ship): return false
  var ship := pilot.ship
  var region: int=[0,2,3][index]
  var planet_at: Vector3=FreeRoamWorld.CENTERS[region]+Vector3(-1000,-600,-1400)
  var near_planet:=ship.position.distance_to(planet_at)<850
- var clearance: bool=index==0 and profile!=null and profile.story.accepted and StoryCampaign.stage(profile) in [1,2]
+ var clearance: bool=index==0 and GameFeatures.creatures_enabled() and profile!=null and profile.story.accepted and StoryCampaign.stage(profile) in [1,2]
  return ship.alive and (army.worlds[index].owner == ship.team or clearance) and (ship.position.distance_to(army.worlds[index].position)<650 or near_planet) and safe_to_service(ship)

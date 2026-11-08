@@ -81,5 +81,5 @@ static func creature(parent: Node3D,definition: FaunaDefinition,stage: int) -> N
     leaf(details,Vector3(side*(.45+i*.3),.9,-.2+i*.35),Vector3(.35,.45,.45),side*-1.1,accent)
    pearl(details,Vector3(side*1.3,.6,-1.8),.18,accent)
  if stage==2:
-  var emblem:=SurfaceArt.ball(details,Vector3(0,1.25,-1.39),Vector3(.07,.09,.02),PEARL,true);emblem.name="RadiantEmblem"
+  var emblem:=SurfaceArt.ball(details,Vector3(0,1.75,.25),Vector3(.07,.09,.02),PEARL,true);emblem.name="RadiantEmblem"
  return root

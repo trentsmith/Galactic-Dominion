@@ -352,7 +352,7 @@ func _clear_surface() -> void:
  surface=null
 
 func show_planets() -> void:
- if not GameFeatures.creatures_enabled():return_to_menu();return
+ if not GameFeatures.wildlife_enabled():return_to_menu();return
  network.disconnect_session();get_tree().paused=false
  _clear_surface()
  if is_instance_valid(battle):
@@ -364,7 +364,7 @@ func show_planets() -> void:
  selector.back_requested.connect(show_menu);selector.launched.connect(start_planet);menu.add_child(selector)
 
 func start_planet(index: int,bot_id: String="") -> void:
- if not GameFeatures.creatures_enabled():return_to_menu();return
+ if not GameFeatures.wildlife_enabled():return_to_menu();return
  network.disconnect_session();get_tree().paused=false
  _clear_surface()
  if is_instance_valid(battle):remove_child(battle);battle.queue_free();battle=null
@@ -378,14 +378,14 @@ func start_planet(index: int,bot_id: String="") -> void:
  surface.return_requested.connect(show_planets);surface.sanctuary_requested.connect(visit_captured_creatures);surface.landing_stats=profile.configured_stats(0);add_child(surface)
 
 func show_sanctuary() -> void:
- if not GameFeatures.creatures_enabled():return_to_menu();return
+ if not GameFeatures.wildlife_enabled():return_to_menu();return
  network.disconnect_session();get_tree().paused=false;_clear_surface()
  if is_instance_valid(battle):remove_child(battle);battle.queue_free();battle=null
  if is_instance_valid(menu):menu.queue_free()
  sanctuary_scene=SanctuaryGarden.new();sanctuary_scene.profile=profile;sanctuary_scene.back_requested.connect(return_to_menu);add_child(sanctuary_scene)
 
 func land_from_roam(index: int) -> bool:
- if not GameFeatures.creatures_enabled():return false
+ if not GameFeatures.wildlife_enabled():return false
  if not battle is FreeRoamMatch or not battle.can_land(index):
   if battle is FreeRoamMatch: battle.log_label.text = "Landing denied / own the world, approach its planet or outpost, and leave combat. Try Peaceful Flight for relaxed landings. Solo mode only."
   return false
@@ -428,7 +428,7 @@ func return_from_planet() -> void:
  battle.log_label.text = "Returned to orbit / the same fleet, war and armies await."
 
 func visit_captured_creatures() -> void:
- if not GameFeatures.creatures_enabled():return_to_menu();return
+ if not GameFeatures.wildlife_enabled():return_to_menu();return
  if not is_instance_valid(surface) or not surface.finished:return
  get_tree().paused=false
  remove_child(surface);surface.queue_free();surface=null
@@ -543,6 +543,7 @@ func ship_story_action() -> void:
   if start_ship_story_encounter():close_story()
   return
  elif step in [2,7]:
+  if not story_can_travel():return
   close_story()
   if not battle is FreeRoamMatch:start_free_roam(true)
   return
@@ -566,6 +567,7 @@ func start_ship_story_encounter() -> bool:
 
 func launch_ship_sortie(mission: String,replay: bool) -> bool:
  if not NexusStoryData.MISSIONS.has(mission) or (is_instance_valid(battle) and battle.network_role!="offline"):return false
+ if not story_can_travel():return false
  if mission=="nexus_warfront" and not ShipCampaign.lock_decision(profile):
   if is_instance_valid(story_layer):story_layer.get_child(0).refresh()
   return false

@@ -15,7 +15,6 @@ static func add(root: Node3D,d: FaunaDefinition) -> void:
    for side in [-1,1]:
     for rib in range(3):
      ArtGeometry.sweep(root,[Vector3(side*.3,1.2,0),Vector3(side*(1.2+rib*.3),1.8-rib*.25,.2),Vector3(side*(1.8+rib*.25),1.4-rib*.25,.8)],[.035,.025,.008],pale,"WingVein")
-   SpaceModelFactory.ball(root,Vector3(0,1.63,-1.31),Vector3(.12,.15,.025),pale,"MoonBrow")
   "nightfang":
    for side in [-1,1]:
     for row in range(3):

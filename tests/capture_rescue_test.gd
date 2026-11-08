@@ -98,7 +98,9 @@ func run() -> void:
  for planet in PlanetCatalog.WORLDS:
   for species in planet.fauna:
    var model:=SurfaceArt.creature(gallery,species)
-   check(model.find_children("EyeAnchor*","Node3D",true,false).size()==2 and model.find_children("UpperLid*","MeshInstance3D",true,false).size()==2,species.id+" has paired surface-mounted eyes and anatomical lids")
+   var eyes:=0 if species.body_style in ["jelly","wisp"] else 2
+   var lids:=0 if species.body_style in ["jelly","wisp","fish","shark"] else 2
+   check(model.find_children("EyeAnchor*","Node3D",true,false).size()==eyes and model.find_children("UpperLid*","MeshInstance3D",true,false).size()==lids,species.id+" has species-specific sensory anatomy")
    check(model.find_child("RosyCheek*",true,false)==null and model.find_child("LittleSmile",true,false)==null,species.id+" uses natural facial anatomy rather than painted cheeks and a smile")
    model.free()
  gallery.queue_free();main.queue_free();await process_frame;await process_frame

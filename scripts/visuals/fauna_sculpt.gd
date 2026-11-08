@@ -63,18 +63,18 @@ static func build(parent: Node3D, definition: FaunaDefinition) -> Node3D:
   if style=="stag":
    head_profile=[Vector4(.16,.12,-1.94,1.52),Vector4(.24,.22,-1.72,1.55),Vector4(.40,.43,-1.12,1.85),Vector4(.36,.4,-.72,1.85),Vector4(.05,.08,-.45,1.65)]
   elif style=="wolf":
-   head_profile=[Vector4(.16,.12,-1.95,1.34),Vector4(.28,.22,-1.65,1.4),Vector4(.5,.46,-1.0,1.55),Vector4(.4,.4,-.55,1.5),Vector4(.06,.08,-.3,1.4)]
+   head_profile=[Vector4(.16,.12,-1.95,1.34),Vector4(.28,.22,-1.65,1.4),Vector4(.40,.34,-1.0,1.55),Vector4(.34,.33,-.55,1.5),Vector4(.06,.08,-.3,1.4)]
   elif style=="bat":
-   head_profile=[Vector4(.14,.12,-1.55,1.43),Vector4(.39,.34,-1.28,1.5),Vector4(.57,.49,-.85,1.55),Vector4(.38,.37,-.5,1.5),Vector4(.05,.05,-.3,1.4)]
+   head_profile=[Vector4(.14,.12,-1.55,1.43),Vector4(.39,.34,-1.28,1.5),Vector4(.43,.35,-.85,1.55),Vector4(.34,.29,-.5,1.5),Vector4(.05,.05,-.3,1.4)]
   elif style=="crawler":
-   head_profile=[Vector4(.04,.05,-1.55,.85),Vector4(.38,.25,-1.3,.9),Vector4(.47,.33,-.9,.98),Vector4(.3,.26,-.55,.95),Vector4(.04,.05,-.3,.85)]
+   head_profile=[Vector4(.04,.05,-1.55,.85),Vector4(.38,.25,-1.3,.9),Vector4(.43,.22,-.9,.98),Vector4(.3,.21,-.55,.95),Vector4(.04,.05,-.3,.85)]
   face_profile=head_profile
   ArtGeometry.part(root,head_profile,light,"SculptedHead")
   if style in ["stag","wolf","bat","grazer","hopper"]:
    for side in [-1,1]:
     var ear_y:=2.08 if style=="stag" else 1.82
     var ear:=SpaceModelFactory.mesh(root,SpaceModelFactory.petal_mesh(),Vector3(side*.34,ear_y,-.7),c,"LeafEar")
-    ear.scale=Vector3(.28 if style=="stag" else .32,.31 if style!="bat" else .43,.64);ear.rotation.z=side*-.5
+    ear.scale=Vector3(.28 if style=="stag" else .29,.32 if style=="bat" else .24,.64);ear.rotation.z=side*-.5
     var inner:=SpaceModelFactory.mesh(ear,SpaceModelFactory.petal_mesh(),Vector3(0,.12,-.08),c.lerp(Color(.6,.39,.35),.45),"EarLining")
     inner.scale=Vector3(.57,.70,.65)
  if style=="stag":

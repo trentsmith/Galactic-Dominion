@@ -1,3 +1,7 @@
+# v0.40 — Planetfall Returns
+
+Restore surface expeditions, orbital landing and sanctuary care independently of the legacy story/art bundle. Keep Nexus ships/campaign and companion faces intact. Give wildlife smaller lateral eyes, neutral muzzle seams, species-specific lidless/sensory anatomy and no decorative brow marks; mature forms inherit the same faces. Preserve schema 9 and existing animals/transport. Guard ship-story travel against losing unextracted surface surveys. Validate all three worlds through landing, capture, delivery and return to the same orbit session.
+
 # v0.39 — The Fractured Relay
 
 Replace checklist-only space story with authored relay, memory-decoding and Seal/Preserve finale objectives, a named antagonist and a personal expedition mystery. Add in-flight text comms, mission art/markers, anomaly warnings, persistent debriefs, optional commendation and two endings. Rebuild the journal around briefings, recordings, dossiers and replayable sorties. Preserve old completions and archived wildlife data; keep companions active. Guard story wins with objective completion and migrate to schema 9.

@@ -33,9 +33,9 @@ Schema 9 accepts prior schemas 1–8. Existing completion, fittings, inventory, 
 
 A victory requires both hostile elimination and the mission objective. The generic finish path refuses premature success. Reports and commission rewards save atomically through the campaign transaction; a failed save restores that mutation and exposes retry status in results. Ordinary battle loot uses its existing separate settlement. Partial in-sortie progress is transient and restarts on retry; choices and completed milestones persist. Codex entries derive from verified milestones rather than repeated save writes.
 
-## Companions and archived wildlife
+## Companions, wildlife and the preserved biological story
 
-`gameplay/companions_enabled=true` keeps orbiting bots active. `gameplay/creatures_enabled=false` keeps wildlife, surface capture, sanctuary activities and the biological story archived. Scripts, resources and saved residents remain preserved. For archived development mode, set gameplay/creatures_enabled true or launch processes with GD_ENABLE_CREATURES=1. Python uses that environment override for its reward eligibility. GD_ENABLE_COMPANIONS=0 independently disables orbiters; default is enabled.
+v0.40 restores surface wildlife and sanctuary care independently through `gameplay/wildlife_enabled=true`. `gameplay/companions_enabled=true` keeps orbiting bot faces/behavior unchanged. `gameplay/creatures_enabled=false` retains Nexus hulls and this fleet campaign. That older bundled switch remains a legacy development override; wildlife no longer requires enabling it. The biological story's data remains preserved and does not advance just because a new wildlife expedition runs. Ship-story travel refuses to discard unextracted surface surveys. [Current landing and wildlife guide](PLANETFALL_RETURN.md).
 
 ## Validation
 
