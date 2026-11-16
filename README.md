@@ -52,7 +52,7 @@ Hold **K for two seconds within 60m** of a gold space cache (6m on a planet). Th
 
 W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse aim; Q/E roll; Shift boost. LMB laser, **M missile**, R ability, Tab target. F1–F3 switch fleet ships; 1–5 give orders. Armada also uses [ / ] to cycle survivors. J chart, G scan/service, K recover parts, F job interaction, O Frontier board, H scenic HUD, Esc menu. Online flight continues while menus are open.
 
-Settings has **Low/Medium/High** graphics, larger menu text, reduced explosion flashes, mouse sensitivity/inversion, volume, fullscreen and input rebinding. Gamepad defaults: left stick moves, right stick aims, triggers fire, bumpers move vertically, A boosts, Y targets, X activates abilities, D-pad up scans/interacts, B captures on planets. Other actions can be assigned under **Controls / Rebind Inputs**. Axis defaults remain fixed; key, mouse and gamepad button bindings can be changed. Hardware controller feel still needs human playtesting.
+Settings has **Low/Medium/High** graphics, larger menu text, reduced explosion flashes, mouse sensitivity/inversion, volume, fullscreen and input rebinding. Gamepad defaults: left stick moves, right stick aims, triggers fire, bumpers move vertically, A boosts, Y targets, X activates abilities, D-pad up scans/interacts, Back opens the Frontier board, B captures on planets. Other actions can be assigned under **Controls / Rebind Inputs**. Axis defaults remain fixed; key, mouse and gamepad button bindings can be changed. Hardware controller feel still needs human playtesting.
 
 ## Archived campaign
 
@@ -62,4 +62,4 @@ Past endings have small free-roam consequences: Seal adds a reconstruction tende
 
 ## Validation
 
-702 Godot checks across 21 suites and 27 account-service tests passed locally, plus a real two-client HTTP/ENet co-op session. Linux Frontier board, wreck and settings renders were inspected. See [Frontier validation and remaining scope](docs/FRONTIER.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.
+706 Godot checks across 21 suites and 27 account-service tests passed locally, plus a real two-client HTTP/ENet co-op session. Linux Frontier board, wreck and settings renders were inspected. See [Frontier validation and remaining scope](docs/FRONTIER.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.

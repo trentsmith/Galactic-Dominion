@@ -23,7 +23,7 @@ static func install() -> void:
    for event in originals[action]:InputMap.action_add_event(action,event)
  for binding in [["strafe_left",0,-1.0],["strafe_right",0,1.0],["forward",1,-1.0],["reverse",1,1.0],["laser",5,1.0],["missile",4,1.0]]:
   var axis:=InputEventJoypadMotion.new();axis.axis=binding[1];axis.axis_value=binding[2];InputMap.action_add_event(binding[0],axis)
- for binding in [["up",5],["down",4],["boost",0],["surface_capture",1],["target",3],["ability",2],["scan",11],["frontier_use",11],["surface_extract",12],["surface_next_hunt",13],["surface_deploy_creature",14],["pause",6]]:
+ for binding in [["up",JOY_BUTTON_RIGHT_SHOULDER],["down",JOY_BUTTON_LEFT_SHOULDER],["boost",JOY_BUTTON_A],["surface_capture",JOY_BUTTON_B],["target",JOY_BUTTON_Y],["ability",JOY_BUTTON_X],["scan",JOY_BUTTON_DPAD_UP],["frontier_use",JOY_BUTTON_DPAD_UP],["surface_extract",JOY_BUTTON_DPAD_DOWN],["surface_next_hunt",JOY_BUTTON_DPAD_LEFT],["surface_deploy_creature",JOY_BUTTON_DPAD_RIGHT],["pause",JOY_BUTTON_START],["story_journal",JOY_BUTTON_BACK]]:
   var button:=InputEventJoypadButton.new();button.button_index=binding[1];InputMap.action_add_event(binding[0],button)
  for action in ["look_left","look_right","look_up","look_down"]:
   if not InputMap.has_action(action):InputMap.add_action(action,.18)

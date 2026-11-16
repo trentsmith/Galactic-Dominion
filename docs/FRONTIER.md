@@ -55,6 +55,6 @@ GD_ENABLE_CAMPAIGN=1 godot --headless --path . --script res://tests/nexus_narrat
 
 `frontier_test.gd` exercises actual scenes, projectile/anchor collisions, range refusal, completed-reward retry, migrations, crafting, patrol allegiance, missile interception, sequential wreck scans/doors/hazards/extraction and scripted input. The network fixture runs a real HTTP account service and two actual ENet clients; it positions ships reproducibly near the job and parks unrelated AI. It does not substitute for player flight/balance tests.
 
-Local validation passed 41 Frontier checks, 20 additional job-path checks, 641 regression checks across 19 existing suites, and 27 account-service tests. A two-client HTTP/ENet test passed shared repair, live joining, allegiance, group-safe switching, per-account saving and endpoint protection. Native Linux board, interior and settings renders were inspected.
+Local validation passed 45 Frontier checks, 20 additional job-path checks, 641 regression checks across 19 existing suites, and 27 account-service tests. A two-client HTTP/ENet test passed shared repair, live joining, allegiance, group-safe switching, per-account saving and endpoint protection. Native Linux board, interior and settings renders were inspected.
 
 Human balance, Windows GUI and physical controller playtests are still needed. Interiors and the new home economy are prototypes with procedural geometry. There is no commercial account recovery, production moderation or official hosted service in this release.

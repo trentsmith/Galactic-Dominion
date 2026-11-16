@@ -102,7 +102,8 @@ func home() -> void:
   var craft:=button(body,"FABRICATE "+CollectionCatalog.find(id).display_name+" / "+" + ".join(parts),func():notice="Blueprint saved. Fit it in Fleet Hangar." if FrontierState.craft(host.profile,id) else "Need a workshop, the listed materials, an undiscovered blueprint and a writable save.";refresh())
   craft.disabled=host.profile.owns(id)
  button(body,"VISIT YOUR SANCTUARY / HOME",func():
-  if host.story_can_travel():host.close_story();host.show_sanctuary())
+  if host.story_can_travel():host.close_story();host.show_sanctuary()
+  else:notice=host.profile.story_message;refresh())
 func records() -> void:
  label(body,"%d optional jobs completed"%int(host.profile.frontier.completed),20)
  for entry in host.profile.frontier.log:label(body,str(entry),15)

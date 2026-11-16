@@ -63,7 +63,10 @@ func run() -> void:
  for child in roam.get_children():
   if child is ComponentSalvage:cache=child
  check(cache.bearing_range()==1750,"Observatory extends real component bearing range")
- check(FrontierState.role(p,"scout") and p.configured_stats(0).companion_role=="scout" and cache.bearing_range()==2750,"Scout protocol affects equipped ship stats and exploration sensing")
+ check(FrontierState.role(p,"scout") and p.configured_stats(0).companion_role=="scout","Scout protocol saves equipped ship stats for the next deployment")
+ check(cache.bearing_range()==1750,"A saved protocol does not silently change the existing flight")
+ ship.stats.companion_role="scout"
+ check(cache.bearing_range()==2750,"A deployed scout companion extends actual salvage sensing")
  ship.health.hull-=5;ship.health.regen_delay=0;var hull:=ship.health.hull;director.timer=0;director.tick(.5,false)
  check(ship.health.hull>hull,"Repair dock restores hull outside combat")
  ship.stats.companion_role="engineer";ship.set_physics_process(true);ship.companion._physics_process(.5);ship.set_physics_process(false)
@@ -126,6 +129,11 @@ func run() -> void:
  var stick:=InputEventJoypadMotion.new();stick.axis=JOY_AXIS_RIGHT_X;stick.axis_value=.9;Input.parse_input_event(stick);await frames()
  check(FlightPreferences.look().x>.5,"Scripted gamepad right-stick input reaches flight aiming")
  stick.axis_value=0;Input.parse_input_event(stick);FlightPreferences.reset()
+ var bumper:=InputEventJoypadButton.new();bumper.button_index=JOY_BUTTON_RIGHT_SHOULDER;bumper.pressed=true;Input.parse_input_event(bumper.duplicate());await frames()
+ check(Input.is_action_pressed("up"),"Godot 4 right bumper drives vertical ascent")
+ bumper.pressed=false;Input.parse_input_event(bumper.duplicate());bumper.button_index=JOY_BUTTON_LEFT_SHOULDER;bumper.pressed=true;Input.parse_input_event(bumper.duplicate());await frames()
+ check(Input.is_action_pressed("down"),"Godot 4 left bumper drives vertical descent")
+ bumper.pressed=false;Input.parse_input_event(bumper.duplicate())
  var light:=DirectionalLight3D.new();root.add_child(light);light.shadow_enabled=true;FlightPreferences.quality="low";FlightPreferences.apply_node(light)
  check(not light.shadow_enabled,"Low graphics quality disables actual shadow rendering")
  FlightPreferences.quality="high";FlightPreferences.apply_node(light);check(light.shadow_enabled,"Returning to high quality restores original shadows")
