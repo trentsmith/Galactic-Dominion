@@ -1,11 +1,16 @@
-Galactic Dominion v0.40 — Planetfall Returns
+Galactic Dominion v0.41.0 — The Frontier
 
-- Restore solo planet landings, three wildlife expeditions, captures, sanctuary delivery/care and surface creature parties.
-- Keep the Nexus fleet story and ships active. An independent wildlife flag avoids reverting to the old cute ship art/biological campaign.
-- Revise planet animal faces only: smaller lateral eyes, neutral jaw lines, no decorative brows, species-appropriate feeding/sensory structures, no paired face on jellyfish or wisps. Wild, party and sanctuary growth models share the change.
-- Preserve orbiting/surface bot faces, their AI attacks, saved animals and existing progression. Save schema remains 9, compatible with v0.39.1.
-- Refuse ship-story travel when surface surveys still need delivery, and keep previous campaign progress separate from new wildlife trips.
+Free roam is now the primary experience. The scripted campaign is disabled by default, with its code and saved progress retained for later use.
 
-Extract the client ZIP and run the game. Choose Planet expeditions, or approach a planet in solo Peaceful Flight and press L. On the surface: T track; hold G within 12m to scan; C within 8m to capture; E at the landing ship delivers. Dangerous fauna needs weakening first. Visit Wildlife sanctuary to see rescued residents. Update online host/client together to v0.40.0; surface exploration remains solo-only.
+- Optional rescue, repair, escort, wreck-recovery and rare-component rumor jobs, plus siege captains with exposed weak points.
+- Solo faction standing, allied/wanted patrol reactions and small world effects from previous campaign endings.
+- Striker, Scout, Guardian and Engineer companion protocols.
+- Walkable derelict interiors with power consoles, doors, security hazards and black-box extraction.
+- Wildlife footprint trails and distant predator/prey interactions; landing, capture and sanctuary delivery stay available.
+- Repair dock, observatory/gallery and fabrication workshop upgrades.
+- Shared online rescue/repair/escort work for up to six allied pilots, with server-validated individual saved rewards.
+- Gamepad flight/surface aiming, input rebinding/reset, graphics presets, larger menu text and reduced explosion flashes.
 
-513 local Godot checks across twelve suites and 23 backend tests passed, including all three landing/capture/delivery paths and glTF round-trips for revised wildlife. Native Linux portraits, menu, planet selector and landing rendering were inspected. Human balance and Windows GUI playtesting remain pending.
+Extract the whole client ZIP and run the executable. Choose **Enter the Frontier**, then **O** for optional activities. Hold **F** near a rescue/repair signal; wrecks use **G** at consoles and **E** at the airlock. **M** remains missiles and **J** remains the star chart. Update online clients and server together to v0.41.0. Back up saves: schema 10 imports old profiles, while old builds cannot read schema 10.
+
+Planet and wreck interiors remain solo-only; co-op currently covers space jobs. Local/online inventories remain separate. Legendary/mythic component odds are unchanged. Hardware-controller, Windows GUI and human balance playtests remain pending. See docs/FRONTIER.md for scope and reproducible validation.

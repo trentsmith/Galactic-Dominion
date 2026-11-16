@@ -24,3 +24,5 @@ extends Resource
 @export var variant_style: String = "standard"
 @export var variant_name: String = "Vanguard Livery"
 @export var color: Color = Color(0.2, 0.7, 1.0)
+
+@export var companion_role: String = "striker"

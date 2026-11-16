@@ -22,10 +22,13 @@ var focus_resident:=false
 var care_bounce: Dictionary={}
 var panel: SanctuaryPanel
 var grid: Node3D
+var frontier_modules: Node3D
+var sky_environment: WorldEnvironment
 func _ready() -> void:
  process_mode=Node.PROCESS_MODE_PAUSABLE
  state=profile.sanctuary
- var background:=SpaceEnvironmentArt.environment(9.8);add_child(background)
+ refresh_frontier_modules()
+ sky_environment=SpaceEnvironmentArt.environment(9.8);add_child(sky_environment)
  var light:=DirectionalLight3D.new();light.rotation_degrees=Vector3(-48,-30,0);light.light_energy=1.1;add_child(light)
  camera=Camera3D.new();camera.fov=56;camera.h_offset=9;add_child(camera);camera.current=true
  residents_root=Node3D.new();add_child(residents_root)
@@ -75,9 +78,8 @@ func refresh_world() -> void:
    var biome:="vampire" if id.begins_with("varkhoss.") else "alien" if id.begins_with("viridia.") else "eldritch"
    model=SurfaceArt.plant(scenery,biome,at,Color(.35,.65,.5),Color(.65,.9,.8),int(id.get_slice(".",1)))
   plant_actors.append(model)
- var sky:=get_child(0) as WorldEnvironment
- sky.environment.sky.sky_material.set_shader_parameter("moon_palette",1.0 if state.location==2 else 0.0)
- sky.environment.sky.sky_material.set_shader_parameter("comet_palette",1.0 if state.location==0 else 0.0)
+ sky_environment.environment.sky.sky_material.set_shader_parameter("moon_palette",1.0 if state.location==2 else 0.0)
+ sky_environment.environment.sky.sky_material.set_shader_parameter("comet_palette",1.0 if state.location==0 else 0.0)
  panel.refresh_lists()
 func _process(delta: float) -> void:
  clock+=delta;save_clock+=delta;refresh_clock+=delta
@@ -167,3 +169,7 @@ func awaken_resident() -> bool:
   actor.position=previous_position
   SpaceEffects.burst(self,actor.global_position+Vector3.UP,Color(1,.7,.9),2.0)
  return true
+
+func refresh_frontier_modules() -> void:
+ if is_instance_valid(frontier_modules):remove_child(frontier_modules);frontier_modules.queue_free()
+ frontier_modules=FrontierHomeArt.build(self,profile)

@@ -16,6 +16,7 @@ func _physics_process(delta: float) -> void:
  if not is_instance_valid(ship) or not ship.alive:
   return
  if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+  aim_offset=(aim_offset+FlightPreferences.look()*delta*1.6).limit_length(.8)
   ship.rotate_object_local(Vector3.UP, -aim_offset.x * ship.stats.turn_speed * delta)
   ship.rotate_object_local(Vector3.RIGHT, -aim_offset.y * ship.stats.turn_speed * delta * (-1.0 if inverted else 1.0))
   ship.rotate_object_local(Vector3.FORWARD, Input.get_axis("roll_left", "roll_right") * 1.8 * delta)

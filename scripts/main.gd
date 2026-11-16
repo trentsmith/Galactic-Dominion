@@ -41,6 +41,9 @@ func _ready() -> void:
   if error != OK:
    get_tree().quit(1)
   return
+ FlightPreferences.install()
+ FlightPreferences.apply_node(get_tree().root)
+ get_tree().node_added.connect(func(node):FlightPreferences.apply_id.call_deferred(node.get_instance_id()))
  var audio := SpaceAudio.new()
  audio.name = "Audio"
  add_child(audio)
@@ -56,10 +59,13 @@ func _ready() -> void:
  volume = settings.get_value("audio", "volume", 0.6)
  AudioServer.set_bus_volume_db(0, linear_to_db(volume))
  _apply_display()
- var tracker:=StoryTracker.new();tracker.host=self;add_child(tracker)
+ if GameFeatures.campaign_enabled():
+  var tracker:=StoryTracker.new();tracker.host=self;add_child(tracker)
  show_menu()
  if "--tutorial" in arguments:
   start_tutorial()
+ elif "--frontier" in arguments:
+  show_frontier();print("GALACTIC_FRONTIER_READY")
  elif "--story" in arguments:
   show_story();print("GALACTIC_STORY_READY stage=%d"%ShipCampaign.stage(profile))
  elif "--free-roam" in arguments:
@@ -265,6 +271,17 @@ func show_settings(paused: bool) -> void:
   AudioServer.set_bus_volume_db(0, linear_to_db(maxf(0.0001, volume)))
   _save_settings())
  column.add_child(volume_slider)
+ var graphics:=OptionButton.new()
+ for word in ["LOW / no shadows or AA","MEDIUM / shadows and 2x AA","HIGH / shadows, 4x AA and available post effects"]:graphics.add_item(word)
+ graphics.selected=["low","medium","high"].find(FlightPreferences.quality)
+ graphics.item_selected.connect(func(index):FlightPreferences.quality=["low","medium","high"][index];FlightPreferences.save_display();FlightPreferences.apply_node(get_tree().root))
+ column.add_child(graphics)
+ var large:=CheckButton.new();large.text="Larger menu text";large.button_pressed=FlightPreferences.large_text
+ large.toggled.connect(func(value):FlightPreferences.large_text=value;FlightPreferences.save_display();center.theme=CartoonStyle.ui_theme());column.add_child(large)
+ var flashes:=CheckButton.new();flashes.text="Reduce explosion flashes";flashes.button_pressed=FlightPreferences.reduced_flashes
+ flashes.toggled.connect(func(value):FlightPreferences.reduced_flashes=value;FlightPreferences.save_display());column.add_child(flashes)
+ var bindings:=Button.new();bindings.text="CONTROLS / REBIND INPUTS";column.add_child(bindings)
+ var remaps:=ControlsPanel.new();remaps.visible=false;column.add_child(remaps);bindings.pressed.connect(func():remaps.visible=not remaps.visible)
  _button(column, "BACK", func(): show_menu(paused))
 
 func _save_settings() -> void:
@@ -337,6 +354,7 @@ func start_free_roam(peaceful: bool = false) -> void:
  battle.profile = profile
  add_child(battle)
  battle.landing_requested.connect(land_from_roam)
+ battle.frontier.boarding_requested.connect(board_derelict)
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
  print("GALACTIC_FREE_ROAM_READY ships=%d" % battle.ships.size())
@@ -457,6 +475,7 @@ func difficulty_choice(parent: Control) -> OptionButton:
  return choice
 
 func show_story() -> void:
+ if not GameFeatures.campaign_enabled():show_frontier();return
  if is_instance_valid(story_layer):return
  story_previous_paused=get_tree().paused
  story_previous_mouse=Input.mouse_mode
@@ -477,6 +496,7 @@ func close_story() -> void:
  Input.mouse_mode=story_previous_mouse
 
 func story_action() -> void:
+ if not GameFeatures.campaign_enabled():return
  if not GameFeatures.creatures_enabled():ship_story_action();return
  var stage:=StoryCampaign.stage(profile)
  match stage:
@@ -535,6 +555,7 @@ func ship_story_busy() -> bool:
  return is_instance_valid(battle) and battle.story_mission.begins_with("nexus_") and not battle.finished
 
 func ship_story_action() -> void:
+ if not GameFeatures.campaign_enabled():return
  if is_instance_valid(battle) and battle.network_role!="offline":return
  if ship_story_busy():close_story();return
  var step:=ShipCampaign.stage(profile)
@@ -561,11 +582,13 @@ func replay_ship_story(mission: String) -> bool:
  return launch_ship_sortie(mission,true)
 
 func start_ship_story_encounter() -> bool:
+ if not GameFeatures.campaign_enabled():return false
  var step:=ShipCampaign.stage(profile)
  if not ShipCampaign.MISSIONS.has(step):return false
  return launch_ship_sortie(ShipCampaign.MISSIONS[step],false)
 
 func launch_ship_sortie(mission: String,replay: bool) -> bool:
+ if not GameFeatures.campaign_enabled():return false
  if not NexusStoryData.MISSIONS.has(mission) or (is_instance_valid(battle) and battle.network_role!="offline"):return false
  if not story_can_travel():return false
  if mission=="nexus_warfront" and not ShipCampaign.lock_decision(profile):
@@ -574,3 +597,30 @@ func launch_ship_sortie(mission: String,replay: bool) -> bool:
  close_story()
  start_battle(int(NexusStoryData.MISSIONS[mission].size),mission,0,0,false,replay)
  return true
+
+func show_frontier() -> void:
+ if is_instance_valid(story_layer):return
+ story_previous_paused=get_tree().paused;story_previous_mouse=Input.mouse_mode
+ if not (is_instance_valid(battle) and battle.network_role!="offline"):get_tree().paused=true
+ Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+ story_layer=CanvasLayer.new();story_layer.layer=30;story_layer.process_mode=Node.PROCESS_MODE_ALWAYS;add_child(story_layer)
+ var board:=FrontierScreen.new();board.host=self;story_layer.add_child(board)
+
+func board_derelict() -> void:
+ if not battle is FreeRoamMatch or battle.network_role!="offline" or not battle.frontier.can_board():return
+ parked_roam=battle;remove_child(parked_roam);battle=null
+ if is_instance_valid(menu):menu.queue_free()
+ var room:=DerelictExpedition.new();room.profile=profile
+ var bots:=PlanetCatalog.available_bots(profile);room.bot_definition=bots[0] if not bots.is_empty() else CollectionCatalog.find("crew_pixlet")
+ surface=room;room.return_requested.connect(return_from_derelict);add_child(room)
+
+func return_from_derelict() -> void:
+ if not surface is DerelictExpedition:return
+ var secured: bool=surface.secured
+ return_from_planet()
+ if battle is FreeRoamMatch:battle.frontier.return_boarding(secured)
+
+func _exit_tree() -> void:
+ # A landed session is deliberately detached; it still belongs to this host.
+ if is_instance_valid(parked_roam):parked_roam.free()
+ parked_roam=null

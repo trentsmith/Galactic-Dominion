@@ -31,6 +31,9 @@ var pending_peers: Dictionary = {}
 var client_lobby: Dictionary = {}
 var loading_peers: Dictionary = {}
 var loading_connection:=true
+var contract_busy:=false
+var contract_payload: Dictionary={}
+var contract_retry:=0.0
 
 func _ready() -> void:
  api = get_parent().online_api
@@ -90,14 +93,14 @@ func _peer_connected(id: int) -> void:
 func _connected() -> void:
  loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.40.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.41.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.40.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.41.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -178,13 +181,13 @@ func request_start(mode: String = "royale") -> void:
   if not member.ready:
    reject.rpc_id(sender, "All connected pilots must be ready.")
    return
- if mode not in ["royale", "free_roam"]: return
+ if mode not in ["royale", "free_roam", "co_op"]: return
  match_mode = mode
  starting = true
  roster.clear()
  match_id = Crypto.new().generate_random_bytes(16).hex_encode()
  for member in members.values():
-  roster.append({"user_id": member.profile.user_id, "team": int(member.index) / 3})
+  roster.append({"user_id": member.profile.user_id, "team": 0 if match_mode=="co_op" else int(member.index) / 3})
  var reply := await api.request("/server/start", {"match_id": match_id, "roster": roster, "mode": match_mode}, HTTPClient.METHOD_POST, server_key)
  if reply.has("error"):
   starting = false
@@ -231,7 +234,8 @@ func request_start(mode: String = "royale") -> void:
   crew_names.append(crew_name)
   ship_totals.append(Vector2.ZERO)
  for id in members:_set_peer_timeout(int(id),true)
- arena = FreeRoamMatch.new() if match_mode == "free_roam" else BattleMatch.new()
+ arena = FreeRoamMatch.new() if match_mode in ["free_roam","co_op"] else BattleMatch.new()
+ if arena is FreeRoamMatch:arena.cooperative=match_mode=="co_op"
  arena.name = "Arena"
  arena.network_role = "server"
  arena.preconfigured_stats = stats_list
@@ -242,6 +246,7 @@ func request_start(mode: String = "royale") -> void:
   ship_totals.append(Vector2.ZERO)
  if arena is FreeRoamMatch:
   arena.encounter_won.connect(_roam_encounter_won)
+  arena.frontier.shared_completed.connect(_frontier_completed)
   arena.ship_replaced.connect(func(index):arena.ships[index].health.damaged.connect(_queue_feedback.bind(index)))
  for index in range(6):
   arena.ships[index].callsign = names[index]
@@ -283,7 +288,8 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
   remove_child(arena)
   arena.queue_free()
  match_mode = mode
- arena = FreeRoamMatch.new() if mode == "free_roam" else BattleMatch.new()
+ arena = FreeRoamMatch.new() if mode in ["free_roam","co_op"] else BattleMatch.new()
+ if arena is FreeRoamMatch:arena.cooperative=match_mode=="co_op"
  arena.name = "Arena"
  arena.network_role = "client"
  for entry in serialized:
@@ -307,7 +313,7 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
  arena.fleet.current_command = "attack"
  aim = Vector2.ZERO
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
- status_changed.emit("Online free-roam running" if match_mode == "free_roam" else "Online match running")
+ status_changed.emit("Online free-roam running" if match_mode in ["free_roam","co_op"] else "Online match running")
  match_loaded.rpc_id(1)
 
 func _choose_client_ship() -> void:
@@ -343,7 +349,7 @@ func ship_event(action: String, argument: int = 0) -> void:
   return
  var ship := arena.ships[index]
  if action == "switch":
-  var requested := ship.team * 3 + clampi(argument, 0, 2)
+  var requested := (index / 3) * 3 + clampi(argument, 0, 2)
   if slot_owners[requested] != 0 and slot_owners[requested] != sender or not arena.ships[requested].alive:
    return
   slot_owners[index] = 0
@@ -353,6 +359,13 @@ func ship_event(action: String, argument: int = 0) -> void:
   inputs.erase(sender)
  elif ship.alive:
   if arena is FreeRoamMatch:
+   if action=="frontier_start":
+    if match_mode=="co_op" and sender==members.keys()[0] and argument in range(3):
+     arena.frontier.start_shared(["rescue","repair","escort"][argument],ship)
+    return
+   if action=="frontier_use":
+    if match_mode=="co_op":arena.frontier.request_use(index)
+    return
    if action.begins_with("army_"):
     army_notice.rpc_id(sender, arena.army_action(sender, ship, action.trim_prefix("army_"), argument))
     return
@@ -426,7 +439,7 @@ func _physics_process(delta: float) -> void:
     for troop in arena.army.units.values():
      if troop.owner == id and troop.order == "follow": troop.leader = index
    if not ship.alive:
-    for candidate in range(ship.team * 3, ship.team * 3 + 3):
+    for candidate in range((index / 3) * 3, (index / 3) * 3 + 3):
      if arena.ships[candidate].alive and slot_owners[candidate] == 0:
       slot_owners[index] = 0
       slot_owners[candidate] = id
@@ -445,12 +458,14 @@ func _physics_process(delta: float) -> void:
     ship.basis = ship.basis.orthonormalized()
     if input.laser:
      ship.weapons.fire()
-  if match_mode == "free_roam":
+  if match_mode in ["free_roam","co_op"]:
    lease_clock += delta
    if lease_clock >= 60:
     lease_clock = 0
     _renew_roam_lease()
   army_snapshot_clock += delta
+  contract_retry=maxf(0,contract_retry-delta)
+  if not contract_payload.is_empty() and not contract_busy and contract_retry<=0:_save_frontier_contract()
   snapshot_clock += delta
   if snapshot_clock >= 1.0 / 15.0:
    snapshot_clock = 0
@@ -472,6 +487,7 @@ func _physics_process(delta: float) -> void:
     if _connected_peer(id):
      if arena is FreeRoamMatch and army_snapshot_clock >= 0.2:
       receive_army.rpc_id(id, arena.army.snapshot())
+      receive_frontier.rpc_id(id,arena.frontier.snapshot())
      receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
      if not pending_feedback.is_empty():receive_feedback.rpc_id(id,pending_feedback)
    pending_feedback.clear()
@@ -486,14 +502,18 @@ func _physics_process(delta: float) -> void:
    ship.basis = ship.basis.slerp(Basis(state.rotation), minf(1, delta * 18)).orthonormalized()
   arena.pilot.update_camera(delta)
   aim = aim.move_toward(Vector2.ZERO, delta * 0.75)
+  if Input.mouse_mode==Input.MOUSE_MODE_CAPTURED:
+   aim=(aim+FlightPreferences.look()*delta*1.6).limit_length(.8)
   send_clock += delta
   if send_clock >= 1.0 / 30.0:
    send_clock = 0
    var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+   if captured and match_mode=="co_op" and Input.is_action_pressed("frontier_use"):ship_event.rpc_id(1,"frontier_use")
    var thrust := Vector3(Input.get_axis("strafe_left", "strafe_right"), Input.get_axis("down", "up"), Input.get_axis("forward", "reverse")) if captured else Vector3.ZERO
    var steering := aim * Vector2(1, -1 if get_parent().inverted else 1) if captured else Vector2.ZERO
    if input_provider.is_valid():
     var supplied: Dictionary = input_provider.call()
+    if match_mode=="co_op" and bool(supplied.get("frontier_use",false)):ship_event.rpc_id(1,"frontier_use")
     send_input.rpc_id(1, supplied.thrust, supplied.steering, supplied.roll, supplied.boost, supplied.laser)
    else:
     send_input.rpc_id(1, thrust, steering, Input.get_axis("roll_left", "roll_right") if captured else 0.0, captured and Input.is_action_pressed("boost"), captured and Input.is_action_pressed("laser"))
@@ -573,7 +593,7 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   FleetCompanionArt.attack(mesh,str(bullet.get("style","")))
 
 func _server_finished(winner: int, reason: String) -> void:
- if match_mode == "free_roam":
+ if match_mode in ["free_roam","co_op"]:
   await api.request("/server/roam/end", {"match_id": match_id}, HTTPClient.METHOD_POST, server_key)
   return
  var results := {}
@@ -621,7 +641,7 @@ func _peer_disconnected(id: int) -> void:
  if not server_mode:
   return
  pending_peers.erase(id)
- if match_mode == "free_roam" and members.has(id):
+ if match_mode in ["free_roam","co_op"] and members.has(id):
   _leave_roam_account(str(members[id].profile.user_id))
  if arena is FreeRoamMatch:
   arena.army.remove_owner(id)
@@ -753,7 +773,7 @@ func _join_running_roam(id: int, account: Dictionary) -> void:
   return
  roam_joining_slots.append(index)
  var session_id := match_id
- var reply := await api.request("/server/roam/join", {"match_id": session_id, "user_id": account.user_id, "team": index / 3}, HTTPClient.METHOD_POST, server_key)
+ var reply := await api.request("/server/roam/join", {"match_id": session_id, "user_id": account.user_id, "team": 0 if match_mode=="co_op" else index / 3}, HTTPClient.METHOD_POST, server_key)
  roam_joining_slots.erase(index)
  if reply.has("error"):
   if _connected_peer(id): reject.rpc_id(id, str(reply.error))
@@ -787,7 +807,7 @@ func _join_running_roam(id: int, account: Dictionary) -> void:
   configurations.append(_serialize_stats(arena.ships[slot].stats))
   names.append(arena.ships[slot].callsign)
   crew_names.append(arena.ships[slot].crew_name)
- begin_match.rpc_id(id, configurations, names, slot_owners, crew_names, "free_roam")
+ begin_match.rpc_id(id, configurations, names, slot_owners, crew_names, match_mode)
 
 func _serialize_stats(stats: ShipStats) -> Dictionary:
  var result := {}
@@ -847,3 +867,32 @@ func receive_feedback(events: Array) -> void:
 @rpc("authority", "call_remote", "reliable")
 func combat_notice(message: String) -> void:
  if is_instance_valid(arena):arena.hud.feedback.notify(message,Color(1,.8,.4))
+
+@rpc("authority", "call_remote", "reliable", 2)
+func receive_frontier(data: Dictionary) -> void:
+ if not server_mode and arena is FreeRoamMatch:arena.frontier.apply_snapshot(data)
+
+func _frontier_completed(event_id: String,kind: String,contributors: Array) -> void:
+ var users: Array[String]=[]
+ for index in contributors:
+  if index not in range(6):continue
+  var owner:=slot_owners[index]
+  if members.has(owner) and not str(members[owner].profile.user_id) in users:users.append(str(members[owner].profile.user_id))
+ if users.is_empty():arena.frontier.shared_saved(true);return
+ contract_payload={"match_id":match_id,"event_id":event_id,"kind":kind,"participants":users}
+ _save_frontier_contract()
+
+func _save_frontier_contract() -> void:
+ if contract_busy or contract_payload.is_empty():return
+ contract_busy=true
+ var payload:=contract_payload.duplicate(true)
+ var reply:=await api.request("/server/roam/contract",payload,HTTPClient.METHOD_POST,server_key)
+ contract_busy=false
+ if payload.match_id!=match_id:return
+ if reply.has("error"):
+  contract_retry=5
+  for id in members:
+   if _connected_peer(id):army_notice.rpc_id(id,"CO-OP REWARD PENDING / server will retry")
+  return
+ contract_payload.clear()
+ if arena is FreeRoamMatch:arena.frontier.shared_saved(true)

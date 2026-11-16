@@ -1,74 +1,65 @@
-# Galactic Dominion — Planetfall Returns
+# Galactic Dominion — The Frontier
 
-A Godot 4.6.3 3D space-combat prototype with an original Nexus Archives fleet story, configurable 1–200 fighter fleets, five ship classes, persistent customization, extremely rare exploration components and self-hosted online spaceflight. Uses GDScript and procedural 3D assets; no paid assets or plugins required.
+A Godot 4.6.3 space-combat and exploration prototype with configurable 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions, a personal sanctuary and self-hosted online play. GDScript and procedural 3D assets; no paid packages required.
 
-## Play the current build
+## Play
 
-Download the Windows or Linux client from [v0.40.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.40.0). Extract the whole ZIP. On Windows run **GalacticDominion.exe**; no Godot installation is needed. Back up your commander profile before upgrading. Save schema remains 9, compatible with v0.39.1. Older pre-v0.39 builds cannot read it.
+Download [v0.41.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.41.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 10 reads previous saves, but older builds cannot read new saves.
 
-For source development, download/clone the `phase-40-wildlife-return` branch, open Godot 4.6.3, click **Import**, select `project.godot`, then press **F6** for the current scene or **F5** for the full project.
+For source development, clone the `phase-41-frontier` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
 
-## Start with Story / Journal
+## Fly your own course
 
-Press **O** or choose **STORY / JOURNAL**. **The Fractured Relay** now follows a frontier evacuation network caught between Marshal Veyr's Crimson fleet and the voices aboard a returned Eldritch ship. Sera is looking for her missing brother; Astra has concealed the expedition orders; Milo wants every journey to have a way home.
+Choose **Enter the Frontier**, then **O** for optional jobs, faction standing, companion protocols and home facilities. There is no mandatory campaign checklist. Peaceful Flight keeps raids and environmental damage off.
 
-1. Accept Astra's commission.
-2. **Lanterns over Varkhoss, 3v3:** defeat the Interdictors, then hold **G for three seconds within 95m** of the civilian relay to transmit its routes. Nearby Interdictors jam and drain it. Preserve at least 70% integrity for a one-time Lantern Keeper commendation (+25 salvage). The commission unlocks the Sprint Drive and Bloodforged hull.
-3. Recover a component cache in solo Free Roam: **hold K for two seconds within 60m** of a gold beacon. A journal waypoint points to the nearest available cache.
-4. Fit a non-standard engine to F1 in Fleet Hangar. The Sprint Drive is already owned; fitting applies on launch.
-5. **The ship that came home, 3v3:** defeat Mnemosyne's wardens, avoid the four-second anomaly warning, then hold **G for four seconds within 95m** of the returned vessel. The decoded recording unlocks the living hull and reveals the missing expedition's fate.
-6. **A door, not a weapon, 10v10:** choose a fracture protocol before launch. **Seal** requires three conduit handshakes (G, two seconds within 95m). **Preserve** requires escorting a memory core to its beacon: stay within 150m and clear enemy jammers inside 110m. Both require the enemy fleet defeated. Launching locks your chapter's choice.
-7. Read your debrief, then archive the transmission with Astra for the one-time **100 salvage** reward and your route's epilogue.
+- Rescue pods and repair disabled vessels: **hold F** with a clear path within **90m** (three or four seconds).
+- Escort couriers: stay within **150m** and clear hostile jammers inside **110m**.
+- Board a wreck: **F within 100m**, outside combat. Walk with your bot, hold **G within 4m for two seconds** at each of three consoles, avoid the pulsed security grid, then **E within 6m of the airlock** to return with the black box.
+- Decode component rumors after your first job or observatory upgrade. Recover the indicated real cache with **K**; clues do not guarantee a rare part.
+- After three completed jobs, combat-board batches can offer a siege captain. Break its three amber anchors to remove armor, then defeat it. Peaceful batches offer couriers instead.
 
-In-flight radio never pauses combat. The journal has Briefing, Recordings, Nexus dossiers and Sortie record tabs. Completed missions can be replayed from Sortie record. Replays keep your progression and do not repeat commission unlocks or chapter payouts; ordinary battle salvage still applies. A first-time commendation may be earned on a replay.
+Five completed slots generate a new board. Jobs have six-minute windows. Completed rewards save immediately and retry if saving fails. Abandoning, timing out or leaving an unfinished job gives no reward; active job progress restarts when the session ends. [Frontier guide and implementation](docs/FRONTIER.md).
 
-Your choice changes the final objective, transmissions and ending. This is a text-led solo opening chapter with three authored sorties, not a voiced cinematic campaign or an online story. Each sortie has an eight-minute deadline. Defeat leaves its objective retryable; save failures explain that progress was not recorded. Older completed saves retain their completion and can access enhanced replays without being paid twice. [Narrative, migration and controls](docs/NEXUS_FLEET_CAMPAIGN.md).
+## Reputation, companions and home
+
+Job completion adds **8 standing** with its patron; destroying a faction patrol costs **4**. At **+24** its patrols become friendly in solo space. At **−20** a faction intercepts you when you enter its sectors, once per sector per flight.
+
+Equip a non-human officer in **Fleet & collection → Crew** to spawn an orbiter. Choose its protocol in O: **Striker**, **Scout**, **Guardian** or **Engineer**. Protocols apply on the next deployment. Human crew do not spawn bots. Scouts extend salvage sensing; guardians intercept a nearby hostile missile every eight seconds; engineers repair hull after incoming damage stops. Support roles trade some attack damage for their utility.
+
+Spend salvage on a **repair dock**, **observatory/gallery** or **workshop** (three levels each). The workshop consumes sanctuary ore, fiber and bloom to fabricate selected permanent standard blueprints. Fit them in Fleet Hangar for your next deployment. Local facilities and roles stay separate from online accounts.
 
 ## Land, track and rescue wildlife
 
-**Planet expeditions** and **Wildlife sanctuary** are back on the main menu. Choose any of the three worlds, then deploy an owned bot or the loaner Pixlet. You can also fly to an owned planet/outpost in solo **Free Roam**, approach outside combat and press **L** to land. **Peaceful Flight** provides friendly world control and no raids. **J** opens the chart and explorer picker. Leaving the surface restores that same orbital session.
+Choose **Planet expeditions**, or approach an owned planet in solo flight and press **L**. **J** opens the chart and landing bot picker. **T** selects a species to track; its recent movement leaves a bounded footprint trail. Distant predators can hunt nearby passive wildlife away from your current encounter.
 
-On the ground, **T** tracks species, **G held for two seconds within 12m** scans, **LMB** stuns dangerous animals non-lethally and **C within 8m** captures a scanned, eligible creature. Dangerous fauna must reach half health first. Return to the landing ship and press **E within 10m** to deliver surveys and secured animals to the sanctuary. **B** switches the exploring bot at the ship; **F** gathers seeds. Your own creature party can be deployed with R, selected with N, ordered to attack with V and recalled with Z. Secured cargo remains saved; failed deliveries can be retried.
+Hold **G for two seconds within 12m** to scan. **LMB** stuns dangerous animals non-lethally; **C within 8m** captures a surveyed eligible creature. Dangerous fauna must reach half health first. **E within 10m of your landing ship** delivers surveys and secured cargo to the sanctuary. **B** switches exploring bots at the ship; **F** gathers seeds. R/N/V/Z deploy, select, attack with and recall your surface creature party. Delivery failures remain retryable. Creatures stay out of space combat; orbiting bot companions remain active.
 
-Wildlife uses restrained anatomical faces: smaller lateral eyes, neutral side jaw seams and no decorative brow marks. Jellyfish have distributed sensory organs; wisps have no paired face. Fish keep lidless eyes. Sanctuary and mature forms inherit the same anatomy. **Orbiting bot faces, their animations/attacks, Nexus hulls and the Fractured Relay story are unchanged.** The restored surface loop is solo-only. [Planet restoration and face notes](docs/PLANETFALL_RETURN.md).
+Planet animals retain restrained biological faces. Your bot companions keep their expressive faces. Landed trips return to the same orbital session.
 
-## Nexus faction ships
+## Online and other modes
 
-**Varkhoss Prime / Crimson Dominion:** angular blood-red armor, jagged fins, reactor seams and siege pylons. Campaign enemies trade speed and shielding for stronger hulls and laser fire.
+**Online → Launch Co-op Frontier** creates one allied team for up to six human pilots, with AI in empty ship slots. The lobby leader starts shared rescue, repair or escort work from O. The combat host validates participation, and the account service grants each eligible pilot a fixed reward once per event. Players may join an already running space session. PvP Free Roam, Fleet Royale, public profiles and trading remain available. Update clients and server together. [Windows PC hosting](server/README.md).
 
-**Ny'Zaroth / Eldritch World:** curved chitin plates, crescent silhouettes, luminous veins and cosmic cores. Campaign enemies have more speed and shield regeneration with lower hull/shield capacity.
+**Planet and wreck interiors are solo-only.** Online has six pilot slots, not 400 human players; Armada's extra fighters are AI. Host authority is trusted, not a hardened commercial anti-cheat service.
 
-Both faction appearances work across Interceptor, Skirmisher, Guardian, Bomber and Support. Class geometry and existing class abilities remain distinct. Faction unlocks are cosmetic; campaign AI stat tuning belongs to its encounter. Full teleportation and reality-fracture mechanics are not implemented. Armada reinforcement meshes remain shared by class/faction for efficiency.
+**Armada:** choose 1–200 fighters per side, asymmetric fleets, randomized sectors, asteroids, stars, black holes and temporary mega weapons. **Fleet Royale/Fleet War:** 3v3 or 10v10 last fleet standing. **Flight School:** safe interactive tutorial. [Armada](docs/ARMADA.md), [AI tuning](docs/ARMADA_AI.md).
 
-## Other modes
+## Rare ship parts
 
-- **Armada:** independently choose 1–200 fighters on each side, including asymmetric fights. The player's fleet count includes the pilot. Random sectors, sensor-limited contacts, asteroids, stars, black holes and temporary mega weapons. [Armada guide](docs/ARMADA.md), [AI tuning](docs/ARMADA_AI.md).
-- **Fleet Royale / Fleet War:** 3v3 or 10v10 last-fleet-standing combat.
-- **Flight School:** safe interactive flight/combat tutorial.
-- **Free Roam / Peaceful Flight:** space exploration, signals, faction ships, stations and salvage recovery.
-- **Fleet & collection:** permanent hulls, components, human/alien officers and appearances. Orbiting bot crew are selectable and eligible for rewards again; animal-themed ship skins remain archived.
-- **Online:** self-hosted six-pilot space sessions and marketplace; local and online inventories remain separate. Update server and clients together to v0.40.0. [Windows hosting](server/README.md).
+Hold **K for two seconds within 60m** of a gold space cache (6m on a planet). The first cache guarantees an uncommon part; twelve discoveries refresh a batch. Schematics save immediately, and duplicates grant 15 salvage. Later odds remain **legendary tier 1/4,096; mythic tier 1/65,536**. No pity guarantee or rumor bonus changes these rolls. Local discoveries remain separate from the online marketplace. [Exact odds](docs/COMPONENT_DISCOVERY.md).
 
-## Discover ship parts
+## Controls and settings
 
-Follow gold COMPONENT SALVAGE bearings in solo Free Roam, approach within **60m**, then hold **K for two seconds** with a clear path. The first recovery guarantees an uncommon part. Twelve recovered caches refresh the local batch. Parts save immediately as reusable schematics; fit them for the next deployment. Duplicates grant 15 salvage. Failed saves leave the cache available to retry.
+W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse aim; Q/E roll; Shift boost. LMB laser, **M missile**, R ability, Tab target. F1–F3 switch fleet ships; 1–5 give orders. Armada also uses [ / ] to cycle survivors. J chart, G scan/service, K recover parts, F job interaction, O Frontier board, H scenic HUD, Esc menu. Online flight continues while menus are open.
 
-Later cache odds: **legendary tier 1/4,096; mythic tier 1/65,536**. Four legendary and two mythic relic parts are cache-exclusive, with tradeoffs rather than automatic superiority. There is no pity guarantee. These discoveries remain solo-only. [Exact odds and components](docs/COMPONENT_DISCOVERY.md).
+Settings has **Low/Medium/High** graphics, larger menu text, reduced explosion flashes, mouse sensitivity/inversion, volume, fullscreen and input rebinding. Gamepad defaults: left stick moves, right stick aims, triggers fire, bumpers move vertically, A boosts, Y targets, X activates abilities, D-pad up scans/interacts, B captures on planets. Other actions can be assigned under **Controls / Rebind Inputs**. Axis defaults remain fixed; key, mouse and gamepad button bindings can be changed. Hardware controller feel still needs human playtesting.
 
-## Controls
+## Archived campaign
 
-W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse steering; Q/E roll; Shift boost. Left click laser, **M missiles**, R class ability, Tab target. F1–F3 switch lead ships; Fleet War supports F1–F10 and Armada additionally uses [ / ] to cycle survivors. 1–5 issue fleet commands. J star chart, G scan/service, K salvage recovery, O journal, H scenic HUD, Esc pause/menu. Online simulation continues while menus are open.
+The authored **Fractured Relay** and biological story are retained with their saves. `gameplay/campaign_enabled=false` disables campaign guidance and progression hooks by default. Developers can re-enable it with that setting or `GD_ENABLE_CAMPAIGN=1`; the older `GD_ENABLE_CREATURES=1` development mode also enables its campaign. Wildlife and companion flags remain independent.
 
-## Orbiting companions are back
-
-In **Fleet & collection → Fleet Hangar**, select a ship and equip a discovered non-human bot in its **CREW** slot. Pixlet, Cinderbit, Lunaflutter, Orbitot and Glimbloom are available again. Orbitot and Glimbloom can also be researched through the collection panel. Human officers do not spawn an orbiting bot. Existing companion ownership and fitting data remain valid. Companions keep their existing orbital animation and AI attacks; the Nexus ship models and spaceship campaign remain active.
-
-The independent setting `gameplay/companions_enabled=true` enables orbiters while `gameplay/wildlife_enabled=true` restores planet animals without changing the ship story. Animal-themed ship skins remain archived, preserving the Nexus hull direction.
-
-## Independent feature settings
-
-`gameplay/wildlife_enabled=true` restores surface landing, capturing and sanctuary care. `gameplay/companions_enabled=true` keeps orbital bots active. `gameplay/creatures_enabled=false` preserves the current Nexus story and hull art; that older bundled setting is a development/legacy-mode override, not the wildlife switch. The biological story remains preserved independently in saves. Animal-themed ship skins stay archived. See [implementation and compatibility](docs/PLANETFALL_RETURN.md).
+Past endings have small free-roam consequences: Seal adds a reconstruction tender's repair aura near Vesper; Preserve adds a contained memory echo and longer salvage bearings. No previous campaign is required to explore or progress. [Archived narrative](docs/NEXUS_FLEET_CAMPAIGN.md).
 
 ## Validation
 
-513 local Godot checks across twelve suites and 23 backend tests passed. These include 42 new restoration checks across all three worlds, real capture/delivery paths, saved rescues, unchanged campaigns and companion faces; 77 face/material/glTF checks; and the existing narrative/capture/care suites. Native Linux wildlife portraits, restored menu, selector and landed scene were inspected. Automated interactions are scripted; human balance and Windows GUI testing remain pending.
+702 Godot checks across 21 suites and 27 account-service tests passed locally, plus a real two-client HTTP/ENet co-op session. Linux Frontier board, wreck and settings renders were inspected. See [Frontier validation and remaining scope](docs/FRONTIER.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.

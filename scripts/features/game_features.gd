@@ -3,6 +3,8 @@ extends RefCounted
 ## Legacy bundled mode remains available; surface wildlife is independent.
 static func creatures_enabled() -> bool:
  return OS.get_environment("GD_ENABLE_CREATURES")=="1" or bool(ProjectSettings.get_setting("gameplay/creatures_enabled",false))
+static func campaign_enabled() -> bool:
+ return creatures_enabled() or OS.get_environment("GD_ENABLE_CAMPAIGN")=="1" or bool(ProjectSettings.get_setting("gameplay/campaign_enabled",false))
 static func wildlife_enabled() -> bool:
  if creatures_enabled():return true
  if OS.has_environment("GD_ENABLE_WILDLIFE"):return OS.get_environment("GD_ENABLE_WILDLIFE")=="1"

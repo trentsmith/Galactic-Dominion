@@ -20,7 +20,7 @@ func _ready() -> void:
  part(badge,Vector3(.22,1.5,-.46),Color(.4,1,1),true)
  var ring:=TorusMesh.new();ring.inner_radius=.75;ring.outer_radius=.8
  part(ring,Vector3(0,.04,0),color,true)
- var label:=Label3D.new();label.text=NAMES.get(npc_id,"Comms")+"\nO: COMMS & WORKSHOP";label.position.y=3.0;label.font_size=26;label.pixel_size=.009;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+ var label:=Label3D.new();label.text=NAMES.get(npc_id,"Comms")+("\nO: COMMS & WORKSHOP" if GameFeatures.campaign_enabled() else "\nO: FRONTIER FACILITIES");label.position.y=3.0;label.font_size=26;label.pixel_size=.009;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
  add_child(label)
 func part(mesh: Mesh,at: Vector3,color: Color,glow: bool=false) -> MeshInstance3D:
  var node:=MeshInstance3D.new();node.mesh=mesh;node.position=at;node.material_override=CartoonStyle.material(color,glow);add_child(node);return node

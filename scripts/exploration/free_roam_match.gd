@@ -8,6 +8,8 @@ signal landing_requested(index)
 var landing_bot_id := ""
 signal dock_requested
 
+var cooperative:=false
+var frontier: FrontierDirector
 var peaceful := false
 var scenic_hud := false
 var war: WorldWar
@@ -50,7 +52,7 @@ func _ready() -> void:
  var count := 3 if network_role == "offline" else 6
  for index in range(count):
   var ship := CombatShip.new()
-  ship.team = 0 if network_role == "offline" else index / 3
+  ship.team = 0 if network_role == "offline" or cooperative else index / 3
   ship.fleet_slot = index % 3
   ship.stats = profile.configured_stats(index) if profile != null else preconfigured_stats[index] if preconfigured_stats.size() == 6 else CLASSES[index % 3]
   ship.callsign = "Explorer %d" % (index + 1)
@@ -96,6 +98,7 @@ func _ready() -> void:
  war = WorldWar.new()
  war.battle = self
  _build_roam_ui()
+ frontier=FrontierDirector.new();frontier.battle=self;frontier.cooperative=cooperative;add_child(frontier)
  if network_role=="offline" and profile!=null:
   var salvage:=ComponentSalvage.new();salvage.profile=profile;salvage.host=self;add_child(salvage)
  if network_role == "server":
@@ -443,6 +446,7 @@ func discover_signal(index: int) -> bool:
 
 func _on_eliminated(ship: CombatShip, attacker: CombatShip) -> void:
  if network_role == "client": return
+ if network_role=="offline" and is_instance_valid(frontier):frontier.record_destruction(ship,attacker)
  if network_role == "server":
   respawns[ship] = 12.0
   if is_instance_valid(attacker) and attacker.team != ship.team:

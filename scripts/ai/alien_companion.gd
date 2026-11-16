@@ -9,6 +9,7 @@ var attacks := 0
 var attack_range := 320.0
 var attack_damage := 6.0
 var attack_interval := 1.4
+var support_clock:=0.0
 
 func _ready() -> void:
  visual = AlienVisual.new()
@@ -53,6 +54,13 @@ func _physics_process(delta: float) -> void:
  # Clients and hangar previews animate companions, but never generate damage.
  if not ship.alive or not ship.is_physics_processing(): return
  if ship.get_parent() is BattleMatch and ship.get_parent().network_role == "client": return
+ support_clock=maxf(0,support_clock-delta)
+ var role: String=ship.stats.companion_role
+ if role=="engineer" and ship.health.regen_delay<=0:ship.health.hull=minf(ship.health.max_hull,ship.health.hull+2*delta)
+ if role=="guardian" and support_clock<=0:
+  for shot in ship.get_parent().get_children():
+   if shot is SpaceProjectile and shot.team!=ship.team and shot.spec.tracking and shot.global_position.distance_to(ship.global_position)<35:
+    shot.queue_free();support_clock=8;SpaceEffects.burst(ship.get_parent(),global_position,Color(.4,1,.8),2);break
  attack_cooldown = maxf(0, attack_cooldown - delta)
  if attack_cooldown > 0 or float(ship.get_meta("spawn_protection", 0)) > 0: return
  var target := choose_target()
@@ -76,7 +84,7 @@ func fire_at(target: CombatShip) -> bool:
  if attack_cooldown > 0 or not ship.alive or not is_instance_valid(target) or not target.alive or float(ship.get_meta("spawn_protection",0)) > 0 or target.team == ship.team or ship.global_position.distance_to(target.global_position) > attack_range: return false
  var shot := SpaceProjectile.new()
  shot.spec = WeaponSpec.new()
- shot.spec.damage = attack_damage
+ shot.spec.damage = attack_damage*({"scout":.7,"guardian":.6,"engineer":.5}.get(ship.stats.companion_role,1.0))
  shot.spec.speed = 170
  shot.spec.lifetime = 2.5
  shot.spec.tracking = definition.species in ["Drakari","Moon Moth"]

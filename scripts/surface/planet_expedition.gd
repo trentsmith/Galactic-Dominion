@@ -14,6 +14,7 @@ var bot_definition: CollectibleDefinition
 var sensitivity:=.0025
 var inverted:=false
 var party: CreatureParty
+var ecology: WildlifeEcology
 var wilderness: WildernessStream
 var world: SurfaceWorld
 var bot: SurfaceBot
@@ -52,6 +53,7 @@ func _ready() -> void:
  for plant in world.flora_nodes:specimens.append(plant)
  wilderness=WildernessStream.new();wilderness.expedition=self;add_child(wilderness)
  party=CreatureParty.new();party.expedition=self;add_child(party)
+ ecology=WildlifeEcology.new();ecology.expedition=self;add_child(ecology)
  var engineer:=StoryNPC.new();engineer.npc_id="milo";engineer.position=Vector3(6,SurfaceWorld.height_at(6,2)+.2,2);add_child(engineer)
  var salvage:=ComponentSalvage.new();salvage.profile=profile;salvage.host=self;salvage.ground=true;salvage.context=definition.id;add_child(salvage)
  hud=SurfaceHUD.new();hud.expedition=self;add_child(hud)

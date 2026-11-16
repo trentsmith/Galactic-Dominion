@@ -39,6 +39,8 @@ func _physics_process(delta: float) -> void:
  var collision := get_world_3d().direct_space_state.intersect_ray(query)
  if not collision.is_empty():
   var body = collision.collider
+  if body is BossHardpoint and body.hit(spec.damage,shooter):
+   if is_instance_valid(shooter):shooter.hits+=1
   if body is CombatShip and body.team != team:
    impact(body,collision.position)
    if is_instance_valid(shooter):
@@ -54,7 +56,7 @@ func _physics_process(delta: float) -> void:
 func impact(body: CombatShip, at: Vector3) -> void:
  if not body.alive or body.team == team: return
  var attacker: CombatShip = shooter if is_instance_valid(shooter) else null
- body.health.damage(spec.damage,attacker,"missile" if spec.tracking else "laser")
+ body.health.damage(spec.damage*float(body.get_meta("boss_damage_scale",1.0)),attacker,"missile" if spec.tracking else "laser")
  if body.alive and body.health.protection > 0 and spec.slow_duration > 0:
   body.movement.apply_gravity_slow(spec.slow_duration)
  if spec.splash_radius <= 0: return
@@ -67,5 +69,5 @@ func impact(body: CombatShip, at: Vector3) -> void:
   query.exclude = excluded
   var collision := get_world_3d().direct_space_state.intersect_ray(query)
   if not collision.is_empty() and collision.collider != candidate:continue
-  candidate.health.damage(spec.damage*0.5,attacker,"missile splash")
+  candidate.health.damage(spec.damage*0.5*float(candidate.get_meta("boss_damage_scale",1.0)),attacker,"missile splash")
  SpaceEffects.burst(get_parent(),at,Color(1,0.35,0.9),spec.splash_radius*0.2)

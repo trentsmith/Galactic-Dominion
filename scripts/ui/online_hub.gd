@@ -95,6 +95,8 @@ func _ready() -> void:
  connect_tab.add_child(roam_buttons)
  button(roam_buttons, "LAUNCH FREE ROAM (LOBBY LEADER)", func():
   if not session.client_lobby.is_empty(): session.request_start.rpc_id(1, "free_roam"))
+ button(roam_buttons,"LAUNCH CO-OP FRONTIER",func():
+  if not session.client_lobby.is_empty():session.request_start.rpc_id(1,"co_op"))
  button(ready_buttons, "LEAVE LOBBY", func():
   session.disconnect_session()
   lobby_info.text = "Disconnected.")

@@ -57,6 +57,7 @@ class Store:
             CREATE TABLE IF NOT EXISTS matches(id TEXT PRIMARY KEY, roster TEXT NOT NULL, status TEXT NOT NULL, created REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS roam_sessions(match_id TEXT PRIMARY KEY REFERENCES matches(id));
             CREATE TABLE IF NOT EXISTS roam_receipts(event_id TEXT PRIMARY KEY, match_id TEXT NOT NULL REFERENCES matches(id), user_id TEXT NOT NULL, ship TEXT NOT NULL, created REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS frontier_receipts(match_id TEXT NOT NULL REFERENCES matches(id), event_id TEXT NOT NULL, kind TEXT NOT NULL, participants TEXT NOT NULL, created REAL NOT NULL, PRIMARY KEY(match_id,event_id));
             ''')
             columns = {r['name'] for r in db.execute('PRAGMA table_info(users)')}
             if 'active_match' not in columns: db.execute("ALTER TABLE users ADD COLUMN active_match TEXT NOT NULL DEFAULT ''")
@@ -84,6 +85,7 @@ class Store:
     def _profile(self, row):
         p = json.loads(row['profile'])
         p.setdefault('discovery_records', {k:dict(v) for k,v in p['inventory'].items()})
+        p.setdefault('frontier', {'completed': 0, 'reputation': 0})
         p.update(user_id=row['id'], commander_name=row['username'])
         return p
     def _save(self, db, uid, profile):
@@ -260,7 +262,7 @@ class Store:
                 db.execute("UPDATE offers SET status='refunded' WHERE id=?", (oid,))
             return {'resolved': oid}
     def start_match(self, mid, roster, mode="royale"):
-        if mode not in ["royale", "free_roam"]: raise ServiceError("Unknown game mode")
+        if mode not in ["royale", "free_roam", "co_op"]: raise ServiceError("Unknown game mode")
         if not isinstance(mid, str) or not 1 <= len(mid) <= 100 or not isinstance(roster, list) or not 1 <= len(roster) <= 6: raise ServiceError('Invalid roster')
         users = [entry.get('user_id') for entry in roster]
         if len(set(users)) != len(users) or any(type(e.get('team')) is not int or e['team'] not in [0,1] for e in roster): raise ServiceError('Invalid teams')
@@ -268,8 +270,8 @@ class Store:
             for uid in users: self._unlocked(self._user(db, uid))
             try: db.execute('INSERT INTO matches VALUES(?,?,?,?)', (mid, json.dumps(roster), 'live', time.time()))
             except sqlite3.IntegrityError: raise ServiceError('Match already exists', 409)
-            if mode == 'free_roam': db.execute('INSERT INTO roam_sessions VALUES(?)', (mid,))
-            for uid in users: db.execute('UPDATE users SET locked_until=?,active_match=? WHERE id=?', (time.time() + (120 if mode == 'free_roam' else 600), mid, uid))
+            if mode != 'royale': db.execute('INSERT INTO roam_sessions VALUES(?)', (mid,))
+            for uid in users: db.execute('UPDATE users SET locked_until=?,active_match=? WHERE id=?', (time.time() + (120 if mode != 'royale' else 600), mid, uid))
             profiles = [self._profile(self._user(db, uid)) for uid in users]
         return {'started': mid, 'profiles': profiles}
     def finish_match(self, mid, winner, metrics):
@@ -352,6 +354,28 @@ class Store:
             db.execute('UPDATE matches SET roster=? WHERE id=?', (json.dumps(roster),mid))
             db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (uid,mid))
         return {'left': uid}
+    def frontier_reward(self, mid, event_id, kind, participants):
+        rewards = {'rescue': 50, 'repair': 60, 'escort': 70}
+        if kind not in rewards or not isinstance(event_id, str) or not re.fullmatch(r'shared-[0-9]{1,10}', event_id): raise ServiceError('Invalid frontier job')
+        if not isinstance(participants, list) or not 1 <= len(participants) <= 6 or any(not isinstance(uid,str) for uid in participants) or len(set(participants)) != len(participants): raise ServiceError('Invalid job participants')
+        encoded = json.dumps(sorted(participants))
+        with self.transaction() as db:
+            session = self._roam_match(db, mid)
+            old = db.execute('SELECT * FROM frontier_receipts WHERE match_id=? AND event_id=?', (mid,event_id)).fetchone()
+            if old:
+                if old['kind'] != kind or old['participants'] != encoded: raise ServiceError('Job receipt does not match',409)
+                return {'already_settled': True}
+            roster = {entry['user_id'] for entry in json.loads(session['roster'])}
+            for uid in participants:
+                user = self._user(db,uid)
+                if uid not in roster or user['active_match'] != mid: raise ServiceError('Pilot is not active in this session',403)
+                p = self._profile(user)
+                p['salvage'] += rewards[kind]
+                p['frontier']['completed'] += 1
+                p['frontier']['reputation'] = min(100,p['frontier']['reputation']+8)
+                self._save(db,uid,p)
+            db.execute('INSERT INTO frontier_receipts VALUES(?,?,?,?,?)',(mid,event_id,kind,encoded,time.time()))
+        return {'settled': event_id, 'salvage_each': rewards[kind]}
     def roam_end(self, mid):
         with self.transaction() as db:
             row = db.execute('SELECT m.* FROM matches m JOIN roam_sessions r ON r.match_id=m.id WHERE m.id=?', (mid,)).fetchone()
@@ -363,7 +387,7 @@ class Store:
         return {'closed': mid}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.40.0'
+    server_version = 'GalacticDominion/0.41.0'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -374,7 +398,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.40.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.41.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:
@@ -393,6 +417,7 @@ class Handler(BaseHTTPRequestHandler):
                 elif path == '/server/roam/join': result = store.roam_join(data.get('match_id'), data.get('user_id'), data.get('team'))
                 elif path == '/server/roam/lease': result = store.roam_lease(data.get('match_id'))
                 elif path == '/server/roam/reward': result = store.roam_reward(data.get('match_id'), data.get('event_id'), data.get('user_id'), data.get('damage',0))
+                elif path == '/server/roam/contract': result = store.frontier_reward(data.get('match_id'), data.get('event_id'), data.get('kind'), data.get('participants'))
                 elif path == '/server/roam/leave': result = store.roam_leave(data.get('match_id'), data.get('user_id'))
                 elif path == '/server/roam/end': result = store.roam_end(data.get('match_id'))
                 elif path == '/server/finish': result = store.finish_match(data.get('match_id'), data.get('winner'), data.get('metrics', {}))

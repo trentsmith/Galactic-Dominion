@@ -11,6 +11,7 @@ static func burst(parent: Node, position: Vector3, color: Color, size: float = 4
  material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
  material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
  material.albedo_color = color
+ if FlightPreferences.reduced_flashes:material.albedo_color.a=.22;size*=.6
  mesh.material_override = material
  parent.add_child(mesh)
  mesh.global_position = position

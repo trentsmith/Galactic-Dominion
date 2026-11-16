@@ -31,6 +31,7 @@ func _ready() -> void:
  var scroll:=ScrollContainer.new();panel.add_child(scroll)
  var column:=VBoxContainer.new();column.custom_minimum_size.x=350;column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;column.add_theme_constant_override("separation",8);scroll.add_child(column)
  _label(column,"YOUR LITTLE WORLD",23)
+ _button(column,"FRONTIER FACILITIES / WORKSHOP",func():garden.get_parent().show_frontier())
  var name_edit:=LineEdit.new();name_edit.placeholder_text="Sanctuary name";name_edit.text=garden.state.name;name_edit.max_length=32;column.add_child(name_edit)
  _button(column,"RENAME PLANET",func():garden.state.name=name_edit.text.strip_edges().left(32);garden.save_and_refresh())
  var palette:=OptionButton.new();for text in ["Mint Meadow","Dream Lavender","Sunset Garden"]:palette.add_item(text)

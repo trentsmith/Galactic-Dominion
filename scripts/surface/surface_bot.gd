@@ -33,6 +33,8 @@ func _physics_process(delta: float) -> void:
  if not alive:return
  cooldown=maxf(0,cooldown-delta);hit_delay=maxf(0,hit_delay-delta)
  if hit_delay<=0:shield=minf(35,shield+delta*6)
+ if Input.mouse_mode==Input.MOUSE_MODE_CAPTURED:
+  var stick:=FlightPreferences.look();yaw-=stick.x*delta*2.2;pitch=clampf(pitch+stick.y*delta*1.8*(-1 if expedition.inverted else 1),-.9,.9)
  var controls:=read_controls()
  var input: Vector2=controls.get("move",Vector2.ZERO)
  var direction:=Basis(Vector3.UP,yaw)*Vector3(input.x,0,input.y)

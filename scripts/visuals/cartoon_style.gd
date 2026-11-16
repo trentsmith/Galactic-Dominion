@@ -37,7 +37,7 @@ static func ball(parent: Node3D, at: Vector3, dimensions: Vector3, color: Color,
 
 static func ui_theme() -> Theme:
  var theme := Theme.new()
- theme.default_font_size = 16
+ theme.default_font_size = 20 if FlightPreferences.large_text else 16
  for state in ["normal", "hover", "pressed", "focus", "disabled"]:
   var panel := StyleBoxFlat.new()
   panel.bg_color = Color(.055,.085,.11) if state == "normal" else Color(.10,.17,.20) if state == "hover" else Color(.08,.23,.24) if state == "pressed" else Color(.035,.055,.075)

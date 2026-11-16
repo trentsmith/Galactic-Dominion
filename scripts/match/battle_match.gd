@@ -261,4 +261,4 @@ func mode_name() -> String:
  return "%dv%d"%[team_size,enemy_team_size if enemy_team_size>0 else team_size]
 
 func local_story() -> bool:
- return network_role=="offline" and not GameFeatures.creatures_enabled() and profile!=null and NexusStoryData.MISSIONS.has(story_mission)
+ return GameFeatures.campaign_enabled() and network_role=="offline" and not GameFeatures.creatures_enabled() and profile!=null and NexusStoryData.MISSIONS.has(story_mission)

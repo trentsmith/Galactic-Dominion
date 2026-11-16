@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-40-wildlife-return]
+    branches: [phase-41-frontier]
   workflow_dispatch:
 permissions:
   contents: write
@@ -39,11 +39,11 @@ jobs:
           cat /tmp/game.log
           grep GALACTIC_FREE_ROAM_READY /tmp/game.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/game.log; then exit 1; fi
-      - name: Verify standalone Nexus journal
+      - name: Verify standalone Frontier board
         run: |
-          build/linux/GalacticDominion.x86_64 --headless --quit-after 30 -- --story > /tmp/journal.log 2>&1
+          build/linux/GalacticDominion.x86_64 --headless --quit-after 30 -- --frontier > /tmp/journal.log 2>&1
           cat /tmp/journal.log
-          grep GALACTIC_STORY_READY /tmp/journal.log
+          grep GALACTIC_FRONTIER_READY /tmp/journal.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/journal.log; then exit 1; fi
       - name: Verify standalone tutorial startup
         run: |
@@ -67,25 +67,25 @@ jobs:
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/sanctuary.log; then exit 1; fi
       - name: Verify planet return with Nexus story and companion faces
         run: |
-          godot --headless --path . --script res://tests/wildlife_return_test.gd --fixed-fps 60 > /tmp/wildlife-return.log 2>&1
+          GD_ENABLE_CAMPAIGN=1 godot --headless --path . --script res://tests/wildlife_return_test.gd --fixed-fps 60 > /tmp/wildlife-return.log 2>&1
           cat /tmp/wildlife-return.log
           grep 'WILDLIFE_RETURN_TEST: 42 checks, 0 failures' /tmp/wildlife-return.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/wildlife-return.log; then exit 1; fi
       - name: Verify orbiting companions with restored wildlife
         run: |
-          godot --headless --path . --script res://tests/orbiting_restore_test.gd --fixed-fps 60 > /tmp/orbiting.log 2>&1
+          GD_ENABLE_CAMPAIGN=1 godot --headless --path . --script res://tests/orbiting_restore_test.gd --fixed-fps 60 > /tmp/orbiting.log 2>&1
           cat /tmp/orbiting.log
           grep 'ORBITING_RESTORE_TEST: 11 checks, 0 failures' /tmp/orbiting.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/orbiting.log; then exit 1; fi
       - name: Verify both narrative protocols and objective rules
         run: |
-          godot --headless --path . --script res://tests/nexus_narrative_test.gd --fixed-fps 60 > /tmp/narrative.log 2>&1
+          GD_ENABLE_CAMPAIGN=1 godot --headless --path . --script res://tests/nexus_narrative_test.gd --fixed-fps 60 > /tmp/narrative.log 2>&1
           cat /tmp/narrative.log
           grep 'NEXUS_NARRATIVE_TEST: 53 checks, 0 failures' /tmp/narrative.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/narrative.log; then exit 1; fi
       - name: Verify ship-only campaign and preserved records
         run: |
-          godot --headless --path . --script res://tests/ship_campaign_test.gd --fixed-fps 60 > /tmp/ship-story.log 2>&1
+          GD_ENABLE_CAMPAIGN=1 godot --headless --path . --script res://tests/ship_campaign_test.gd --fixed-fps 60 > /tmp/ship-story.log 2>&1
           cat /tmp/ship-story.log
           grep 'SHIP_CAMPAIGN_TEST: 30 checks, 0 failures' /tmp/ship-story.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/ship-story.log; then exit 1; fi
@@ -132,6 +132,18 @@ jobs:
           python3 tests/test_army_network.py
           GD_TEST_COMPANION=crew_orbitot GD_TEST_VARIANT=variant_orbitot GD_TEST_HULL=skirmisher python3 tests/test_free_roam_network.py
           GD_TEST_COMPANION=crew_glimbloom GD_TEST_VARIANT=variant_glimbloom GD_TEST_HULL=guardian python3 tests/test_free_roam_network.py
+      - name: Verify Frontier exploration, persistence and co-op
+        run: |
+          godot --headless --path . --script res://tests/frontier_test.gd --fixed-fps 60 > /tmp/frontier.log 2>&1
+          cat /tmp/frontier.log
+          grep '0 failures' /tmp/frontier.log
+          if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/frontier.log; then exit 1; fi
+          godot --headless --path . --script res://tests/frontier_jobs_test.gd --fixed-fps 60 > /tmp/frontier-jobs.log 2>&1
+          cat /tmp/frontier-jobs.log
+          grep '0 failures' /tmp/frontier-jobs.log
+          if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/frontier-jobs.log; then exit 1; fi
+          python3 -m unittest discover -s tests -p 'test_*service.py'
+          python3 tests/test_frontier_network.py
       - name: Compare all three solo 10v10 presets
         run: |
           for preset in relaxed standard veteran; do
@@ -150,8 +162,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.40.0
+          tag=v0.41.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.40.0 — Planetfall Returns' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.41.0 — The Frontier' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

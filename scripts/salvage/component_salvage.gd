@@ -40,7 +40,7 @@ func refresh() -> void:
   SpaceModelFactory.mesh(cache,box,Vector3.ZERO,Color(.18,.26,.3),"SalvageContainer")
   var scale_value:=1.0 if ground else 7.0
   SpaceModelFactory.ring(cache,Vector3(0,.6*scale_value,0),.65*scale_value,.03*scale_value,Color(1,.72,.2),"RecoveryBeacon",true)
-  var label:=Label3D.new();label.text="COMPONENT SALVAGE\nHOLD K";label.position.y=2.3 if ground else 18;label.font_size=32;label.pixel_size=.012 if ground else .035;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED;label.visibility_range_end=65 if ground else 1000;cache.add_child(label);labels.append(label)
+  var label:=Label3D.new();label.text="COMPONENT SALVAGE\nHOLD K";label.position.y=2.3 if ground else 18;label.font_size=32;label.pixel_size=.012 if ground else .035;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED;label.visibility_range_end=65 if ground else bearing_range();cache.add_child(label);labels.append(label)
   cache.visible=not i in ComponentDiscovery.state(profile,context).opened
  placement_pending=true
 func settle_positions(expected_generation: int) -> void:
@@ -85,7 +85,7 @@ func tick(delta: float,held: bool) -> void:
  for label in labels:label.visible=not scenic
  hint.visible=Input.mouse_mode==Input.MOUSE_MODE_CAPTURED and not scenic
  if message_time>0:hint.text=message
- elif selected>=0 and distance<(65 if ground else 1000):
+ elif selected>=0 and distance<(65 if ground else bearing_range()):
   var camera: Camera3D=host.bot.camera if ground else host.camera
   var local:=camera.global_basis.inverse()*(caches[selected].global_position-actor.global_position).normalized()
   var bearing: String="BEHIND" if local.z>0 else "LEFT" if local.x<-.2 else "RIGHT" if local.x>.2 else "AHEAD"
@@ -106,3 +106,6 @@ func recover(index: int) -> Dictionary:
   if ground:host.status_message=message
   else:host.log_label.text=message
  return result
+
+func bearing_range() -> float:
+ return 1000.0+float(profile.frontier.facilities.observatory)*750.0+(1000.0 if profile.frontier.role=="scout" else 0.0)+(500.0 if profile.ship_story.ending=="preserve" else 0.0)

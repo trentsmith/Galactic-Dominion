@@ -58,6 +58,11 @@ func _physics_process(delta: float) -> void:
   state="duel";destination=expedition.party.units.values()[0].actor.global_position
   if skill_cooldown<=0 and global_position.distance_to(destination)<12:
    skill_cooldown=7;expedition.party.wild_skill(self)
+ elif ambient_animal("ambient_prey")!=null and distance>45:
+  var prey:=ambient_animal("ambient_prey");state="hunt";destination=prey.position
+  if position.distance_to(prey.position)<3 and attack_timer<=0:attack_timer=1.2;prey.hit(definition.damage*.5)
+ elif ambient_animal("ambient_flee")!=null and distance>45:
+  var threat:=ambient_animal("ambient_flee");state="flee";destination=position+(position-threat.position).normalized()*12
  elif decide_timer<=0:
   decide_timer=.25
   if Vector2(position.x,position.z).length()<13:
@@ -108,3 +113,9 @@ func _process(delta: float) -> void:
   if title.begins_with("LeafEar"):child.rotation.z=sin(face_clock*1.5+child.position.x)*.12+signf(child.position.x)*-.5
   elif title in ["FawnTail","PlumedTail"]:child.rotation.y=sin(face_clock*2.4)*.25
   elif title.begins_with("VeilStreamer"):child.rotation.x=sin(face_clock*1.2+child.position.x)*.12
+
+func ambient_animal(key: String) -> SurfaceFauna:
+ var id:=int(get_meta(key,0))
+ if id<=0 or not is_instance_id_valid(id):return null
+ var animal:=instance_from_id(id) as SurfaceFauna
+ return animal if animal!=null and animal.alive else null
