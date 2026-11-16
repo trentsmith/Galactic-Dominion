@@ -41,12 +41,14 @@ func _ready() -> void:
  column.add_theme_constant_override("separation",5)
  scroll.add_child(column)
  _label(column,"G A L A C T I C   D O M I N I O N",13,MINT)
- var title := _label(column,"Ready when\nyou are." if paused else "THE FRONTIER\nYour next discovery." if not GameFeatures.campaign_enabled() else "ARMADA\nYour fleet war.",46,INK)
+ var title := _label(column,"Ready when\nyou are." if paused else "PATHFINDERS\nYour frontier." if not GameFeatures.campaign_enabled() else "ARMADA\nYour fleet war.",46,INK)
  title.add_theme_constant_override("line_spacing",-5)
  var online: bool = is_instance_valid(host.battle) and host.battle.network_role != "offline"
- _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "Optional distress calls. Ancient wrecks.\nChoose your own course among the stars." if not GameFeatures.campaign_enabled() else "Choose 1–200 fighters on each side.\nNew sectors. Stronger AI. Gravity hazards.",15,MUTED)
+ _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "Chart a course. Mine a discovery.\nFind your next upgrade among the stars." if not GameFeatures.campaign_enabled() else "Choose 1–200 fighters on each side.\nNew sectors. Stronger AI. Gravity hazards.",15,MUTED)
  var primary := _button(column,"ResumeButton" if paused else "ArmadaButton","RESUME FLIGHT   >" if paused else "ENTER THE FRONTIER   >" if not GameFeatures.campaign_enabled() else "ARMADA / CHOOSE YOUR FLEETS   >",host.resume if paused else host.start_free_roam if not GameFeatures.campaign_enabled() else host.show_armada_setup,52)
  _primary_style(primary)
+ if not paused and not host.profile.journey.resume.is_empty():
+  _button(column,"ContinueFrontier","CONTINUE / "+FreeRoamWorld.NAMES[int(host.profile.journey.resume.region)].to_upper(),host.continue_frontier,36)
  if not paused:
   var quick := HBoxContainer.new();quick.add_theme_constant_override("separation",10);column.add_child(quick)
   _button(quick,"ExploreButton","FREE ROAM",host.start_free_roam,32).size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -80,14 +82,14 @@ func _ready() -> void:
  var footer := HBoxContainer.new();footer.add_theme_constant_override("separation",12);column.add_child(footer)
  _button(footer,"SettingsButton","Settings",func():host.show_settings(paused),30).flat=true
  _button(footer,"ControlsButton","Flight controls",_show_controls,30).flat=true
- _button(footer,"QuitButton","Quit",func():get_tree().quit(),30).flat=true
+ _button(footer,"QuitButton","Quit",host.quit_game,30).flat=true
  var right := Control.new();right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(right)
  var mark := _label(right,"N E X U S   /   F L E E T S   /   F R O N T I E R S",11,MINT)
  mark.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);mark.position=Vector2(-360,6)
  var caption := VBoxContainer.new();caption.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);caption.position=Vector2(-370,-105);caption.custom_minimum_size=Vector2(360,90);caption.add_theme_constant_override("separation",8);right.add_child(caption)
  _label(caption,"YOUR NEXT CHAPTER STARTS HERE",11,MINT)
  _label(caption,"A small ship.\nAn extraordinary universe.",25,INK)
- _label(caption,"Build a fleet. Follow the signal. Hold the relay.",12,MUTED)
+ _label(caption,"Chart a course. Gather. Build. Discover." if not GameFeatures.campaign_enabled() else "Build a fleet. Follow the signal. Hold the relay.",12,MUTED)
 
 func _build_preview() -> void:
  var display := SubViewportContainer.new()
@@ -147,7 +149,7 @@ func _show_controls() -> void:
  controls_popup.add_child(margin)
  var column:=VBoxContainer.new();column.add_theme_constant_override("separation",14);margin.add_child(column)
  _label(column,"A LITTLE FLIGHT SCHOOL",23,MINT)
- _label(column,"W / S    Forward / reverse\nA / D    Strafe · Space / Ctrl    Vertical\nMouse    Steer · Q / E    Roll\nShift    Boost · R    Ship ability\n\nLeft click    Laser · M    Missile\nTab    Target · F1–F3    Switch ship\nFleet War: F1–F10    Any allied ship\n1–5    Fleet commands\n\nJ    Star chart · G    Scan / service\nH    Scenic HUD · Esc    Pause / menu",15,INK)
+ _label(column,"W / S    Forward / reverse\nA / D    Strafe · Space / Ctrl    Vertical\nMouse    Steer · Q / E    Roll\nShift    Boost · R    Ship ability\n\nLeft click    Laser · M    Missile\nTab    Target · F1–F3    Switch ship\nFleet War: F1–F10    Any allied ship\n1–5    Fleet commands\n\nJ    Star chart · G    Scan / service\nO    Atlas / journey · P    Team ping\nF    Job / collect · K    Ship parts\nH    Scenic HUD · Esc    Pause / menu",15,INK)
  _label(column,"Peaceful flight has no raids or ion damage.\nFleet Royale has a shrinking battle zone.\nOnline play continues while menus are open.",13,MUTED)
  _button(column,"CloseControlsButton","GOT IT / BACK TO THE STARS",func():controls_popup.hide(),40)
- controls_popup.popup_centered(Vector2i(470,520))
+ controls_popup.popup_centered(Vector2i(490,600))

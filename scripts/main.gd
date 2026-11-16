@@ -21,6 +21,7 @@ var settings: ConfigFile = ConfigFile.new()
 var profile: PlayerProfile
 # Tests can redirect progression away from the real player's profile.
 var profile_path := "user://commander_profile.json"
+var quit_dialog: ConfirmationDialog
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -42,6 +43,7 @@ func _ready() -> void:
    get_tree().quit(1)
   return
  FlightPreferences.install()
+ get_tree().auto_accept_quit=false
  FlightPreferences.apply_node(get_tree().root)
  get_tree().node_added.connect(func(node):FlightPreferences.apply_id.call_deferred(node.get_instance_id()))
  var audio := SpaceAudio.new()
@@ -66,6 +68,8 @@ func _ready() -> void:
   start_tutorial()
  elif "--frontier" in arguments:
   show_frontier();print("GALACTIC_FRONTIER_READY")
+ elif "--atlas" in arguments or "--journey" in arguments:
+  start_free_roam(true);show_frontier();var screen: FrontierScreen=story_layer.get_child(0);screen.tab=5 if "--atlas" in arguments else 6;screen.refresh();print("GALACTIC_PATHFINDERS_READY")
  elif "--story" in arguments:
   show_story();print("GALACTIC_STORY_READY stage=%d"%ShipCampaign.stage(profile))
  elif "--free-roam" in arguments:
@@ -361,6 +365,7 @@ func start_free_roam(peaceful: bool = false) -> void:
 
 
 func _clear_surface() -> void:
+ save_frontier()
  if is_instance_valid(parked_roam): parked_roam.queue_free()
  parked_roam = null
  if is_instance_valid(sanctuary_scene):remove_child(sanctuary_scene);sanctuary_scene.queue_free()
@@ -624,3 +629,31 @@ func _exit_tree() -> void:
  # A landed session is deliberately detached; it still belongs to this host.
  if is_instance_valid(parked_roam):parked_roam.free()
  parked_roam=null
+
+func continue_frontier() -> void:
+ if profile==null or profile.journey.resume.is_empty():return
+ var checkpoint: Dictionary=profile.journey.resume.duplicate(true)
+ start_free_roam(bool(checkpoint.get("peaceful",false)))
+ battle.journey_log.restore(checkpoint)
+
+func save_frontier() -> bool:
+ var flight: FreeRoamMatch=battle as FreeRoamMatch if battle is FreeRoamMatch else parked_roam
+ return flight.journey_log.save_checkpoint() if is_instance_valid(flight) and flight.network_role=="offline" else true
+
+func quit_game() -> void:
+ if is_instance_valid(quit_dialog):return
+ var reason:=""
+ if not save_frontier():reason="Your journey could not be saved. "+profile.save_error+"\nKeep playing to retry from O, or quit without saving the latest progress."
+ elif is_instance_valid(surface) and not surface.pending.is_empty():reason="Unextracted surveys will be lost. Keep playing and deliver with E at the landing ship, or quit without these surveys. Secured transport stays saved."
+ elif surface is DerelictExpedition:reason="Your orbital job is saved, but wreck console progress and unsecured black-box data will restart. Keep exploring to return through the airlock, or quit now."
+ if reason.is_empty():get_tree().quit();return
+ var previous_mouse:=Input.mouse_mode
+ var previous_pause:=get_tree().paused
+ if not (is_instance_valid(battle) and battle.network_role!="offline"):get_tree().paused=true
+ quit_dialog=ConfirmationDialog.new();quit_dialog.title="Leave this expedition?";quit_dialog.dialog_text=reason;quit_dialog.ok_button_text="QUIT WITHOUT UNSAVED PROGRESS";quit_dialog.cancel_button_text="KEEP PLAYING";add_child(quit_dialog)
+ quit_dialog.confirmed.connect(func():get_tree().quit())
+ quit_dialog.canceled.connect(func():quit_dialog.queue_free();quit_dialog=null;get_tree().paused=previous_pause;Input.mouse_mode=previous_mouse)
+ quit_dialog.popup_centered(Vector2i(600,180));Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+
+func _notification(what: int) -> void:
+ if what==NOTIFICATION_WM_CLOSE_REQUEST and profile!=null:quit_game()

@@ -1,12 +1,24 @@
-# Galactic Dominion — The Frontier
+# Galactic Dominion — Pathfinders
 
 A Godot 4.6.3 space-combat and exploration prototype with configurable 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions, a personal sanctuary and self-hosted online play. GDScript and procedural 3D assets; no paid packages required.
 
 ## Play
 
-Download [v0.41.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.41.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 10 reads previous saves, but older builds cannot read new saves.
+Download [v0.42.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.42.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
 
-For source development, clone the `phase-41-frontier` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
+For source development, clone the `phase-42-pathfinders` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
+
+## New in Pathfinders
+
+**O → Field atlas** remembers useful destinations, surveyed places and creature records. Resource contacts respect sensor range. Search/filter, set a course with distance/bearing guidance, save up to twelve personal beacons, or right-click the **J** chart to drop a waypoint.
+
+**Space mining:** shoot a glowing vein to fracture it, then hold **F for one second within 75m** with a clear path. Ore, crystal and alloy feed your home workshop, including Vector Engine and Crystal Shield recipes. Completed deposits save; legendary/mythic relic odds are unchanged.
+
+**O → Journey & badges:** eight optional goals, pinned or completely unpinned, with one-time salvage rewards. **P / middle click / right-stick press** pings your aim for allies; Shift+P sends Danger and Ctrl+P sends Regroup.
+
+**Continue** restores your mode at the last serviced station and optional job progress. Checkpoints save every twelve seconds and when leaving/quitting; they start fresh NPC fleets rather than restoring an entire universe. Unsecured wreck data and unextracted surveys still require their normal exit/delivery. [Guide and save boundaries](docs/PATHFINDERS.md).
+
+[Eight-game comparison, implemented gaps and remaining priorities](docs/GAMEPLAY_REVIEW.md). This is a focused comparison of relevant games, not a claim to have analyzed every popular game.
 
 ## Fly your own course
 
@@ -18,7 +30,7 @@ Choose **Enter the Frontier**, then **O** for optional jobs, faction standing, c
 - Decode component rumors after your first job or observatory upgrade. Recover the indicated real cache with **K**; clues do not guarantee a rare part.
 - After three completed jobs, combat-board batches can offer a siege captain. Break its three amber anchors to remove armor, then defeat it. Peaceful batches offer couriers instead.
 
-Five completed slots generate a new board. Jobs have six-minute windows. Completed rewards save immediately and retry if saving fails. Abandoning, timing out or leaving an unfinished job gives no reward; active job progress restarts when the session ends. [Frontier guide and implementation](docs/FRONTIER.md).
+Five completed slots generate a new board. Jobs have six-minute windows. Completed rewards save immediately and retry if saving fails. Abandoning, timing out or leaving an unfinished job gives no reward; job checkpoints can be continued at your last safe dock. [Frontier guide and implementation](docs/FRONTIER.md).
 
 ## Reputation, companions and home
 
@@ -26,7 +38,7 @@ Job completion adds **8 standing** with its patron; destroying a faction patrol 
 
 Equip a non-human officer in **Fleet & collection → Crew** to spawn an orbiter. Choose its protocol in O: **Striker**, **Scout**, **Guardian** or **Engineer**. Protocols apply on the next deployment. Human crew do not spawn bots. Scouts extend salvage sensing; guardians intercept a nearby hostile missile every eight seconds; engineers repair hull after incoming damage stops. Support roles trade some attack damage for their utility.
 
-Spend salvage on a **repair dock**, **observatory/gallery** or **workshop** (three levels each). The workshop consumes sanctuary ore, fiber and bloom to fabricate selected permanent standard blueprints. Fit them in Fleet Hangar for your next deployment. Local facilities and roles stay separate from online accounts.
+Spend salvage on a **repair dock**, **observatory/gallery** or **workshop** (three levels each). The workshop consumes sanctuary ore, fiber and bloom to fabricate selected permanent standard blueprints. Fit them in Fleet Hangar for your next deployment. Local facilities, mining and roles stay separate from online accounts.
 
 ## Land, track and rescue wildlife
 
@@ -62,4 +74,4 @@ Past endings have small free-roam consequences: Seal adds a reconstruction tende
 
 ## Validation
 
-706 Godot checks across 21 suites and 27 account-service tests passed locally, plus a real two-client HTTP/ENet co-op session. Linux Frontier board, wreck and settings renders were inspected. See [Frontier validation and remaining scope](docs/FRONTIER.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.
+777 local Godot checks across 23 suites passed, including 71 new Pathfinders/checkpoint checks. The updated two-client HTTP/ENet test also passed shared pings. Linux atlas, mining and journey renders were inspected. See [Frontier validation and remaining scope](docs/FRONTIER.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.

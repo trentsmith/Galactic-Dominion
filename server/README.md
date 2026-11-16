@@ -4,7 +4,7 @@ Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with
 
 ## One-click Windows host package
 
-Download **Galactic-Dominion-Server-Windows.zip** from [the v0.41.0 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.41.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
+Download **Galactic-Dominion-Server-Windows.zip** from [the v0.42.0 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.42.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
 
 The server window prints the PC's LAN addresses. Friends on your same network run the player download, open Online, put that IP in Combat Server Address and click **Use This Address For A Local-Network Host**. The shortcut sets the account URL to `http://HOST:8080`. Clients on the hosting PC can use `127.0.0.1`. Connection preferences remember the address and username.
 
@@ -34,7 +34,7 @@ Equip an owned alien in **Online Fleet → Crew** before joining. Its companion 
 
 The host also runs recurring Crimson/Pelagian/Eldritch invasions, hostile ion storms and ship-held outposts (the archived creature army is not deployed in space). J shows a seven-region star chart, raid briefing and army orders. G within 100m surveys a landmark for the session, without inventory rewards. Online landing onto solo surfaces is disabled.
 
-Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.41.0 game build is required on the server and every client.
+Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.42.0 game build is required on the server and every client.
 
 ## Explicit launch command
 
@@ -98,4 +98,9 @@ This is a self-hosted multiplayer prototype with interpolated server snapshots. 
 
 Ready all connected pilots, then the lobby leader chooses **LAUNCH CO-OP FRONTIER**. All six pilot hulls are allied; AI fills empty slots, and another pilot may join the active space session. Press **O** during flight: the leader requests a shared rescue, repair or escort job. Hold **F** within 90m for rescue/repair, or stay within 150m of the escort and clear nearby jammers. The host validates participation; eligible accounts receive 50/60/70 salvage and +8 council standing exactly once per completed event. Refresh Online Fleet to see the saved balance.
 
-NPC encounters, faction war and ordinary kill rewards remain active. Co-op does not enable friendly-fire damage between pilot hulls. Shared planet/wreck interiors are not implemented; local facilities and companion protocols do not transfer to the online economy. Up to six human pilots are supported, with AI NPCs in the wider world. The star chart uses **J**, missiles **M**. All players and the host must use v0.41.0.
+NPC encounters, faction war and ordinary kill rewards remain active. Co-op does not enable friendly-fire damage between pilot hulls. Shared planet/wreck interiors are not implemented; local facilities and companion protocols do not transfer to the online economy. Up to six human pilots are supported, with AI NPCs in the wider world. The star chart uses **J**, missiles **M**. All players and the host must use v0.42.0.
+
+
+## Shared navigation pings in v0.42
+
+Press P/middle click/right-stick press to mark your aim, Shift+P for Danger or Ctrl+P for Regroup. O → Field atlas also has ping buttons. The host computes the location from the pilot's ship; only allies receive it. A pilot can keep three markers for 45 seconds, with a two-second cooldown. Mining, personal beacons and journey badges remain local; online courses are temporary. Update every client and host together.

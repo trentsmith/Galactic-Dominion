@@ -108,8 +108,7 @@ func recover(index: int) -> Dictionary:
  return result
 
 func bearing_range() -> float:
- var scout:=false
+ var ship: CombatShip
  if not ground and host is FreeRoamMatch and host.pilot!=null and is_instance_valid(host.pilot.ship):
-  var ship: CombatShip=host.pilot.ship
-  scout=ship.stats.companion_role=="scout" and is_instance_valid(ship.companion)
- return 1000.0+float(profile.frontier.facilities.observatory)*750.0+(1000.0 if scout else 0.0)+(500.0 if profile.ship_story.ending=="preserve" else 0.0)
+  ship=host.pilot.ship
+ return JourneySensors.range_for(profile,ship)

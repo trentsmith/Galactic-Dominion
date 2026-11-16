@@ -10,6 +10,10 @@ signal dock_requested
 
 var cooperative:=false
 var frontier: FrontierDirector
+var mining: MiningField
+var journey_log: JourneyRecorder
+var navigation: NavigationBeacon
+var pings: TeamPings
 var peaceful := false
 var scenic_hud := false
 var war: WorldWar
@@ -101,6 +105,10 @@ func _ready() -> void:
  frontier=FrontierDirector.new();frontier.battle=self;frontier.cooperative=cooperative;add_child(frontier)
  if network_role=="offline" and profile!=null:
   var salvage:=ComponentSalvage.new();salvage.profile=profile;salvage.host=self;add_child(salvage)
+ mining=MiningField.new();mining.battle=self;add_child(mining)
+ journey_log=JourneyRecorder.new();journey_log.battle=self;add_child(journey_log)
+ navigation=NavigationBeacon.new();navigation.battle=self;add_child(navigation)
+ pings=TeamPings.new();pings.battle=self;add_child(pings)
  if network_role == "server":
   hud.visible = false
   map_panel.get_parent().visible = false
@@ -279,6 +287,10 @@ func toggle_chart() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if map_panel.visible else Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:
+ if event.is_action_pressed("ping") and network_role!="server" and Input.mouse_mode==Input.MOUSE_MODE_CAPTURED:
+  var kind:=0
+  if event is InputEventKey:kind=2 if event.ctrl_pressed else 1 if event.shift_pressed else 0
+  pings.request(kind);get_viewport().set_input_as_handled();return
  if GameFeatures.wildlife_enabled() and event.is_action_pressed("surface_land"):
   for index in range(3):
    if can_land(index):
@@ -392,6 +404,7 @@ func service_ship(ship: CombatShip, whole_fleet: bool = false) -> bool:
   if member.alive and member.position.distance_to(ship.position) < 250 and safe_to_service(member):
    member.health.configure(member.stats)
    member.movement.boost_energy = member.stats.boost_capacity
+ if network_role=="offline" and ship==pilot.ship and is_instance_valid(journey_log):journey_log.docked(region)
  log_label.text = "Station service complete / hull, shields and boost restored."
  return true
 
@@ -529,8 +542,9 @@ func survey_landmark(owner: int, ship: CombatShip) -> String:
   if ship.position.distance_to(landmark.position) > 100: continue
   var record := "%d.%d" % [owner, landmark.region]
   if surveyed.has(record): return "Landmark already surveyed this session."
+  if profile != null and not profile.exploration_records.has("open.landmark.%d"%landmark.region):
+   if not profile.record_discovery("open.landmark.%d" % landmark.region, landmark.name):return "SURVEY NOT SAVED / "+profile.save_error
   surveyed[record] = true
-  if profile != null: profile.record_discovery("open.landmark.%d" % landmark.region, landmark.name)
   return "SURVEY COMPLETE / " + landmark.name
  return ""
 

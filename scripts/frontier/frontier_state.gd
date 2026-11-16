@@ -4,7 +4,7 @@ extends RefCounted
 const FACTIONS={"frontier":"Frontier Council","crimson":"Crimson Dominion","pelagian":"Pelagian Concord","eldritch":"Eldritch Host"}
 const ROLES=["striker","scout","guardian","engineer"]
 const FACILITIES={"repair":{"name":"Repair dock","description":"Repairs fleet hulls outside combat in solo Free Roam (+0.6 hull/s per level)."},"observatory":{"name":"Observatory & collection gallery","description":"Extends salvage bearings and distress sensing; displays fitted ships at your home."},"workshop":{"name":"Fabrication workshop","description":"Craft permanent standard component blueprints using sanctuary materials."}}
-const RECIPES={"engine_sprint":{"ore":4,"fiber":2},"shield_recovery":{"ore":5,"bloom":3},"utility_reserve":{"ore":3,"fiber":3}}
+const RECIPES={"engine_sprint":{"ore":4,"fiber":2},"shield_recovery":{"ore":5,"bloom":3},"utility_reserve":{"ore":3,"fiber":3},"engine_vector":{"ore":10,"crystal":6},"shield_crystal":{"ore":8,"alloy":6,"crystal":4}}
 static func defaults() -> Dictionary:
  var rng:=RandomNumberGenerator.new();rng.randomize()
  return {"seed":rng.randi_range(1,2147483646),"generation":0,"done":[],"completed":0,"intel":0,"reputation":{"frontier":0,"crimson":0,"pelagian":0,"eldritch":0},"role":"striker","facilities":{"repair":0,"observatory":0,"workshop":0},"log":[]}

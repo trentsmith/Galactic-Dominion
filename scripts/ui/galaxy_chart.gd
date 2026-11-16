@@ -12,6 +12,11 @@ func point(region: int) -> Vector2:
 func _draw() -> void:
  draw_rect(Rect2(Vector2.ZERO, size), Color(.025, .04, .09))
  var font := ThemeDB.fallback_font
+ if is_instance_valid(battle.navigation) and not battle.navigation.route().is_empty():
+  var at:=JourneyState.vector(battle.navigation.route().at)
+  var pin:=Vector2(45+(at.x+6500)/13500*450,25+(1000-at.z)/10000*175).clamp(Vector2(5,5),size-Vector2(5,5))
+  draw_circle(pin,7,Color(.45,1,.8),false,2)
+  draw_string(font,pin+Vector2(10,15),"COURSE",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color(.45,1,.8))
  for index in range(1, FreeRoamWorld.CENTERS.size()):
   draw_line(point(index - 1), point(index), Color(.2, .35, .5), 1)
  for index in range(FreeRoamWorld.CENTERS.size()):
@@ -25,6 +30,9 @@ func _draw() -> void:
   var marker := Vector2(45 + (position.x + 6500) / 13500 * 450, 25 + (1000 - position.z) / 10000 * 175)
   draw_circle(marker.clamp(Vector2(5,5),size-Vector2(5,5)), 3, Color.WHITE)
 func _gui_input(event: InputEvent) -> void:
+ if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_RIGHT and is_instance_valid(battle.navigation):
+  var at:=Vector3((event.position.x-45)/450*13500-6500,battle.pilot.ship.position.y,1000-(event.position.y-25)/175*10000)
+  battle.navigation.set_route({"id":"chart-pin","name":"Chart waypoint","kind":"beacon","at":JourneyState.pack(at)});accept_event();return
  if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
   for region in range(FreeRoamWorld.CENTERS.size()):
    if event.position.distance_to(point(region)) < 20:

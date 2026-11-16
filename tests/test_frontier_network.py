@@ -40,7 +40,7 @@ def main():
                 raise AssertionError('Contract endpoint lacked server authentication')
             except HTTPError as error:assert error.code==403
             log=(tmp/'server.log').read_text();assert 'SCRIPT ERROR' not in log and 'ERROR:' not in log,log
-            print('FRONTIER_NETWORK_PASS: two allied clients, late join, host-only jobs, replicated repair, fleet switching, individual persistent rewards and protected endpoint')
+            print('FRONTIER_NETWORK_PASS: two allied clients, late join, host-only jobs, replicated repair and team pings, fleet switching, individual persistent rewards and protected endpoint')
         finally:
             for process in processes:
                 if process.poll() is None:process.terminate()

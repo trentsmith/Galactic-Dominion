@@ -26,12 +26,21 @@ func refresh() -> void:
  label(layout,"FRONTIER / FLY YOUR OWN COURSE",27)
  label(layout,"Optional distress calls, discovered wrecks, faction standing and your home base. The scripted campaign is archived.",14)
  var tabs:=TabBar.new()
- for words in ["Distress board","Factions & rumors","Companion protocols","Home facilities","Log & archive"]:tabs.add_tab(words)
+ for words in ["Distress board","Factions & rumors","Companion protocols","Home facilities","Log & archive","Field atlas","Journey & badges"]:tabs.add_tab(words)
  tabs.current_tab=tab;tabs.tab_changed.connect(func(value):tab=value;refresh());layout.add_child(tabs)
  var scroll:=ScrollContainer.new();scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;layout.add_child(scroll)
  body=VBoxContainer.new();body.custom_minimum_size.x=1000;body.size_flags_horizontal=Control.SIZE_EXPAND_FILL;body.add_theme_constant_override("separation",12);scroll.add_child(body)
  var online: bool=host.battle is FreeRoamMatch and host.battle.network_role!="offline"
- if online:shared_board()
+ if tab==5:
+  var flight: FreeRoamMatch=host.battle if host.battle is FreeRoamMatch else host.parked_roam
+  if is_instance_valid(flight) and flight.is_inside_tree():
+   var atlas:=AtlasPage.new();atlas.host=host;atlas.battle=flight;body.add_child(atlas)
+  else:label(body,"Enter Free Roam to browse real station, landmark and resource positions. Your saved creature surveys remain in the discovery records.")
+ elif tab==6:
+  if online:label(body,"Personal journey badges belong to your local exploration save. Online rewards remain in your host's account service.")
+  else:
+   var page:=JourneyPage.new();page.host=host;body.add_child(page)
+ elif online:shared_board()
  else:
   match tab:
    0:jobs()
@@ -43,8 +52,10 @@ func refresh() -> void:
  var row:=HBoxContainer.new();row.add_theme_constant_override("separation",12);layout.add_child(row)
  button(row,"CLOSE / O OR ESC",host.close_story,"CloseFrontier")
  if not online:
-  button(row,"ENTER FREE ROAM",func():launch(false),"LaunchFrontier")
-  button(row,"PEACEFUL EXPLORATION",func():launch(true))
+  button(row,"RETURN TO FLIGHT" if host.battle is FreeRoamMatch else "ENTER FREE ROAM",func():
+   if host.battle is FreeRoamMatch:host.close_story()
+   else:launch(false),"LaunchFrontier")
+  button(row,"NEW PEACEFUL FLIGHT",func():launch(true))
 func launch(peaceful: bool) -> void:
  if host.surface is DerelictExpedition:notice="Return to orbit through the wreck airlock or pause menu first.";refresh();return
  if not host.story_can_travel():notice=host.profile.story_message;refresh();return

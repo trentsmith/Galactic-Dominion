@@ -7,6 +7,8 @@ var request_sent:=false
 var switched:=false
 var seen:=false
 var finishing:=false
+var ping_sent:=false
+var ping_seen:=false
 func _initialize() -> void:call_deferred("run")
 func run() -> void:
  role=OS.get_environment("GD_TEST_USER")
@@ -37,9 +39,15 @@ func _process(delta: float) -> bool:
    main.network.ship_event.rpc_id(1,"switch",1)
    main.network.ship_event.rpc_id(1,"frontier_start",0) # Nonleader request must be ignored.
  if role=="Coop_A" and clock>9 and not request_sent:request_sent=true;print("COOP_JOB_REQUEST");main.network.ship_event.rpc_id(1,"frontier_start",1)
+ for ping in roam.pings.records:
+  if ping.kind==1 and ping.name=="Coop_A":ping_seen=true
  if not roam.frontier.active.is_empty():
   if not seen:print("COOP_BEACON_RECEIVED")
   seen=true
+  if role=="Coop_A" and not ping_sent:
+   ping_sent=true
+   main.network.ship_event.rpc_id(1,"ping",1)
+   main.network.ship_event.rpc_id(1,"ping",1) # Host cooldown must reject the duplicate.
   Input.mouse_mode=Input.MOUSE_MODE_CAPTURED;Input.action_press("frontier_use")
  elif seen and not finishing:finishing=true;finish()
  return false
@@ -47,7 +55,8 @@ func finish() -> void:
  Input.action_release("frontier_use")
  var reply: Dictionary=await main.online_api.refresh()
  var account: Dictionary=main.online_api.account
+ if not ping_seen:push_error("Allied team ping did not replicate");quit(1);return
  if reply.has("error") or account.frontier.completed!=1 or account.salvage!=260:push_error("Shared reward missing "+str(account));quit(1);return
  if role=="Coop_B" and main.network._controlled_index(main.network.peer_id)!=4:push_error("Second group switched into another player's fleet");quit(1);return
- print("COOP_CLIENT_PASS: "+role+" / shared signal, allied team, switching and individual online reward")
+ print("COOP_CLIENT_PASS: "+role+" / shared signal, allied team ping, switching and individual online reward")
  main.network.disconnect_session();await create_timer(.7).timeout;main.queue_free();await process_frame;quit(0)

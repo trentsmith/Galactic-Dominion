@@ -93,14 +93,14 @@ func _peer_connected(id: int) -> void:
 func _connected() -> void:
  loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.41.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.42.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.41.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.42.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -359,6 +359,8 @@ func ship_event(action: String, argument: int = 0) -> void:
   inputs.erase(sender)
  elif ship.alive:
   if arena is FreeRoamMatch:
+   if action=="ping":
+    arena.pings.add_ping(sender,ship,argument);return
    if action=="frontier_start":
     if match_mode=="co_op" and sender==members.keys()[0] and argument in range(3):
      arena.frontier.start_shared(["rescue","repair","escort"][argument],ship)
@@ -488,6 +490,8 @@ func _physics_process(delta: float) -> void:
      if arena is FreeRoamMatch and army_snapshot_clock >= 0.2:
       receive_army.rpc_id(id, arena.army.snapshot())
       receive_frontier.rpc_id(id,arena.frontier.snapshot())
+      var controlled:=_controlled_index(id)
+      if controlled>=0:receive_pings.rpc_id(id,arena.pings.snapshot(arena.ships[controlled].team))
      receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
      if not pending_feedback.is_empty():receive_feedback.rpc_id(id,pending_feedback)
    pending_feedback.clear()
@@ -645,6 +649,7 @@ func _peer_disconnected(id: int) -> void:
   _leave_roam_account(str(members[id].profile.user_id))
  if arena is FreeRoamMatch:
   arena.army.remove_owner(id)
+  arena.pings.forget_owner(id)
  members.erase(id)
  inputs.erase(id)
  loading_peers.erase(id)
@@ -896,3 +901,7 @@ func _save_frontier_contract() -> void:
   return
  contract_payload.clear()
  if arena is FreeRoamMatch:arena.frontier.shared_saved(true)
+
+@rpc("authority", "call_remote", "reliable", 2)
+func receive_pings(data: Array) -> void:
+ if not server_mode and arena is FreeRoamMatch:arena.pings.apply_snapshot(data)

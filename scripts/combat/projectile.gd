@@ -39,6 +39,7 @@ func _physics_process(delta: float) -> void:
  var collision := get_world_3d().direct_space_state.intersect_ray(query)
  if not collision.is_empty():
   var body = collision.collider
+  if body is MineralVein:body.strike(spec.damage,shooter)
   if body is BossHardpoint and body.hit(spec.damage,shooter):
    if is_instance_valid(shooter):shooter.hits+=1
   if body is CombatShip and body.team != team:

@@ -1,5 +1,7 @@
 # The Frontier — v0.41
 
+Historical notes: v0.42 adds a field atlas, mining and optional job checkpoints. See [Pathfinders](PATHFINDERS.md) for current save behavior.
+
 The campaign is disabled through `GameFeatures.campaign_enabled()`, rather than deleting or commenting out interdependent files. Its profile records and source remain available. Optional jobs never gate landing, hangar access, factions or facilities. O opens the Frontier board; the title screen starts open-world flight.
 
 ## Implemented update ideas

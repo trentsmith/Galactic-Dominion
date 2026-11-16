@@ -1,16 +1,17 @@
-Galactic Dominion v0.41.0 — The Frontier
+Galactic Dominion v0.42.0 — Pathfinders
 
-Free roam is now the primary experience. The scripted campaign is disabled by default, with its code and saved progress retained for later use.
+A connected free-roam loop: discover a useful destination, remember it, gather materials, improve a ship and continue your journey later. The scripted campaign remains disabled by default and preserved in saves.
 
-- Optional rescue, repair, escort, wreck-recovery and rare-component rumor jobs, plus siege captains with exposed weak points.
-- Solo faction standing, allied/wanted patrol reactions and small world effects from previous campaign endings.
-- Striker, Scout, Guardian and Engineer companion protocols.
-- Walkable derelict interiors with power consoles, doors, security hazards and black-box extraction.
-- Wildlife footprint trails and distant predator/prey interactions; landing, capture and sanctuary delivery stay available.
-- Repair dock, observatory/gallery and fabrication workshop upgrades.
-- Shared online rescue/repair/escort work for up to six allied pilots, with server-validated individual saved rewards.
-- Gamepad flight/surface aiming, input rebinding/reset, graphics presets, larger menu text and reduced explosion flashes.
+- Searchable field atlas with sensor-limited resources, surveyed landmarks and delivered creature records.
+- Saved courses, personal beacons, star-chart pins and contextual arrival guidance.
+- Eight optional badges with pinnable goals and one-time ordinary salvage rewards.
+- Mineable ore/crystal/alloy deposits feeding real workshop component recipes.
+- Shared allied Look/Danger/Regroup pings, derived and rate-limited by the host.
+- Safe-dock Continue with optional job checkpoints and visible autosave feedback.
+- Atomic discovery-save rollback and clear quit warnings for unsaved expedition data.
 
-Extract the whole client ZIP and run the executable. Choose **Enter the Frontier**, then **O** for optional activities. Hold **F** near a rescue/repair signal; wrecks use **G** at consoles and **E** at the airlock. **M** remains missiles and **J** remains the star chart. Update online clients and server together to v0.41.0. Back up saves: schema 10 imports old profiles, while old builds cannot read schema 10.
+Extract the client ZIP and run the executable. **O → Field atlas / Journey & badges**, **J** chart, lasers fracture deposits, **hold F** within 75m to collect, **P** or middle click pings. Service stations with **G** to update your Continue dock.
 
-Planet and wreck interiors remain solo-only; co-op currently covers space jobs. Local/online inventories remain separate. Legendary/mythic component odds are unchanged. Hardware-controller, Windows GUI and human balance playtests remain pending. See docs/FRONTIER.md for scope and reproducible validation.
+Schema 11 imports previous profiles. Back up before upgrading: older builds cannot read schema 11. Update online clients and hosts together to v0.42.0. Local mining/milestones remain separate from the online economy; planet/wreck interiors are still solo. Continue starts fresh NPC fleets at a safe station, rather than restoring an entire running universe. Legendary/mythic component odds are unchanged. Physical-controller, Windows GUI and human balance playtests remain pending.
+
+See docs/PATHFINDERS.md for controls, save boundaries and checks; docs/GAMEPLAY_REVIEW.md explains the eight-game comparison and unfinished priorities.

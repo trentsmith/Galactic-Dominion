@@ -85,12 +85,13 @@ func clear_actors() -> void:
 func place_clear() -> void:
  if not is_inside_tree() or battle.network_role=="client" or not is_instance_valid(point):return
  var probe:=PhysicsShapeQueryParameters3D.new();var shape:=SphereShape3D.new();shape.radius=14;probe.shape=shape;probe.collision_mask=2
+ var origin: Vector3=active.at
  for attempt in range(20):
-  probe.transform=Transform3D(Basis.IDENTITY,point.global_position)
+  probe.transform=Transform3D(Basis.IDENTITY,origin)
   if get_world_3d().direct_space_state.intersect_shape(probe,1).is_empty():break
-  point.position.y+=35
- active.at=point.position
- if is_instance_valid(goal):goal.position=point.position+Vector3(0,0,300)
+  origin.y+=35
+ active.at=origin;point.position=origin
+ if is_instance_valid(goal):goal.position=origin+Vector3(0,0,300);point.position=origin.lerp(goal.position,escort)
 func request_use(index: int) -> void:
  if battle.network_role!="server" or index not in range(6) or not battle.ships[index].alive:return
  requests[index]=.4
@@ -196,7 +197,7 @@ func update_hint(delta: float) -> void:
  if hint==null:return
  message_time=maxf(0,message_time-delta);hint.visible=not battle.scenic_hud and not battle.map_panel.visible
  if message_time>0:hint.text=message
- elif active.is_empty():hint.text="FRONTIER / O: jobs, rumors, bot protocols and reputation"
+ elif active.is_empty():hint.text="" if is_instance_valid(battle.navigation) and not battle.navigation.route().is_empty() else "FRONTIER / O: jobs, rumors, bot protocols and reputation"
  else:
   var at: Vector3=enemy.position if active.kind=="boss" and is_instance_valid(enemy) else point.position if is_instance_valid(point) else active.at
   var distance:=int(battle.pilot.ship.position.distance_to(at))
