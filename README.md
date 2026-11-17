@@ -1,14 +1,25 @@
-# Galactic Dominion — Pathfinders
+# Galactic Dominion — Flight Polish
 
 A Godot 4.6.3 space-combat and exploration prototype with configurable 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions, a personal sanctuary and self-hosted online play. GDScript and procedural 3D assets; no paid packages required.
 
 ## Play
 
-Download [v0.42.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.42.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
+Download [v0.43.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.43.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
 
-For source development, clone the `phase-42-pathfinders` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
+For source development, clone the `phase-43-polish` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
 
-## New in Pathfinders
+## New in v0.43 — Flight Polish
+
+- Failed checkpoints keep the current flight open until you retry or explicitly leave. Activity changes also protect unextracted surveys; completed deliveries return normally.
+- Keyboard, mouse and gamepad button remaps persist independently. Combat prompts show your current controls.
+- Completed jobs, deposits and caches stop drawing stale course markers. Claimed badges clear their pinned reminder, and empty atlas searches explain what to try.
+- Mining refuses blocked or out-of-range tractor actions with a specific explanation, and its prompt no longer overlaps the component-recovery prompt.
+- Co-op participation follows accounts across ship changes. Reward retries finish before departures unlock accounts, including a disconnect or a lost reply during payment. Team pings expire locally when snapshots stop.
+- Unchanged autosaves skip unnecessary file writes; manual saves and failed-write retries still write normally.
+
+[Polish guide, checks and limitations](docs/POLISH.md).
+
+## Exploration and navigation
 
 **O → Field atlas** remembers useful destinations, surveyed places and creature records. Resource contacts respect sensor range. Search/filter, set a course with distance/bearing guidance, save up to twelve personal beacons, or right-click the **J** chart to drop a waypoint.
 
@@ -74,4 +85,4 @@ Past endings have small free-roam consequences: Seal adds a reconstruction tende
 
 ## Validation
 
-777 local Godot checks across 23 suites passed, including 71 new Pathfinders/checkpoint checks. The updated two-client HTTP/ENet test also passed shared pings. Linux atlas, mining and journey renders were inspected. See [Frontier validation and remaining scope](docs/FRONTIER.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.
+824 local Godot checks across 25 suites passed, plus 30 account-service tests. Real two-client HTTP/ENet runs covered normal co-op and a participant disconnect with a committed reward whose reply was lost. Native Linux renders checked departure warnings, remapped HUD prompts and empty atlas guidance. See [polish validation and remaining scope](docs/POLISH.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.

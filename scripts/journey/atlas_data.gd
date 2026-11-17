@@ -10,7 +10,7 @@ static func entries(battle: FreeRoamMatch) -> Array[Dictionary]:
  if not battle.frontier.active.is_empty() and is_instance_valid(battle.frontier.point):
   var director:=battle.frontier
   var at: Vector3=director.enemy.position if is_instance_valid(director.enemy) else director.point.position
-  result.append({"id":"active-job","name":director.active.title,"at":JourneyState.pack(at),"kind":"job","region":director.active.region,"known":true})
+  result.append({"id":"job:"+str(director.active.id),"name":director.active.title,"at":JourneyState.pack(at),"kind":"job","region":director.active.region,"known":true})
  for child in battle.get_children():
   if child is ComponentSalvage:
    for index in range(child.caches.size()):

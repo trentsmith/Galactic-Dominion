@@ -34,6 +34,10 @@ var loading_connection:=true
 var contract_busy:=false
 var contract_payload: Dictionary={}
 var contract_retry:=0.0
+var deferred_roam_leaves: Array[Dictionary]=[]
+var pending_roam_ends: Array[String]=[]
+var settlement_busy:=false
+var settlement_retry:=0.0
 
 func _ready() -> void:
  api = get_parent().online_api
@@ -93,14 +97,14 @@ func _peer_connected(id: int) -> void:
 func _connected() -> void:
  loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.42.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.43.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.42.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.43.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -177,6 +181,8 @@ func request_start(mode: String = "royale") -> void:
  var sender := multiplayer.get_remote_sender_id()
  if not server_mode or starting or members.is_empty() or sender != members.keys()[0] or (is_instance_valid(arena) and not arena.finished):
   return
+ if contract_busy or not contract_payload.is_empty() or settlement_busy or not deferred_roam_leaves.is_empty() or not pending_roam_ends.is_empty():
+  reject.rpc_id(sender,"Previous session rewards are still saving. Try launching again in a moment.");return
  for member in members.values():
   if not member.ready:
    reject.rpc_id(sender, "All connected pilots must be ready.")
@@ -417,6 +423,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
  if server_mode:
+  contract_retry=maxf(0,contract_retry-delta);settlement_retry=maxf(0,settlement_retry-delta)
+  if not contract_payload.is_empty() and not contract_busy and contract_retry<=0:_save_frontier_contract()
+  if contract_payload.is_empty() and not contract_busy and not settlement_busy and settlement_retry<=0 and (not deferred_roam_leaves.is_empty() or not pending_roam_ends.is_empty()):_flush_roam_departures()
   for id in pending_peers.keys():
    pending_peers[id] += delta
    if pending_peers[id] > 15:
@@ -466,8 +475,6 @@ func _physics_process(delta: float) -> void:
     lease_clock = 0
     _renew_roam_lease()
   army_snapshot_clock += delta
-  contract_retry=maxf(0,contract_retry-delta)
-  if not contract_payload.is_empty() and not contract_busy and contract_retry<=0:_save_frontier_contract()
   snapshot_clock += delta
   if snapshot_clock >= 1.0 / 15.0:
    snapshot_clock = 0
@@ -598,7 +605,8 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
 
 func _server_finished(winner: int, reason: String) -> void:
  if match_mode in ["free_roam","co_op"]:
-  await api.request("/server/roam/end", {"match_id": match_id}, HTTPClient.METHOD_POST, server_key)
+  if not match_id in pending_roam_ends:pending_roam_ends.append(match_id)
+  _flush_roam_departures()
   return
  var results := {}
  for entry in roster:
@@ -764,7 +772,26 @@ func roam_notice(message: String) -> void:
  status_changed.emit(message)
 
 func _leave_roam_account(user_id: String) -> void:
- await api.request("/server/roam/leave", {"match_id": match_id, "user_id": user_id}, HTTPClient.METHOD_POST, server_key)
+ var entry:={"match_id":match_id,"user_id":user_id}
+ if not entry in deferred_roam_leaves:deferred_roam_leaves.append(entry)
+ _flush_roam_departures()
+
+func _flush_roam_departures() -> void:
+ if settlement_busy or contract_busy or not contract_payload.is_empty():return
+ settlement_busy=true
+ while not deferred_roam_leaves.is_empty():
+  if contract_busy or not contract_payload.is_empty():settlement_busy=false;return
+  var entry: Dictionary=deferred_roam_leaves[0]
+  var reply:=await api.request("/server/roam/leave",entry,HTTPClient.METHOD_POST,server_key)
+  if reply.has("error"):settlement_retry=2;settlement_busy=false;return
+  deferred_roam_leaves.pop_front()
+ while not pending_roam_ends.is_empty():
+  if contract_busy or not contract_payload.is_empty():settlement_busy=false;return
+  var session_id: String=pending_roam_ends[0]
+  var reply:=await api.request("/server/roam/end",{"match_id":session_id},HTTPClient.METHOD_POST,server_key)
+  if reply.has("error"):settlement_retry=2;settlement_busy=false;return
+  pending_roam_ends.pop_front()
+ settlement_busy=false
 
 func _join_running_roam(id: int, account: Dictionary) -> void:
  var index := -1
@@ -879,10 +906,9 @@ func receive_frontier(data: Dictionary) -> void:
 
 func _frontier_completed(event_id: String,kind: String,contributors: Array) -> void:
  var users: Array[String]=[]
- for index in contributors:
-  if index not in range(6):continue
-  var owner:=slot_owners[index]
-  if members.has(owner) and not str(members[owner].profile.user_id) in users:users.append(str(members[owner].profile.user_id))
+ for account in contributors:
+  for member in members.values():
+   if str(member.profile.user_id)==str(account) and not str(account) in users:users.append(str(account));break
  if users.is_empty():arena.frontier.shared_saved(true);return
  contract_payload={"match_id":match_id,"event_id":event_id,"kind":kind,"participants":users}
  _save_frontier_contract()
@@ -901,6 +927,7 @@ func _save_frontier_contract() -> void:
   return
  contract_payload.clear()
  if arena is FreeRoamMatch:arena.frontier.shared_saved(true)
+ _flush_roam_departures()
 
 @rpc("authority", "call_remote", "reliable", 2)
 func receive_pings(data: Array) -> void:

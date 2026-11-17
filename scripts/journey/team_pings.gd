@@ -38,9 +38,8 @@ func add_ping(owner: int,ship: CombatShip,kind: int) -> bool:
  return true
 func _physics_process(delta: float) -> void:
  clock+=delta
- if battle.network_role!="client":
-  for record in records:record.remaining-=delta
-  records=records.filter(func(record):return record.remaining>0)
+ for record in records:record.remaining-=delta
+ records=records.filter(func(record):return record.remaining>0)
  if battle.network_role=="server":return
  render_markers()
 func snapshot(team: int) -> Array:
@@ -50,12 +49,16 @@ func forget_owner(owner: int) -> void:
 func apply_snapshot(data: Array) -> void:
  if battle.network_role!="client":return
  records.clear()
+ var seen: Dictionary={}
  for value in data:
   if records.size()>=18:break
   if not value is Dictionary or not value.get("kind") in range(3):continue
   var at:=JourneyState.coordinates(value.get("at"))
   if at.is_empty():continue
-  records.append({"id":int(JourneyState.number(value.get("id",0),0,999999999)),"owner":int(JourneyState.number(value.get("owner",0),0,2147483647)),"team":int(JourneyState.number(value.get("team",0),0,4)),"name":str(value.get("name","Pilot")).left(32),"kind":int(value.kind),"at":at,"remaining":JourneyState.number(value.get("remaining",0),0,45)})
+  var id:=int(JourneyState.number(value.get("id",0),0,999999999))
+  if id<=0 or seen.has(id):continue
+  seen[id]=true
+  records.append({"id":id,"owner":int(JourneyState.number(value.get("owner",0),0,2147483647)),"team":int(JourneyState.number(value.get("team",0),0,4)),"name":str(value.get("name","Pilot")).left(32),"kind":int(value.kind),"at":at,"remaining":JourneyState.number(value.get("remaining",0),0,45)})
 func render_markers() -> void:
  if not is_instance_valid(battle.pilot.ship):return
  var live: Dictionary={};var nearest: Dictionary={};var distance:=INF

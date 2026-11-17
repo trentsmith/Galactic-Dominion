@@ -17,7 +17,7 @@ func _ready() -> void:
  var query:=LineEdit.new();query.name="AtlasSearch";query.placeholder_text="Find a region, place or creature...";query.custom_minimum_size.x=350;query.text_changed.connect(func(value):search=value;refresh());row.add_child(query)
  action(row,"REFRESH",refresh)
  var navigation:=HBoxContainer.new();add_child(navigation)
- action(navigation,"CLEAR COURSE",func():battle.navigation.set_route({});notice.text="Course cleared.")
+ action(navigation,"CLEAR COURSE",func():notice.text="Course cleared." if battle.navigation.set_route({}) else "Course could not save. "+battle.profile.save_error)
  if battle.network_role=="offline":
   action(navigation,"SAVE BEACON HERE (MAX 12)",func():
    notice.text="Personal beacon saved." if JourneyState.bookmark(battle.profile,battle.pilot.ship.position,"Beacon in "+FreeRoamWorld.NAMES[FreeRoamWorld.nearest_region(battle.pilot.ship.position)]) else "Beacon could not save: limit reached or "+battle.profile.save_error
@@ -36,9 +36,11 @@ func refresh() -> void:
   if a.kind=="job" and b.kind!="job":return true
   if b.kind=="job" and a.kind!="job":return false
   return battle.pilot.ship.position.distance_squared_to(JourneyState.vector(a.at))<battle.pilot.ship.position.distance_squared_to(JourneyState.vector(b.at)))
+ var shown:=0
  for entry in entries:
   if category!="all" and entry.kind!=category:continue
   if not search.is_empty() and not (str(entry.name)+" "+FreeRoamWorld.NAMES[int(entry.region)]).to_lower().contains(search.to_lower()):continue
+  shown+=1
   var title:=Label.new();title.text=str(entry.name)+" / "+FreeRoamWorld.NAMES[int(entry.region)]+(" / SURVEYED" if entry.kind=="landmark" and entry.known else " / UNSURVEYED" if entry.kind=="landmark" else "");title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;list.add_child(title)
   if entry.has("detail"):
    var detail:=Label.new();detail.text=entry.detail;detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;list.add_child(detail)
@@ -49,6 +51,10 @@ func refresh() -> void:
    if battle.network_role=="client":battle.travel_requested.emit(int(entry.region));host.close_story()
    elif battle.travel_fleet(int(entry.region)):host.close_story()
    else:notice.text=battle.log_label.text;Input.mouse_mode=Input.MOUSE_MODE_VISIBLE)
-  if entry.kind=="beacon" and battle.profile!=null:action(row,"DELETE BEACON",func():JourneyState.remove_bookmark(battle.profile,entry.id);refresh())
+  if entry.kind=="beacon" and battle.profile!=null:action(row,"DELETE BEACON",func():
+   notice.text="Beacon deleted." if JourneyState.remove_bookmark(battle.profile,entry.id) else "Beacon could not save. "+battle.profile.save_error
+   refresh())
+ if shown==0:
+  var empty:=Label.new();empty.name="NoAtlasContacts";empty.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;empty.text="No contacts match this filter. Clear the search or try another category. Mineral and salvage contacts appear when you fly within sensor range; creature records appear after survey delivery.";list.add_child(empty)
  if battle.profile!=null:
   var line:=Label.new();line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;line.text="Discovery record: %d regions · %d landmarks · %d creature species. G surveys landmarks; planet scans count once delivered at the landing ship."%[JourneyState.metrics(battle.profile).regions,JourneyState.metrics(battle.profile).landmarks,JourneyState.metrics(battle.profile).fauna];list.add_child(line)

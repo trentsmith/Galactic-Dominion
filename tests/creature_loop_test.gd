@@ -56,6 +56,8 @@ func run() -> void:
   var restored:=PlayerProfile.new(path);restored.load_profile()
   check(restored.surface_transport.animals.size()==1 and restored.surface_transport.animals[0]==animal.definition.id,"Captured transport is durable before sanctuary delivery")
   main.return_to_menu();await process_frame
+  check(is_instance_valid(main.quit_dialog) and main.surface==e,"Leaving undelivered surveys requires an explicit choice without losing secured transport")
+  if is_instance_valid(main.quit_dialog):main.quit_dialog.confirmed.emit();await process_frame
   main.profile=restored;main.start_planet(index);await process_frame
   e=main.surface;freeze(e)
   check(e.cargo_animals.size()==1 and e.status_message.contains("RECOVERED"),"Reloaded expedition restores transport at the landing ship")

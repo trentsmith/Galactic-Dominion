@@ -5,7 +5,6 @@ var battle: FreeRoamMatch
 var region:=0
 var clock:=0.0
 var message:=""
-var last_job:=""
 var restoring:=false
 var status: Label
 var status_time:=0.0
@@ -35,9 +34,11 @@ func job_snapshot() -> Dictionary:
  if is_instance_valid(director.boss):
   result.anchors=director.boss.snapshot();result.hull_ratio=director.enemy.health.hull/director.enemy.health.max_hull;result.shield_ratio=director.enemy.health.shield/director.enemy.health.max_shield if director.enemy.health.max_shield>0 else 0.0
  return JourneyState.sanitize_job(result)
-func save_checkpoint() -> bool:
+func save_checkpoint(force: bool=false) -> bool:
  if battle.network_role!="offline" or battle.profile==null or restoring:return false
  var value:={"region":region,"peaceful":battle.peaceful,"saved_at":int(Time.get_unix_time_from_system()),"job":job_snapshot()}
+ var previous: Dictionary=battle.profile.journey.resume
+ if not force and battle.profile.save_error.is_empty() and not previous.is_empty() and int(previous.region)==region and bool(previous.peaceful)==battle.peaceful and previous.job==value.job:return true
  var saved:=JourneyState.transaction(battle.profile,func():battle.profile.journey.resume=value)
  message="JOURNEY SAVED / Continue at "+FreeRoamWorld.NAMES[region] if saved else "AUTOSAVE FAILED / "+battle.profile.save_error+" / retry from the Frontier log"
  if status!=null:status.text=message;status_time=5 if saved else 1000000;status.add_theme_color_override("font_color",Color(.6,.95,.8) if saved else Color(1,.6,.4))

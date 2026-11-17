@@ -59,7 +59,7 @@ func tick(delta: float) -> void:
  if target != previous_target:locked_before = false
  if locked and not locked_before and lock_clock <= 0:
   sound("lock")
-  notify("TARGET LOCKED · MISSILE RELOADING" if controlled.weapons.missile_remaining>0 else "MISSILE LOCK READY · PRESS M",Color(.3,1,.85),1.2)
+  notify("TARGET LOCKED · MISSILE RELOADING" if controlled.weapons.missile_remaining>0 else "MISSILE LOCK READY · PRESS "+FlightPreferences.label_for("missile"),Color(.3,1,.85),1.2)
   lock_clock = 1.0
  locked_before = locked
  previous_target = target
@@ -110,14 +110,14 @@ func on_damage(report: Dictionary, victim: CombatShip) -> void:
   if report.get("shield_broken",false):notify("TARGET SHIELDS BROKEN",Color(1,.8,.4),1.3)
  if report.get("fatal",false) and victim != controlled:
   if victim.team == battle.local_team():notify(victim.callsign.to_upper()+" LOST · "+damage_cause(report),Color(1,.5,.3),2.4)
-  elif victim == previous_target:notify("TARGET DESTROYED · TAB FOR NEXT",Color(.5,1,.75),2)
+  elif victim == previous_target:notify("TARGET DESTROYED · "+FlightPreferences.label_for("target")+" FOR NEXT",Color(.5,1,.75),2)
 
 func _on_rejected(reason: String, ship: CombatShip) -> void:
  if ship == battle.pilot.ship:notify(reason,Color(1,.8,.4))
 
 func _on_eliminated(ship: CombatShip, _attacker: CombatShip) -> void:
  if battle.network_role == "server" or ship.team == battle.local_team():return
- if ship == previous_target:notify("TARGET DESTROYED · TAB FOR NEXT",Color(.5,1,.75),2)
+ if ship == previous_target:notify("TARGET DESTROYED · "+FlightPreferences.label_for("target")+" FOR NEXT",Color(.5,1,.75),2)
 
 func direction_label(world_position: Vector3) -> String:
  var local := battle.camera.global_basis.inverse() * (world_position - battle.pilot.ship.global_position)

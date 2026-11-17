@@ -83,7 +83,8 @@ func tick(delta: float,held: bool) -> void:
  else:progress=0
  var scenic: bool=host is FreeRoamMatch and host.scenic_hud
  for label in labels:label.visible=not scenic
- hint.visible=Input.mouse_mode==Input.MOUSE_MODE_CAPTURED and not scenic
+ var mining_focus: bool=host is FreeRoamMatch and is_instance_valid(host.mining) and host.mining.focused() and not held
+ hint.visible=Input.mouse_mode==Input.MOUSE_MODE_CAPTURED and not scenic and not mining_focus
  if message_time>0:hint.text=message
  elif selected>=0 and distance<(65 if ground else bearing_range()):
   var camera: Camera3D=host.bot.camera if ground else host.camera

@@ -22,6 +22,7 @@ var profile: PlayerProfile
 # Tests can redirect progression away from the real player's profile.
 var profile_path := "user://commander_profile.json"
 var quit_dialog: ConfirmationDialog
+var transition_override:=false
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -107,6 +108,7 @@ func _unhandled_input(event: InputEvent) -> void:
   get_viewport().set_input_as_handled()
 
 func start_tutorial() -> void:
+ if not prepare_departure(start_tutorial):return
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -137,6 +139,7 @@ func start_fleet_war() -> void:
  start_battle(10)
 
 func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0,opponents: int=0,armada: bool=false,replay_story: bool=false) -> void:
+ if not prepare_departure(start_battle.bind(size_per_team,mission,seed_value,opponents,armada,replay_story)):return
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -164,6 +167,7 @@ func resume() -> void:
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func return_to_menu() -> void:
+ if not prepare_departure(return_to_menu):return
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -316,6 +320,7 @@ func show_hangar() -> void:
  menu.add_child(hangar)
 
 func start_exploration(index: int) -> void:
+ if not prepare_departure(start_exploration.bind(index)):return
  _clear_surface()
  get_tree().paused = false
  if is_instance_valid(menu):
@@ -345,7 +350,8 @@ func show_online() -> void:
  hub.back_requested.connect(show_menu)
  menu.add_child(hub)
 
-func start_free_roam(peaceful: bool = false) -> void:
+func start_free_roam(peaceful: bool = false,checkpoint: Dictionary={}) -> bool:
+ if not prepare_departure(start_free_roam.bind(peaceful,checkpoint.duplicate(true))):return false
  _clear_surface()
  network.disconnect_session()
  get_tree().paused = false
@@ -361,11 +367,12 @@ func start_free_roam(peaceful: bool = false) -> void:
  battle.frontier.boarding_requested.connect(board_derelict)
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
+ if not checkpoint.is_empty():battle.journey_log.restore(checkpoint)
  print("GALACTIC_FREE_ROAM_READY ships=%d" % battle.ships.size())
+ return true
 
 
 func _clear_surface() -> void:
- save_frontier()
  if is_instance_valid(parked_roam): parked_roam.queue_free()
  parked_roam = null
  if is_instance_valid(sanctuary_scene):remove_child(sanctuary_scene);sanctuary_scene.queue_free()
@@ -375,6 +382,7 @@ func _clear_surface() -> void:
  surface=null
 
 func show_planets() -> void:
+ if not prepare_departure(show_planets):return
  if not GameFeatures.wildlife_enabled():return_to_menu();return
  network.disconnect_session();get_tree().paused=false
  _clear_surface()
@@ -387,6 +395,7 @@ func show_planets() -> void:
  selector.back_requested.connect(show_menu);selector.launched.connect(start_planet);menu.add_child(selector)
 
 func start_planet(index: int,bot_id: String="") -> void:
+ if not prepare_departure(start_planet.bind(index,bot_id)):return
  if not GameFeatures.wildlife_enabled():return_to_menu();return
  network.disconnect_session();get_tree().paused=false
  _clear_surface()
@@ -401,6 +410,7 @@ func start_planet(index: int,bot_id: String="") -> void:
  surface.return_requested.connect(show_planets);surface.sanctuary_requested.connect(visit_captured_creatures);surface.landing_stats=profile.configured_stats(0);add_child(surface)
 
 func show_sanctuary() -> void:
+ if not prepare_departure(show_sanctuary):return
  if not GameFeatures.wildlife_enabled():return_to_menu();return
  network.disconnect_session();get_tree().paused=false;_clear_surface()
  if is_instance_valid(battle):remove_child(battle);battle.queue_free();battle=null
@@ -434,6 +444,10 @@ func land_from_roam(index: int) -> bool:
  return true
 
 func return_from_planet() -> void:
+ if not prepare_departure(return_from_planet,true):return
+ _restore_orbit()
+
+func _restore_orbit() -> void:
  get_tree().paused = false
  if is_instance_valid(surface):
   remove_child(surface)
@@ -460,9 +474,10 @@ func visit_captured_creatures() -> void:
  add_child(sanctuary_scene)
 
 func return_from_sanctuary_trip() -> void:
+ if not prepare_departure(return_from_sanctuary_trip,true):return
  if is_instance_valid(sanctuary_scene):remove_child(sanctuary_scene);sanctuary_scene.queue_free()
  sanctuary_scene=null
- if is_instance_valid(parked_roam):return_from_planet()
+ if is_instance_valid(parked_roam):_restore_orbit()
  else:show_planets()
 
 func difficulty_choice(parent: Control) -> OptionButton:
@@ -621,8 +636,9 @@ func board_derelict() -> void:
 
 func return_from_derelict() -> void:
  if not surface is DerelictExpedition:return
+ if not prepare_departure(return_from_derelict,true):return
  var secured: bool=surface.secured
- return_from_planet()
+ _restore_orbit()
  if battle is FreeRoamMatch:battle.frontier.return_boarding(secured)
 
 func _exit_tree() -> void:
@@ -633,27 +649,34 @@ func _exit_tree() -> void:
 func continue_frontier() -> void:
  if profile==null or profile.journey.resume.is_empty():return
  var checkpoint: Dictionary=profile.journey.resume.duplicate(true)
- start_free_roam(bool(checkpoint.get("peaceful",false)))
- battle.journey_log.restore(checkpoint)
+ start_free_roam(bool(checkpoint.get("peaceful",false)),checkpoint)
 
-func save_frontier() -> bool:
+func save_frontier(force: bool=true) -> bool:
  var flight: FreeRoamMatch=battle as FreeRoamMatch if battle is FreeRoamMatch else parked_roam
- return flight.journey_log.save_checkpoint() if is_instance_valid(flight) and flight.network_role=="offline" else true
+ return flight.journey_log.save_checkpoint(force) if is_instance_valid(flight) and flight.network_role=="offline" else true
 
-func quit_game() -> void:
- if is_instance_valid(quit_dialog):return
+func prepare_departure(destination: Callable,surface_exit: bool=false) -> bool:
+ if transition_override:transition_override=false;return true
+ if is_instance_valid(quit_dialog):return false
  var reason:=""
- if not save_frontier():reason="Your journey could not be saved. "+profile.save_error+"\nKeep playing to retry from O, or quit without saving the latest progress."
- elif is_instance_valid(surface) and not surface.pending.is_empty():reason="Unextracted surveys will be lost. Keep playing and deliver with E at the landing ship, or quit without these surveys. Secured transport stays saved."
- elif surface is DerelictExpedition:reason="Your orbital job is saved, but wreck console progress and unsecured black-box data will restart. Keep exploring to return through the airlock, or quit now."
- if reason.is_empty():get_tree().quit();return
+ if not save_frontier():reason="Your journey could not be saved. "+profile.save_error+"\nStay here and retry saving, or leave without the latest checkpoint."
+ elif is_instance_valid(surface) and not surface.finished and not surface.pending.is_empty():reason="Unextracted surveys will be lost. Deliver with E at the landing ship before leaving. Secured transport remains saved."
+ elif surface is DerelictExpedition and not surface_exit:reason="Wreck console progress and unsecured black-box data will restart. Return through the airlock to secure the black box before changing activities."
+ if reason.is_empty():return true
  var previous_mouse:=Input.mouse_mode
  var previous_pause:=get_tree().paused
  if not (is_instance_valid(battle) and battle.network_role!="offline"):get_tree().paused=true
- quit_dialog=ConfirmationDialog.new();quit_dialog.title="Leave this expedition?";quit_dialog.dialog_text=reason;quit_dialog.ok_button_text="QUIT WITHOUT UNSAVED PROGRESS";quit_dialog.cancel_button_text="KEEP PLAYING";add_child(quit_dialog)
- quit_dialog.confirmed.connect(func():get_tree().quit())
- quit_dialog.canceled.connect(func():quit_dialog.queue_free();quit_dialog=null;get_tree().paused=previous_pause;Input.mouse_mode=previous_mouse)
- quit_dialog.popup_centered(Vector2i(600,180));Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+ var dialog:=ConfirmationDialog.new();quit_dialog=dialog
+ dialog.title="Leave this expedition?";dialog.theme=CartoonStyle.ui_theme();dialog.dialog_text=reason;dialog.ok_button_text="LEAVE WITHOUT UNSAVED PROGRESS";dialog.cancel_button_text="KEEP PLAYING";add_child(dialog)
+ dialog.confirmed.connect(func():
+  quit_dialog=null;dialog.queue_free();get_tree().paused=previous_pause;Input.mouse_mode=previous_mouse
+  transition_override=true;destination.call();transition_override=false)
+ dialog.canceled.connect(func():quit_dialog=null;dialog.queue_free();get_tree().paused=previous_pause;Input.mouse_mode=previous_mouse)
+ dialog.popup_centered(Vector2i(600,180));dialog.get_cancel_button().grab_focus();Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+ return false
+
+func quit_game() -> void:
+ if prepare_departure(get_tree().quit):get_tree().quit()
 
 func _notification(what: int) -> void:
  if what==NOTIFICATION_WM_CLOSE_REQUEST and profile!=null:quit_game()

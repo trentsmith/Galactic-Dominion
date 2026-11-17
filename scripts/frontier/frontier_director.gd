@@ -22,7 +22,7 @@ var escort:=0.0
 var elapsed:=0.0
 var completed:=false
 var credited:=false
-var contributors: Array[int]=[]
+var contributors: Array[String]=[]
 var requests: Dictionary={}
 var retired: Dictionary={}
 var timer:=0.0
@@ -105,6 +105,15 @@ func participants() -> Array[CombatShip]:
    if battle.ships[i].player_controlled and battle.ships[i].alive:result.append(battle.ships[i])
  elif is_instance_valid(battle.pilot.ship) and battle.pilot.ship.alive:result.append(battle.pilot.ship)
  return result
+func contribute(ship: CombatShip) -> void:
+ if battle.network_role!="server":return
+ var session:=battle.get_parent() as OnlineSession
+ var index:=battle.ships.find(ship)
+ if session==null or index not in range(6):return
+ var owner:=int(session.slot_owners[index])
+ if not session.members.has(owner) or not ship.player_controlled:return
+ var account: String=session.members[owner].profile.user_id
+ if not account in contributors:contributors.append(account)
 func tick(delta: float,held: bool) -> void:
  timer-=delta
  if timer<=0:
@@ -141,7 +150,7 @@ func tick(delta: float,held: bool) -> void:
   for ship in people:
    if ship.position.distance_to(at)<=150:
     near=ship
-    if not battle.ships.find(ship) in contributors:contributors.append(battle.ships.find(ship))
+    contribute(ship)
   if near!=null and jammers==0:escort=minf(1,escort+delta/30)
   point.position=(active.at as Vector3).lerp(goal.position,escort)
   completed=escort>=1
@@ -154,7 +163,7 @@ func tick(delta: float,held: bool) -> void:
     var index:=battle.ships.find(ship)
     if held or requests.has(index):
      any_using=true
-     if not index in contributors:contributors.append(index)
+     contribute(ship)
   progress=progress+delta if any_using else 0
   completed=progress>=(4 if active.kind=="repair" else 3)
  if completed:finish_reward()
@@ -173,7 +182,7 @@ func finish_reward() -> void:
   if pending_shared.is_empty():
    pending_shared=active.id
    for ship in participants():
-    if ship.position.distance_to(point.position)<1000 and not battle.ships.find(ship) in contributors:contributors.append(battle.ships.find(ship))
+    if ship.position.distance_to(point.position)<=150 and clear_path(ship,point.position):contribute(ship)
    shared_completed.emit(active.id,active.kind,contributors.duplicate())
   return
  if FrontierState.pay(profile,int(active.generation),int(active.slot),str(active.faction),str(active.title),int(active.reward)):

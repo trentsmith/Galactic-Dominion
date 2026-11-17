@@ -37,5 +37,21 @@ class FrontierServiceTests(unittest.TestCase):
         self.assertEqual(self.store.me(self.a)['salvage'],200)
         self.store.roam_end('coop')
         with self.assertRaises(ServiceError):self.store.frontier_reward('coop','shared-2','repair',[self.a])
+    def test_completed_receipt_can_be_retried_after_departure_and_closure(self):
+        self.store.frontier_reward('coop','shared-1','repair',[self.a,self.b])
+        self.store.roam_leave('coop',self.b);self.store.roam_end('coop')
+        self.assertTrue(self.store.frontier_reward('coop','shared-1','repair',[self.b,self.a])['already_settled'])
+        self.assertEqual(self.store.me(self.a)['salvage'],260)
+        self.assertEqual(self.store.me(self.b)['salvage'],260)
+        with self.assertRaises(ServiceError):self.store.frontier_reward('coop','shared-1','escort',[self.a,self.b])
+    def test_delayed_leave_retry_cannot_unlock_a_new_match(self):
+        self.store.roam_leave('coop',self.a);self.store.roam_end('coop')
+        self.store.start_match('next',[{'user_id':self.a,'team':0}])
+        self.store.roam_leave('coop',self.a)
+        with self.store.connect() as db:self.assertEqual(self.store._user(db,self.a)['active_match'],'next')
+        with self.assertRaises(ServiceError):self.store.equip(self.a,0,'engine','engine_sprint')
+    def test_invalid_job_kind_is_a_validation_error(self):
+        for kind in [{},[],None,123]:
+            with self.assertRaises(ServiceError):self.store.frontier_reward('coop','shared-1',kind,[self.a])
 
 if __name__=='__main__':unittest.main()

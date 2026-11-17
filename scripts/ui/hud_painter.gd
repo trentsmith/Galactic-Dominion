@@ -59,11 +59,11 @@ func _draw() -> void:
  text(Vector2(42, height - 36), "%d m/s  •  %s" % [int(ship.velocity.length()), "BOOST" if ship.movement.boost_requested else "CRUISE"], MUTED, 13)
  panel(Rect2(Vector2(width - 320, height - 200), Vector2(296, 176)))
  text(Vector2(width - 300, height - 171), "ARMAMENT", CYAN, 16)
- text(Vector2(width - 300, height - 143), "LMB   LASER    %s" % ("READY" if ship.weapons.laser_remaining <= 0 else "%.1fs" % ship.weapons.laser_remaining), Color.WHITE, 15)
- text(Vector2(width - 300, height - 115), "M     MISSILE  %s" % ("READY" if ship.weapons.missile_remaining <= 0 else "%.1fs" % ship.weapons.missile_remaining), Color.WHITE, 15)
- text(Vector2(width - 300, height - 87), "R   %s" % ship.stats.ability.to_upper(), CYAN, 15)
+ text(Vector2(width - 300, height - 143), "%s   LASER    %s" % [FlightPreferences.label_for("laser"), ("READY" if ship.weapons.laser_remaining <= 0 else "%.1fs" % ship.weapons.laser_remaining)], Color.WHITE, 15)
+ text(Vector2(width - 300, height - 115), "%s   MISSILE  %s" % [FlightPreferences.label_for("missile"), ("READY" if ship.weapons.missile_remaining <= 0 else "%.1fs" % ship.weapons.missile_remaining)], Color.WHITE, 15)
+ text(Vector2(width - 300, height - 87), "%s   %s" % [FlightPreferences.label_for("ability"),ship.stats.ability.to_upper()], CYAN, 15)
  text(Vector2(width - 300, height - 61), "ACTIVE %.1fs" % ship.ability_remaining if ship.ability_remaining > 0 else ("READY" if ship.ability_cooldown <= 0 else "RECHARGING %.1fs" % ship.ability_cooldown), MUTED, 13)
- text(Vector2(width - 300, height - 35), "ESC   PAUSE / SETTINGS", MUTED, 13)
+ text(Vector2(width - 300, height - 35), FlightPreferences.label_for("pause")+"   PAUSE / SETTINGS", MUTED, 13)
  panel(Rect2(Vector2(width - 320, 22), Vector2(296, 58 + mini(10,battle.fleet.ships.size()) * 25)))
  text(Vector2(width - 300, 47), "FLEET  /  %s" % battle.fleet.current_command.to_upper(), CYAN, 16)
  for ally in battle.fleet.ships.slice(0,10):
@@ -117,7 +117,7 @@ func _draw() -> void:
  if is_instance_valid(target) and target.alive:
   _draw_target_card(target,ship)
  else:
-  text(center + Vector2(-110, 95), "TAB  /  ACQUIRE TARGET", MUTED, 14)
+  text(center + Vector2(-110, 95), FlightPreferences.label_for("target")+"  /  ACQUIRE TARGET", MUTED, 14)
  _draw_feedback(reticle)
  if ship.outside_time > 0:
   draw_rect(Rect2(Vector2.ZERO, size), Color(1, 0.2, 0.1, 0.10))
@@ -174,7 +174,7 @@ func _draw_target_card(target: CombatShip, ship: CombatShip) -> void:
  draw_rect(Rect2(at+Vector2(240,52),Vector2(204,7)),Color(.08,.15,.2))
  draw_rect(Rect2(at+Vector2(240,52),Vector2(204*clampf(target.health.shield/maxf(1,target.health.max_shield),0,1),7)),CYAN)
  var lock_fraction := clampf(ship.targeting.lock_time/maxf(.01,ship.targeting.lock_duration),0,1)
- var lock_status := "LOCK READY · PRESS M" if ship.targeting.locked() else "LOCK %d%% · KEEP TARGET AHEAD" % int(lock_fraction*100)
+ var lock_status := "LOCK READY · PRESS "+FlightPreferences.label_for("missile") if ship.targeting.locked() else "LOCK %d%% · KEEP TARGET AHEAD" % int(lock_fraction*100)
  if ship.targeting.locked() and ship.weapons.missile_remaining>0:lock_status = "LOCK HELD · MISSILE RELOAD %.1fs" % ship.weapons.missile_remaining
  text(at+Vector2(16,81),lock_status,CYAN,13)
  draw_rect(Rect2(at+Vector2(16,90),Vector2(428,4)),Color(.08,.15,.2))

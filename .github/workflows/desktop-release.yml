@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-42-pathfinders]
+    branches: [phase-43-polish]
   workflow_dispatch:
 permissions:
   contents: write
@@ -162,6 +162,15 @@ jobs:
           cat /tmp/pathfinders-resume.log
           grep '0 failures' /tmp/pathfinders-resume.log
           if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/pathfinders-resume.log; then exit 1; fi
+      - name: Verify polish and disconnected co-op settlement
+        run: |
+          for suite in polish coop_settlement; do
+            godot --headless --path . --script "res://tests/${suite}_test.gd" --fixed-fps 60 > /tmp/polish.log 2>&1
+            cat /tmp/polish.log
+            grep '0 failures' /tmp/polish.log
+            if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/polish.log; then exit 1; fi
+          done
+          GD_TEST_REWARD_DISCONNECT=1 python3 tests/test_frontier_network.py
       - name: Compare all three solo 10v10 presets
         run: |
           for preset in relaxed standard veteran; do
@@ -180,8 +189,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.42.0
+          tag=v0.43.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.42.0 — Pathfinders' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.43.0 — Flight Polish' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

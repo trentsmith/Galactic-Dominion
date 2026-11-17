@@ -26,7 +26,7 @@ Eight optional badges use existing gameplay progress. Claim each once for salvag
 
 Service a station with **G** outside combat to update your Continue dock. Local free-roam checkpoints also save job progress every twelve seconds, when leaving the activity and when quitting. The title screen's **Continue** returns to that serviced station, with optional job timers/integrity/escort or boss progress retained. NPC fleets start a fresh session. A stale checkpoint cannot pay a completed job again. No offline time is deducted from job timers.
 
-The game does not serialize every moving object. Pings, NPC positions/war waves and partial mineral damage restart. A wreck resumes outside its interior; return through the airlock before quitting to secure its black box. Unextracted surveys must be delivered at the landing ship. Secured transport cargo remains saved. Quit warnings explain these differences.
+The game does not serialize every moving object. Pings, NPC positions/war waves and partial mineral damage restart. A wreck resumes outside its interior; return through the airlock before quitting to secure its black box. Unextracted surveys must be delivered at the landing ship. Secured transport cargo remains saved. In v0.43, activity changes as well as quitting protect unsaved progress; see [Flight Polish](POLISH.md).
 
 ## Development and validation
 

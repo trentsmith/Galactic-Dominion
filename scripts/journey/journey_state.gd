@@ -36,6 +36,7 @@ static func sanitize(value: Variant) -> Dictionary:
   for id in value.claimed:
    if id in GOALS and not id in result.claimed:result.claimed.append(id)
  if value.get("goal") in GOALS:result.goal=value.goal
+ if result.goal in result.claimed:result.goal=""
  result.waypoint=marker(value.get("waypoint"))
  if value.get("bookmarks") is Array:
   var ids: Dictionary={}
@@ -91,7 +92,9 @@ static func claim(profile: PlayerProfile,id: String) -> bool:
  if not GOALS.has(id) or id in profile.journey.claimed:return false
  var goal: Dictionary=GOALS[id]
  if int(metrics(profile)[goal.metric])<int(goal.need):return false
- return transaction(profile,func():profile.journey.claimed.append(id);profile.salvage+=int(goal.reward))
+ return transaction(profile,func():
+  profile.journey.claimed.append(id);profile.salvage+=int(goal.reward)
+  if profile.journey.goal==id:profile.journey.goal="")
 static func pin(profile: PlayerProfile,id: String) -> bool:
  if not id.is_empty() and not id in GOALS:return false
  return transaction(profile,func():profile.journey.goal=id)

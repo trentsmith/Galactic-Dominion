@@ -11,6 +11,18 @@ var hint: Label
 var message:=""
 var message_time:=0.0
 func sensor_range() -> float:return JourneySensors.range_for(profile,battle.pilot.ship)
+func focused() -> bool:
+ return selected in range(veins.size()) and veins[selected].visible and is_instance_valid(battle.navigation) and battle.navigation.route().get("kind","")=="mineral" and battle.pilot.ship.position.distance_to(veins[selected].position)<130
+func refusal(vein: MineralVein) -> String:
+ if not is_inside_tree() or battle.network_role!="offline" or profile==null:return "MINING / return to solo spaceflight"
+ if not is_instance_valid(vein) or not vein in veins or not vein.visible or vein.generation!=int(profile.journey.mining.generation) or vein.slot in profile.journey.mining.opened:return "DEPOSIT ALREADY RECOVERED / choose another seam"
+ if not is_instance_valid(battle.pilot.ship) or not battle.pilot.ship.alive:return "MINING / redeploy your ship first"
+ if vein.health>0:return "FRACTURE THE SEAM / aim and fire "+FlightPreferences.label_for("laser")
+ var distance:=battle.pilot.ship.position.distance_to(vein.position)
+ if distance>75:return "TRACTOR OUT OF RANGE / approach within 75m (%dm)"%int(distance)
+ var query:=PhysicsRayQueryParameters3D.create(battle.pilot.ship.global_position,vein.global_position,2);query.exclude=[vein.get_rid()]
+ if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():return "MINING BLOCKED / move around the obstacle"
+ return ""
 func _ready() -> void:
  profile=battle.profile
  if battle.network_role!="offline" or profile==null:set_physics_process(false);return
@@ -51,23 +63,23 @@ func tick(delta: float,held: bool) -> void:
   if range_value<distance:distance=range_value;next=i
  if next!=selected:selected=next;progress=0
  message_time=maxf(0,message_time-delta)
- hint.visible=not battle.scenic_hud and not battle.map_panel.visible and (next>=0 or message_time>0)
+ hint.visible=not battle.scenic_hud and not battle.map_panel.visible and not Input.is_action_pressed("recover_component") and (next>=0 or message_time>0)
  if next<0:hint.text=message if message_time>0 else "";return
  var vein:=veins[next]
- if vein.health<=0 and distance<=75 and held:
-  var ray:=PhysicsRayQueryParameters3D.create(ship.global_position,vein.global_position,2);ray.exclude=[vein.get_rid()]
-  if get_world_3d().direct_space_state.intersect_ray(ray).is_empty():progress+=delta
-  else:progress=0;message="MINING BLOCKED / move around the obstacle";message_time=2
+ if held:
+  var reason:=refusal(vein)
+  if reason.is_empty():progress+=delta
+  else:progress=0;message=reason;message_time=2
   if progress>=1:collect(vein);progress=0
  else:progress=0
- hint.text=message if message_time>0 else "%s / %dm\n%s"%[vein.title(),int(distance),"Hold F to tractor materials · %d%%"%int(progress*100) if vein.health<=0 and distance<=75 else "Approach within 75m to collect" if vein.health<=0 else "Fire lasers at the glowing seam to fracture it"]
+ hint.text=message if message_time>0 else "%s / %dm\n%s"%[vein.title(),int(distance),"Hold %s to tractor materials · %d%%"%[FlightPreferences.label_for("frontier_use"),int(progress*100)] if vein.health<=0 and distance<=75 else "Approach within 75m to collect" if vein.health<=0 else "Fire %s at the glowing seam to fracture it"%FlightPreferences.label_for("laser")]
 func collect(vein: MineralVein) -> bool:
- if battle.network_role!="offline" or not is_instance_valid(vein) or vein.generation!=int(profile.journey.mining.generation) or vein.slot in profile.journey.mining.opened or vein.health>0:return false
- if battle.pilot.ship.position.distance_to(vein.position)>75:return false
+ var reason:=refusal(vein)
+ if not reason.is_empty():message=reason;message_time=4;return false
  var amount:=4 if vein.material_id=="ore" else 2
  if int(profile.sanctuary.materials[vein.material_id])+amount>99999:message="MATERIAL STORAGE FULL / use materials in your home workshop";message_time=5;return false
  var saved:=JourneyState.transaction(profile,func():
   profile.sanctuary.materials[vein.material_id]+=amount;profile.journey.mining.opened.append(vein.slot);profile.journey.mining.total+=1
   if profile.journey.mining.opened.size()==12:profile.journey.mining.generation+=1;profile.journey.mining.opened.clear())
- if not saved:message="MINING NOT SAVED / vein retained; retry F. "+profile.save_error;message_time=6;return false
+ if not saved:message="MINING NOT SAVED / vein retained; retry "+FlightPreferences.label_for("frontier_use")+". "+profile.save_error;message_time=6;return false
  vein.hide();vein.set_deferred("collision_layer",0);message="MATERIALS SAVED / +%d %s / available in your home workshop"%[amount,vein.material_id];message_time=7;SpaceAudio.play("click");SpaceEffects.burst(self,vein.position,vein.tint,8);return true

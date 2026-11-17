@@ -4,15 +4,16 @@ extends RefCounted
 const PATH="user://flight-controls.cfg"
 const ACTIONS=["ping","forward","reverse","strafe_left","strafe_right","up","down","roll_left","roll_right","boost","laser","missile","target","ability","scan","recover_component","frontier_use","surface_land","story_journal","surface_capture","surface_extract","surface_gather","surface_next_hunt","surface_next_bot","surface_deploy_creature","surface_cycle_creature","surface_attack_creature","surface_recall_creatures","ship_1","ship_2","ship_3","fleet_next","fleet_previous","mega_weapon","sector_map","scenic_hud","command_1","command_2","command_3","command_4","command_5","pause"]
 static var config:=ConfigFile.new()
+static var save_path:=PATH
 static var originals: Dictionary={}
 static var quality:="high"
 static var large_text:=false
 static var reduced_flashes:=false
-static func install() -> void:
+static func install(reload_config: bool=true) -> void:
  if originals.is_empty():
   for action in ACTIONS:
    if InputMap.has_action(action):originals[action]=InputMap.action_get_events(action)
- config.load(PATH)
+ if reload_config:config=ConfigFile.new();config.load(save_path)
  quality=str(config.get_value("display","quality","high"))
  if quality not in ["low","medium","high"]:quality="high"
  large_text=bool(config.get_value("accessibility","large_text",false))
@@ -31,24 +32,42 @@ static func install() -> void:
  for binding in [["look_left",2,-1.0],["look_right",2,1.0],["look_up",3,-1.0],["look_down",3,1.0]]:
   var axis:=InputEventJoypadMotion.new();axis.axis=binding[1];axis.axis_value=binding[2];InputMap.action_add_event(binding[0],axis)
  for action in (config.get_section_keys("bindings") if config.has_section("bindings") else PackedStringArray()):
-  var event: Variant=config.get_value("bindings",action)
-  if action in ACTIONS and event is InputEvent:replace(action,event,false)
+  if not action in ACTIONS:continue
+  var value: Variant=config.get_value("bindings",action)
+  if value is InputEvent:replace(action,value,false)
+  elif value is Dictionary:
+   for device in ["key","mouse","pad"]:
+    var event: Variant=value.get(device)
+    if event is InputEvent and family(event)==device:replace(action,event,false)
 static func look() -> Vector2:
  return Input.get_vector("look_left","look_right","look_up","look_down") if InputMap.has_action("look_left") else Vector2.ZERO
 static func replace(action: String,event: InputEvent,save_value:=true) -> Error:
- if not action in ACTIONS or not InputMap.has_action(action):return ERR_INVALID_PARAMETER
+ var device:=family(event)
+ if not action in ACTIONS or not InputMap.has_action(action) or device.is_empty():return ERR_INVALID_PARAMETER
+ var clean:=event.duplicate() as InputEvent;clean.device=-1
  # Replace only the selected device family, preserving the other devices.
  for old in InputMap.action_get_events(action):
   if (event is InputEventKey and old is InputEventKey) or (event is InputEventMouseButton and old is InputEventMouseButton) or (event is InputEventJoypadButton and old is InputEventJoypadButton):InputMap.action_erase_event(action,old)
- InputMap.action_add_event(action,event)
+ InputMap.action_add_event(action,clean)
  if save_value:
-  config.set_value("bindings",action,event);return config.save(PATH)
+  var prior: Variant=config.get_value("bindings",action,{})
+  var overrides: Dictionary=prior.duplicate() if prior is Dictionary else {}
+  if prior is InputEvent and not family(prior).is_empty():overrides[family(prior)]=prior
+  overrides[device]=clean
+  config.set_value("bindings",action,overrides);return config.save(save_path)
  return OK
-static func reset() -> void:
+static func family(event: InputEvent) -> String:
+ return "key" if event is InputEventKey else "mouse" if event is InputEventMouseButton else "pad" if event is InputEventJoypadButton else ""
+static func label_for(action: String) -> String:
+ for type in ["key","mouse","pad"]:
+  for event in InputMap.action_get_events(action):
+   if family(event)==type:return event.as_text().replace(" (Physical)","").replace(" - Physical","").replace("Left Mouse Button","LMB").replace("Right Mouse Button","RMB").replace("Middle Mouse Button","MMB")
+ return action.replace("_"," ").capitalize()
+static func reset() -> Error:
  if config.has_section("bindings"):config.erase_section("bindings")
- config.save(PATH);install()
+ var error:=config.save(save_path);install(false);return error
 static func save_display() -> Error:
- config.set_value("display","quality",quality);config.set_value("accessibility","large_text",large_text);config.set_value("accessibility","reduced_flashes",reduced_flashes);return config.save(PATH)
+ config.set_value("display","quality",quality);config.set_value("accessibility","large_text",large_text);config.set_value("accessibility","reduced_flashes",reduced_flashes);return config.save(save_path)
 static func apply_node(node: Node) -> void:
  if not is_instance_valid(node):return
  if node is Light3D:

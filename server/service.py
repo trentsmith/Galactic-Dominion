@@ -349,22 +349,23 @@ class Store:
         return {'ship': prize, 'settled': event_id}
     def roam_leave(self, mid, uid):
         with self.transaction() as db:
-            row = self._roam_match(db, mid)
+            row = db.execute('SELECT m.* FROM matches m JOIN roam_sessions r ON r.match_id=m.id WHERE m.id=?',(mid,)).fetchone()
+            if not row: raise ServiceError('Unknown free-roam session',404)
             roster = [e for e in json.loads(row['roster']) if e['user_id'] != uid]
             db.execute('UPDATE matches SET roster=? WHERE id=?', (json.dumps(roster),mid))
             db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (uid,mid))
         return {'left': uid}
     def frontier_reward(self, mid, event_id, kind, participants):
         rewards = {'rescue': 50, 'repair': 60, 'escort': 70}
-        if kind not in rewards or not isinstance(event_id, str) or not re.fullmatch(r'shared-[0-9]{1,10}', event_id): raise ServiceError('Invalid frontier job')
+        if not isinstance(kind,str) or kind not in rewards or not isinstance(event_id, str) or not re.fullmatch(r'shared-[0-9]{1,10}', event_id): raise ServiceError('Invalid frontier job')
         if not isinstance(participants, list) or not 1 <= len(participants) <= 6 or any(not isinstance(uid,str) for uid in participants) or len(set(participants)) != len(participants): raise ServiceError('Invalid job participants')
         encoded = json.dumps(sorted(participants))
         with self.transaction() as db:
-            session = self._roam_match(db, mid)
             old = db.execute('SELECT * FROM frontier_receipts WHERE match_id=? AND event_id=?', (mid,event_id)).fetchone()
             if old:
                 if old['kind'] != kind or old['participants'] != encoded: raise ServiceError('Job receipt does not match',409)
                 return {'already_settled': True}
+            session = self._roam_match(db, mid)
             roster = {entry['user_id'] for entry in json.loads(session['roster'])}
             for uid in participants:
                 user = self._user(db,uid)
@@ -387,7 +388,7 @@ class Store:
         return {'closed': mid}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.42.0'
+    server_version = 'GalacticDominion/0.43.0'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -398,7 +399,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.42.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.43.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:

@@ -10,7 +10,9 @@ func _ready() -> void:
   if not InputMap.has_action(action):continue
   var button:=Button.new();button.custom_minimum_size.y=34;buttons[action]=button;add_child(button)
   button.pressed.connect(func():waiting=action;notice.text="Press a key, mouse button or gamepad button for "+action+". Esc cancels. Device axes keep their defaults.")
- var reset:=Button.new();reset.text="RESTORE DEFAULT CONTROLS";reset.pressed.connect(func():FlightPreferences.reset();refresh());add_child(reset);refresh()
+ var reset:=Button.new();reset.text="RESTORE DEFAULT CONTROLS";reset.pressed.connect(func():
+  var error:=FlightPreferences.reset();notice.text="Default controls restored." if error==OK else "Defaults restored for this session. The settings file could not be saved."
+  refresh());add_child(reset);refresh()
 func refresh() -> void:
  for action in buttons:
   var words: PackedStringArray=[]
