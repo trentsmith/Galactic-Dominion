@@ -27,14 +27,25 @@ func tick(delta: float) -> void:
  laser_remaining = maxf(0.0, laser_remaining - delta)
  missile_remaining = maxf(0.0, missile_remaining - delta)
 
+func missile_refusal() -> String:
+ return "MISSILE RELOADING" if missile_remaining>0 else ship.targeting.missile_refusal()
+
+func laser_solution(check_path: bool=false) -> Dictionary:
+ var target:=ship.targeting.target
+ if not ship.targeting.valid_enemy(target):return {}
+ var origin:=ship.targeting.muzzle_position()
+ var time:=Ballistics.intercept_time(target.global_position-origin,target.velocity,primary.speed,primary.lifetime)
+ if time<0:return {"reachable":false}
+ var at:=target.global_position+target.velocity*time
+ var direction:=origin.direction_to(at)
+ return {"reachable":true,"at":at,"time":time,"direction":direction,"aligned":(-ship.global_basis.z).dot(direction)>aim_assist_dot,"clear":not check_path or ship.targeting.clear_line(at,target)}
+
 func fire(missile: bool = false) -> bool:
  if not ship.alive:return false
- if (missile_remaining if missile else laser_remaining) > 0.0:
-  if missile:rejected.emit("MISSILE RELOADING")
-  return false
- if missile and not ship.targeting.locked():
-  rejected.emit("SELECT A TARGET WITH TAB" if not is_instance_valid(ship.targeting.target) else "KEEP TARGET AHEAD TO LOCK")
-  return false
+ if missile:
+  var reason:=missile_refusal()
+  if not reason.is_empty():rejected.emit(reason);return false
+ elif laser_remaining>0:return false
  # Firing ends spawn protection so it cannot be used to attack invulnerably.
  if float(ship.get_meta("spawn_protection", 0)) > 0:
   ship.set_meta("spawn_protection", 0.0)
@@ -55,11 +66,13 @@ func fire(missile: bool = false) -> bool:
  projectile.direction = -ship.global_basis.z
  # Aim assist only within the reticle cone; pilot must still align the ship.
  var target := ship.targeting.target
- if not missile and is_instance_valid(target) and target.alive:
+ if not missile and ship.targeting.valid_enemy(target) and (precise_intercept or ship.player_controlled):
+  var solution:=laser_solution()
+  if solution.get("reachable",false) and solution.aligned:projectile.direction=solution.direction
+ elif not missile and ship.targeting.valid_enemy(target):
   var distance := ship.global_position.distance_to(target.global_position)
-  var origin:=ship.global_position-ship.global_basis.z*5
-  var predicted := Ballistics.aim_point(origin,target.global_position,target.velocity,spec.speed,spec.lifetime) if precise_intercept else target.global_position + target.velocity * distance / spec.speed
-  var aim := origin.direction_to(predicted) if precise_intercept else ship.global_position.direction_to(predicted)
+  var predicted:=target.global_position+target.velocity*distance/spec.speed
+  var aim:=ship.global_position.direction_to(predicted)
   if projectile.direction.dot(aim) > aim_assist_dot:
    projectile.direction = aim
  ship.get_parent().add_child(projectile)

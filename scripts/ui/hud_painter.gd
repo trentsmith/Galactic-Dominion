@@ -50,13 +50,13 @@ func _draw() -> void:
  var exploring := battle is ExplorationMatch
  var remaining := maxi(0, int(battle.max_duration) - int(battle.elapsed))
  text(Vector2(width / 2 - 104, 48), "TRAINING" if battle.training else "FREE ROAM" if free_roam else "EXPLORATION" if exploring else "%02d:%02d   /   ZONE %dm" % [remaining / 60, remaining % 60, int(battle.zone.radius)], CYAN, 20)
- text(Vector2(width / 2 - 98, 70), "NO TIMER / NO INCOMING DAMAGE" if battle.training else "G SERVICE / J STAR CHART" if free_roam else "FREE FLIGHT / G SCAN / J MAP" if exploring else "FINAL COLLAPSE / NO RESPAWNS" if battle.elimination_only and battle.elapsed >= 480 else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
+ text(Vector2(width / 2 - 98, 70), "NO TIMER / NO INCOMING DAMAGE" if battle.training else FlightPreferences.label_for("scan")+" SERVICE / "+FlightPreferences.label_for("sector_map")+" STAR CHART" if free_roam else "FREE FLIGHT / "+FlightPreferences.label_for("scan")+" SCAN / "+FlightPreferences.label_for("sector_map")+" MAP" if exploring else "FINAL COLLAPSE / NO RESPAWNS" if battle.elimination_only and battle.elapsed >= 480 else "CONTRACTING" if battle.elapsed > 30 else "CONTRACTION IN %ds" % int(30 - battle.elapsed), MUTED, 12)
  panel(Rect2(Vector2(24, height - 200), Vector2(320, 176)))
  text(Vector2(42, height - 174), "%s  /  %s" % [ship.callsign.to_upper(), ship.stats.class_name_text.to_upper()], CYAN, 16)
  bar(Vector2(42, height - 145), "HULL INTEGRITY", ship.health.hull, ship.health.max_hull, Color(0.6, 0.9, 0.65))
  bar(Vector2(42, height - 108), "SHIELD ENERGY", ship.health.shield, ship.health.max_shield, CYAN)
  bar(Vector2(42, height - 71), "BOOST RESERVE", ship.movement.boost_energy, ship.stats.boost_capacity, Color(1, 0.7, 0.25))
- text(Vector2(42, height - 36), "%d m/s  •  %s" % [int(ship.velocity.length()), "BOOST" if ship.movement.boost_requested else "CRUISE"], MUTED, 13)
+ text(Vector2(42, height - 36), "%d m/s  •  %s" % [int(ship.velocity.length()), "BOOST" if ship.movement.boost_active else "BOOST RECHARGING" if ship.movement.boost_recovering else "CRUISE"], MUTED, 13)
  panel(Rect2(Vector2(width - 320, height - 200), Vector2(296, 176)))
  text(Vector2(width - 300, height - 171), "ARMAMENT", CYAN, 16)
  text(Vector2(width - 300, height - 143), "%s   LASER    %s" % [FlightPreferences.label_for("laser"), ("READY" if ship.weapons.laser_remaining <= 0 else "%.1fs" % ship.weapons.laser_remaining)], Color.WHITE, 15)
@@ -66,17 +66,20 @@ func _draw() -> void:
  text(Vector2(width - 300, height - 35), FlightPreferences.label_for("pause")+"   PAUSE / SETTINGS", MUTED, 13)
  panel(Rect2(Vector2(width - 320, 22), Vector2(296, 58 + mini(10,battle.fleet.ships.size()) * 25)))
  text(Vector2(width - 300, 47), "FLEET  /  %s" % battle.fleet.current_command.to_upper(), CYAN, 16)
- for ally in battle.fleet.ships.slice(0,10):
-  var y: float = 72.0 + ally.fleet_slot * 25.0
+ var shown:=battle.fleet.ships.slice(0,10)
+ for row in range(shown.size()):
+  var ally: CombatShip=shown[row]
+  var y: float=72.0+row*25.0
   var color := CYAN if ally == ship else MUTED
-  text(Vector2(width - 300, y), "F%d  %s  %s" % [ally.fleet_slot + 1, ally.stats.class_name_text, "%d%%" % int(ally.health.hull / ally.health.max_hull * 100) if ally.alive else "LOST"], color, 14)
+  text(Vector2(width - 300, y), "%s  %s  %s" % [fleet_binding(ally.fleet_slot,ally), ally.stats.class_name_text, "%d%%" % int(ally.health.hull / ally.health.max_hull * 100) if ally.alive else "LOST"], color, 14)
+ if can_cycle_fleet():text(Vector2(width-300,72+shown.size()*25),FlightPreferences.label_for("fleet_previous")+" / "+FlightPreferences.label_for("fleet_next")+"  CYCLE SURVIVORS",MUTED,12)
  text(Vector2(42, 128), "PILOT  /  " + ship.crew_name.to_upper(), MUTED, 13)
  if is_instance_valid(ship.companion):
   text(Vector2(42, 149), "ALIEN COMPANION / AUTO ATTACK", CYAN, 13)
- text(Vector2(width / 2 - 234, height - 30), "1 Follow   2 Attack   3 Defend   4 Regroup   5 Retreat", MUTED, 14)
+ text(Vector2(width / 2 - 234, height - 30),"%s Follow   %s Attack   %s Defend   %s Regroup   %s Retreat"%[FlightPreferences.label_for("command_1"),FlightPreferences.label_for("command_2"),FlightPreferences.label_for("command_3"),FlightPreferences.label_for("command_4"),FlightPreferences.label_for("command_5")],MUTED,14)
  # Reticle remains centered on the ship's weapon axis (camera is offset upward).
  var weapon_point := ship.global_position - ship.global_basis.z * 500.0
- var reticle := battle.camera.unproject_position(weapon_point)
+ var reticle:=feedback_anchor(battle.camera.unproject_position(weapon_point))
  draw_arc(reticle, 15, 0, TAU, 32, Color(CYAN, 0.65), 1.5)
  draw_line(reticle - Vector2(24, 0), reticle - Vector2(10, 0), CYAN)
  draw_line(reticle + Vector2(10, 0), reticle + Vector2(24, 0), CYAN)
@@ -106,7 +109,7 @@ func _draw() -> void:
     text(screen + Vector2(15, 0), "SIGNAL %dm" % int(ship.global_position.distance_to(position)), CYAN, 13)
  if is_instance_valid(battle.mega):
   text(Vector2(42,180),battle.mega.description(ship),Color(1,.8,.4),13)
-  text(Vector2(42,203),"[ / ] TAKE OVER ANY SURVIVING ALLY",MUTED,13)
+  text(Vector2(42,203),FlightPreferences.label_for("fleet_previous")+" / "+FlightPreferences.label_for("fleet_next")+" TAKE OVER ANY SURVIVING ALLY",MUTED,13)
   if battle.sector_map!=null:text(Vector2(42,225),battle.sector_map.warning(ship.position),Color(1,.7,.4),13)
  var target := ship.targeting.target
  for candidate in battle.ships:
@@ -116,6 +119,7 @@ func _draw() -> void:
    _draw_ship_marker(candidate, candidate == target)
  if is_instance_valid(target) and target.alive:
   _draw_target_card(target,ship)
+  _draw_lead(target)
  else:
   text(center + Vector2(-110, 95), FlightPreferences.label_for("target")+"  /  ACQUIRE TARGET", MUTED, 14)
  _draw_feedback(reticle)
@@ -152,8 +156,6 @@ func _draw_ship_marker(ship: CombatShip, selected: bool) -> void:
   draw_rect(Rect2(origin,Vector2(length*clampf(ship.health.shield/maxf(1,ship.health.max_shield),0,1),5)),CYAN)
   draw_rect(Rect2(origin+Vector2(0,8),Vector2(length,6)),Color(.2,.08,.08))
   draw_rect(Rect2(origin+Vector2(0,8),Vector2(length*clampf(ship.health.hull/maxf(1,ship.health.max_hull),0,1),6)),Color(1,.65,.35))
- if selected:
-  text(screen + Vector2(25, -8), ship.stats.class_name_text, color, 12)
 
 func _draw_location(at: Vector3, name_text: String, color: Color, ship: CombatShip) -> void:
  if battle.camera.is_position_behind(at): return
@@ -167,18 +169,46 @@ func _draw_target_card(target: CombatShip, ship: CombatShip) -> void:
  panel(Rect2(at,Vector2(460,106)))
  text(at+Vector2(16,22),"%s / %s / %dm" % [target.callsign,target.stats.class_name_text,int(ship.global_position.distance_to(target.global_position))],Color.WHITE,14)
  var hull_percent := int(100*target.health.hull/maxf(1,target.health.max_hull))
- text(at+Vector2(16,45),"HULL %d%% · %d / %d" % [hull_percent,ceil(target.health.hull),target.health.max_hull],Color(1,.75,.45),13)
+ text(at+Vector2(16,45),"HULL %d%% · %d / %d" % [hull_percent,ceil(target.health.hull),ceil(target.health.max_hull)],Color(1,.75,.45),13)
  draw_rect(Rect2(at+Vector2(16,52),Vector2(204,7)),Color(.16,.08,.08))
  draw_rect(Rect2(at+Vector2(16,52),Vector2(204*clampf(target.health.hull/maxf(1,target.health.max_hull),0,1),7)),Color(1,.65,.35))
- text(at+Vector2(240,45),"SHIELD %d / %d" % [ceil(target.health.shield),target.health.max_shield],CYAN,13)
+ text(at+Vector2(240,45),"SHIELD %d / %d" % [ceil(target.health.shield),ceil(target.health.max_shield)],CYAN,13)
  draw_rect(Rect2(at+Vector2(240,52),Vector2(204,7)),Color(.08,.15,.2))
  draw_rect(Rect2(at+Vector2(240,52),Vector2(204*clampf(target.health.shield/maxf(1,target.health.max_shield),0,1),7)),CYAN)
  var lock_fraction := clampf(ship.targeting.lock_time/maxf(.01,ship.targeting.lock_duration),0,1)
  var lock_status := "LOCK READY · PRESS "+FlightPreferences.label_for("missile") if ship.targeting.locked() else "LOCK %d%% · KEEP TARGET AHEAD" % int(lock_fraction*100)
+ if not ship.targeting.lock_reason.is_empty():lock_status=ship.targeting.lock_reason
  if ship.targeting.locked() and ship.weapons.missile_remaining>0:lock_status = "LOCK HELD · MISSILE RELOAD %.1fs" % ship.weapons.missile_remaining
- text(at+Vector2(16,81),lock_status,CYAN,13)
+ var lock_color:=CYAN if ship.targeting.lock_reason.is_empty() else Color(1,.75,.4)
+ text(at+Vector2(16,81),lock_status,lock_color,13)
  draw_rect(Rect2(at+Vector2(16,90),Vector2(428,4)),Color(.08,.15,.2))
- draw_rect(Rect2(at+Vector2(16,90),Vector2(428*lock_fraction,4)),Color(.5,1,.75))
+ draw_rect(Rect2(at+Vector2(16,90),Vector2(428*lock_fraction,4)),lock_color)
+
+func can_cycle_fleet() -> bool:
+ return battle.network_role=="offline" and battle.fleet.ships.size()>3
+
+func fleet_binding(slot: int,candidate: CombatShip=null) -> String:
+ if battle.network_role=="client" and is_instance_valid(candidate):
+  var session:=battle.get_parent() as OnlineSession
+  if session!=null:
+   var controlled:=session.slot_owners.find(session.peer_id);var index:=battle.ships.find(candidate)
+   if controlled<0 or index not in range(6) or index/3!=controlled/3:return "ALLY"
+   if session.slot_owners[index]!=0 and session.slot_owners[index]!=session.peer_id:return "PILOT"
+   slot=index%3
+ return FlightPreferences.label_for("ship_%d"%(slot+1)) if slot<3 else "%02d"%(slot+1)
+
+func _draw_lead(target: CombatShip) -> void:
+ if not FlightPreferences.show_lead_guide or not is_instance_valid(feedback) or not feedback.lead.get("reachable",false) or not feedback.lead.get("clear",false):return
+ if battle.camera.is_position_behind(feedback.lead.at):return
+ var point:=battle.camera.unproject_position(feedback.lead.at)
+ if not Rect2(Vector2(32,110),size-Vector2(64,320)).has_point(point):return
+ var color:=Color(.5,1,.75) if feedback.lead.aligned else Color(1,.8,.4)
+ var diamond:=PackedVector2Array([point+Vector2(0,-8),point+Vector2(8,0),point+Vector2(0,8),point+Vector2(-8,0),point+Vector2(0,-8)])
+ draw_polyline(diamond,color,1.8,true)
+ if not battle.camera.is_position_behind(target.global_position):
+  var body:=battle.camera.unproject_position(target.global_position)
+  if body.distance_to(point)>24:draw_dashed_line(body,point,Color(color,.35),1.0,5)
+ text(point+Vector2(13,-10),"LEAD · %.1fs"%feedback.lead.time,color,12)
 
 func _draw_feedback(reticle: Vector2) -> void:
  if not is_instance_valid(feedback):return
@@ -200,14 +230,18 @@ func _draw_feedback(reticle: Vector2) -> void:
     draw_line(reticle+Vector2(side*19,vertical*19),reticle+Vector2(side*26,vertical*26),color,2)
   text(reticle+Vector2(28,-25),"-%d %s" % [ceil(feedback.hit_amount),"HULL HIT" if feedback.hit_hull else "SHIELD HIT"],color,13)
  if feedback.incoming_count>0:
-  panel(Rect2(center+Vector2(-230,-150),Vector2(460,38)))
-  text(center+Vector2(-210,-125),"INCOMING MISSILE ×%d · BOOST + STRAFE" % feedback.incoming_count,Color(1,.5,.3),17)
+  var color:=Color(1,.6,.25)
+  panel(Rect2(center+Vector2(-230,-154),Vector2(460,62)))
+  text(center+Vector2(-213,-130),"MISSILE ×%d / %s / %dm"%[feedback.incoming_count,feedback.direction_label(feedback.incoming_position),int(feedback.incoming_distance)],color,17)
+  text(center+Vector2(-213,-107),("~%.1fs CLOSING · "%feedback.incoming_eta if feedback.incoming_eta>=0 and feedback.incoming_eta<100 else "")+"BOOST + STRAFE TO EVADE",color,13)
+  var direction:=feedback.indicator_direction(feedback.incoming_position);var tangent:=Vector2(-direction.y,direction.x);var point:=reticle+direction*150
+  draw_colored_polygon(PackedVector2Array([point+direction*13,point-direction*4+tangent*9,point-direction*4-tangent*9]),color)
  if feedback.notice_remaining>0:
   text(center+Vector2(-215,163),feedback.notice,feedback.notice_color,14)
  var ship := battle.pilot.ship
  if ship.health.hull<=ship.health.max_hull*.25 and ship.alive:
   draw_rect(Rect2(Vector2.ZERO,Vector2(size.x,5)),Color(1,.3,.2,.7))
-  text(Vector2(42,size.y-213),"CRITICAL HULL · %s SWITCH / 5 RETREAT" % ("F1–F10" if battle.team_size==10 else "F1–F3"),Color(1,.45,.3),13)
+  text(Vector2(42,size.y-213),"CRITICAL HULL · %s SWITCH / %s RETREAT"%[FlightPreferences.label_for("fleet_next") if can_cycle_fleet() else "/".join([fleet_binding(0),fleet_binding(1),fleet_binding(2)]),FlightPreferences.label_for("command_5")],Color(1,.45,.3),13)
 
 func feedback_anchor(projected: Vector2) -> Vector2:
  # Offscreen/behind-camera weapon projections can be enormous during ship changes.

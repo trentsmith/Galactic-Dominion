@@ -1,14 +1,25 @@
-# Galactic Dominion — Flight Polish
+# Galactic Dominion — Dogfight Upgrade
 
 A Godot 4.6.3 space-combat and exploration prototype with configurable 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions, a personal sanctuary and self-hosted online play. GDScript and procedural 3D assets; no paid packages required.
 
 ## Play
 
-Download [v0.43.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.43.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
+Download [v0.44.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.44.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
 
-For source development, clone the `phase-43-polish` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
+For source development, clone the `phase-44-combat` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
 
-## New in v0.43 — Flight Polish
+## New in v0.44 — Dogfight Upgrade
+
+- **Moving-target lead guide:** Tab favors enemies near your aim. An amber diamond shows where to lead your lasers; it turns mint inside the existing assistance cone. Player laser assistance shares the guide's actual interception calculation.
+- **Useful cover:** missile locks require a clear path within 600m. Range, cover, alignment and reload refusals explain what to change; a blocked launch does not start its cooldown.
+- **Directional missile alerts:** bearing, distance and an approximate closing estimate identify the most urgent incoming missile. Survey/journey text yields to the warning while your course marker stays visible.
+- **Better fleet control:** **[ / ]** cycle every surviving offline ally in 10v10 and Armada. Co-op rows stay separate and distinguish your group from another pilot's ships.
+- **Steadier flight camera:** obstacle-aware chase position, frame-independent FOV transitions and visible boost recovery. Empty boost recharges to a usable reserve instead of rapidly pulsing.
+- **Comfort options:** Settings adds **Reduce camera motion** and **Show laser lead guide**. Existing combat stats, rare component odds and saved collections remain intact.
+
+[Combat guide, checks and remaining playtests](docs/COMBAT_HANDLING.md).
+
+## Previous polish improvements
 
 - Failed checkpoints keep the current flight open until you retry or explicitly leave. Activity changes also protect unextracted surveys; completed deliveries return normally.
 - Keyboard, mouse and gamepad button remaps persist independently. Combat prompts show your current controls.
@@ -73,7 +84,7 @@ Hold **K for two seconds within 60m** of a gold space cache (6m on a planet). Th
 
 ## Controls and settings
 
-W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse aim; Q/E roll; Shift boost. LMB laser, **M missile**, R ability, Tab target. F1–F3 switch fleet ships; 1–5 give orders. Armada also uses [ / ] to cycle survivors. J chart, G scan/service, K recover parts, F job interaction, O Frontier board, H scenic HUD, Esc menu. Online flight continues while menus are open.
+W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse aim; Q/E roll; Shift boost. LMB laser, **M missile**, R ability, Tab target. F1–F3 switch fleet ships; 1–5 give orders. Offline 10v10 and Armada use [ / ] to cycle every surviving ally. J chart, G scan/service, K recover parts, F job interaction, O Frontier board, H scenic HUD, Esc menu. Online flight continues while menus are open.
 
 Settings has **Low/Medium/High** graphics, larger menu text, reduced explosion flashes, mouse sensitivity/inversion, volume, fullscreen and input rebinding. Gamepad defaults: left stick moves, right stick aims, triggers fire, bumpers move vertically, A boosts, Y targets, X activates abilities, D-pad up scans/interacts, Back opens the Frontier board, B captures on planets. Other actions can be assigned under **Controls / Rebind Inputs**. Axis defaults remain fixed; key, mouse and gamepad button bindings can be changed. Hardware controller feel still needs human playtesting.
 
@@ -85,4 +96,4 @@ Past endings have small free-roam consequences: Seal adds a reconstruction tende
 
 ## Validation
 
-824 local Godot checks across 25 suites passed, plus 30 account-service tests. Real two-client HTTP/ENet runs covered normal co-op and a participant disconnect with a committed reward whose reply was lost. Native Linux renders checked departure warnings, remapped HUD prompts and empty atlas guidance. See [polish validation and remaining scope](docs/POLISH.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.
+903 local Godot checks across 28 suites passed, including 47 new combat handling checks and a real moving-target projectile hit. Native Linux bracket-key input and rendered combat HUD views were checked. Real two-client HTTP/ENet tests covered arena play and co-op; release CI additionally covers packaged Linux/server startup and the disconnect/lost-reply regression. See [combat validation](docs/COMBAT_HANDLING.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.

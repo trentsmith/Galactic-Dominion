@@ -288,6 +288,10 @@ func show_settings(paused: bool) -> void:
  large.toggled.connect(func(value):FlightPreferences.large_text=value;FlightPreferences.save_display();center.theme=CartoonStyle.ui_theme());column.add_child(large)
  var flashes:=CheckButton.new();flashes.text="Reduce explosion flashes";flashes.button_pressed=FlightPreferences.reduced_flashes
  flashes.toggled.connect(func(value):FlightPreferences.reduced_flashes=value;FlightPreferences.save_display());column.add_child(flashes)
+ var motion:=CheckButton.new();motion.name="ReducedCameraMotion";motion.text="Reduce camera motion (fixed FOV)";motion.button_pressed=FlightPreferences.reduced_camera_motion
+ motion.toggled.connect(func(value):FlightPreferences.reduced_camera_motion=value;FlightPreferences.save_display());column.add_child(motion)
+ var lead:=CheckButton.new();lead.name="ShowLeadGuide";lead.text="Show laser lead guide";lead.button_pressed=FlightPreferences.show_lead_guide
+ lead.toggled.connect(func(value):FlightPreferences.show_lead_guide=value;FlightPreferences.save_display());column.add_child(lead)
  var bindings:=Button.new();bindings.text="CONTROLS / REBIND INPUTS";column.add_child(bindings)
  var remaps:=ControlsPanel.new();remaps.visible=false;column.add_child(remaps);bindings.pressed.connect(func():remaps.visible=not remaps.visible)
  _button(column, "BACK", func(): show_menu(paused))

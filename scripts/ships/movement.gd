@@ -4,6 +4,8 @@ extends Node
 var ship: CombatShip
 var thrust := Vector3.ZERO
 var boost_requested := false
+var boost_active:=false
+var boost_recovering:=false
 var boost_energy := 100.0
 var ability_multiplier := 1.0
 var external_acceleration:=Vector3.ZERO
@@ -16,9 +18,11 @@ func apply_gravity_slow(duration: float) -> void:
 
 func tick(delta: float) -> void:
  slow_remaining = maxf(0,slow_remaining-delta)
- var boosting := boost_requested and boost_energy > 1.0 and thrust.length_squared() > 0.01
- boost_energy = clampf(boost_energy + (-32.0 if boosting else ship.stats.boost_regen) * delta, 0.0, ship.stats.boost_capacity)
- var top_speed := ship.stats.speed * ability_multiplier * (1.8 if boosting else 1.0) * (0.65 if slow_remaining>0 else 1.0)
+ if boost_recovering and boost_energy>=maxf(8,ship.stats.boost_capacity*.15):boost_recovering=false
+ boost_active=boost_requested and not boost_recovering and boost_energy>0 and thrust.length_squared()>.01
+ boost_energy=clampf(boost_energy+(-32.0 if boost_active else ship.stats.boost_regen)*delta,0,ship.stats.boost_capacity)
+ if boost_active and boost_energy<=0:boost_recovering=true;boost_active=false
+ var top_speed := ship.stats.speed * ability_multiplier * (1.8 if boost_active else 1.0) * (0.65 if slow_remaining>0 else 1.0)
  var desired := ship.global_basis * thrust.limit_length() * top_speed
  # Mild drag preserves a short drift while still making stopping accessible.
  var response := ship.stats.acceleration if thrust.length_squared() > 0.01 else ship.stats.acceleration * 0.38

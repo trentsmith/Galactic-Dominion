@@ -47,7 +47,8 @@ func _process(delta: float) -> void:
  if clock>0:return
  clock=.15
  var visible_hud:=not battle.scenic_hud and not battle.map_panel.visible
- hint.visible=visible_hud;goals.visible=visible_hud;marker.visible=visible_hud and not route().is_empty()
+ var threatened:=is_instance_valid(battle.hud) and is_instance_valid(battle.hud.feedback) and battle.hud.feedback.incoming_count>0
+ hint.visible=visible_hud and not threatened;goals.visible=visible_hud and not threatened;marker.visible=visible_hud and not route().is_empty()
  var target:=resolve_route(route()) if not route().is_empty() else {}
  if target.is_empty():hint.text=""
  elif not str(target.ended).is_empty():marker.hide();hint.text=target.ended

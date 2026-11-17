@@ -1,16 +1,18 @@
-Galactic Dominion v0.43.0 — Flight Polish
+Galactic Dominion v0.44.0 — Dogfight Upgrade
 
-This update improves the existing flight, exploration, controls and co-op loops. Free roam remains the default; wildlife, sanctuary trips and orbiting companions remain available, and the scripted campaign stays optional and disabled by default.
+A more readable and dependable version of the existing combat game. Free roam, wildlife expeditions, sanctuary, orbiting companions and self-hosted online play remain available; the scripted story stays disabled by default.
 
-- A failed checkpoint keeps the current expedition open. Before changing activities or quitting, choose to keep playing or explicitly leave without unsaved progress. Undelivered surveys receive the same protection; completed deliveries return to orbit normally.
-- Keyboard, mouse and gamepad button remaps save independently, including migration from previous settings. Combat and course prompts reflect the current bindings.
-- Completed jobs, recovered components and mined deposits stop drawing stale course markers. Claimed badges clear their pinned goal, and empty atlas searches explain filters and sensor requirements.
-- Mining gives specific distance, obstruction and fracture guidance; mineral and component recovery prompts avoid overlapping.
-- Co-op job participation follows accounts rather than mutable ship slots. Payments retry before departures/session closure, including when a participant disconnects during payment or a committed payment's reply is lost. Duplicate payment receipts remain idempotent. Team pings expire even if updates stop.
-- Unchanged automatic checkpoints avoid redundant file writes; manual saves and failed-write retries remain active.
+- **Aim ahead of moving ships:** Tab favors enemies near your aim, and a lead diamond uses actual laser interception. Amber means turn toward it; mint indicates the existing assistance cone. Player lasers use the same solution, with no damage or cone bonus.
+- **Use cover:** missile locks require a clear path within 600m. Blocked, out-of-range, misaligned and reloading shots explain their refusal; a blocked launch does not spend its cooldown.
+- **Read incoming threats:** directional missile alerts show bearing, distance and an approximate closing estimate, prioritizing urgent threats. Old hull warnings clear when switching ships.
+- **Command every survivor:** [ / ] cycle all offline allies in 10v10 and Armada. Fleet rows show valid keys and vessel numbers; co-op allied rows stay separate and identify your ownership group.
+- **Steadier flight:** boost recovery prevents rapid empty-reserve pulses, HUD/FOV follow actual thrust, and the chase camera avoids scenery with frame-independent smoothing.
+- **Comfort options:** Settings adds reduced camera motion and a lead-guide toggle. Existing save protections, atlas routes, co-op reward retries and rare component odds remain.
 
-Download the appropriate client ZIP, extract the entire folder, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. No Godot installation is required for players. Existing controls remain: **M** missiles, **O** Frontier/atlas/journey, **J** chart, lasers fracture deposits, **hold F** within 75m to tractor materials, **K** recover components, **G** service stations, **L** land at eligible planets.
+**Windows:** download Galactic-Dominion-Windows.zip, extract the entire folder and run GalacticDominion.exe. **Linux:** extract Galactic-Dominion-Linux.zip and run GalacticDominion.x86_64. Players do not need Godot. M fires missiles; Tab selects targets; F1–F3 select your first ships; [ / ] cycle offline survivors. All actions can be rebound in Settings.
 
-Save schema stays at 11 and reads existing profiles. Update online hosts and every client together to v0.43.0. Local and online inventories stay separate. Legendary/mythic component odds are unchanged. Shared planet/wreck interiors and durable recovery of pending payments after a server restart remain unfinished. Windows GUI, physical-controller and human balance playtests remain pending.
+Schema remains 11; existing collections and progression are retained. Update online clients and hosts together to v0.44.0. Large fleet modes use AI; online still supports six humans. Shared planet/wreck interiors and pending-payment recovery after killing a host remain unfinished.
 
-Validation: 824 local Godot checks across 25 suites; 30 account-service tests; normal and fault-injected real two-client HTTP/ENet runs. Native Linux renders inspected for departure warnings, remapped combat prompts and empty atlas guidance. See [the polish guide](https://github.com/trentsmith/Galactic-Dominion/blob/phase-43-polish/docs/POLISH.md) for details and reproduction commands.
+Validation: 903 local Godot checks across 28 suites, including a real moving-target laser impact; native Linux HUD views and captured bracket-key input; real two-client HTTP/ENet arena and co-op runs. Release CI runs backend, difficulty, disconnect/retry and packaged Linux/server checks. Windows GUI, physical controllers, target-PC performance and human combat balance still need playtests.
+
+[Combat guide and validation details](https://github.com/trentsmith/Galactic-Dominion/blob/phase-44-combat/docs/COMBAT_HANDLING.md).

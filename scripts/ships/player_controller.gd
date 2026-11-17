@@ -40,18 +40,28 @@ func _physics_process(delta: float) -> void:
 func update_camera(delta: float) -> void:
  if not is_instance_valid(ship):
   return
- var desired := ship.global_position + ship.global_basis * Vector3(0, 3.4, 14.5) + ship.velocity * 0.025
- camera.global_position = camera.global_position.lerp(desired, 1.0 - exp(-8.0 * delta))
+ var desired:=ship.global_position+ship.global_basis*Vector3(0,3.4,14.5)+ship.velocity*(0.0 if FlightPreferences.reduced_camera_motion else .025)
+ var smoothed:=camera.global_position.lerp(desired,1.0-exp(-8.0*delta))
+ camera.global_position=clear_camera_position(smoothed)
  var desired_basis := ship.global_basis
  camera.global_basis = camera.global_basis.slerp(desired_basis, 1.0 - exp(-12.0 * delta)).orthonormalized()
- camera.fov = lerpf(camera.fov, 78.0 if ship.movement.boost_requested else 68.0, delta * 3.0)
+ camera.fov=lerpf(camera.fov,78.0 if ship.movement.boost_active and not FlightPreferences.reduced_camera_motion else 68.0,1.0-exp(-3.0*delta))
+
+func clear_camera_position(desired: Vector3) -> Vector3:
+ if not ship.is_inside_tree():return desired
+ var focus:=ship.global_position+ship.global_basis.y*1.5
+ var query:=PhysicsRayQueryParameters3D.create(focus,desired,2)
+ var hit:=ship.get_world_3d().direct_space_state.intersect_ray(query)
+ return hit.position+hit.normal*.5 if not hit.is_empty() else desired
 
 func take_control(next: CombatShip) -> void:
  if is_instance_valid(ship):
   ship.player_controlled = false
   ship.movement.boost_requested = false
+  ship.movement.boost_active=false
  ship = next
  ship.player_controlled = true
  aim_offset = Vector2.ZERO
- camera.global_position = ship.global_position + ship.global_basis * Vector3(0, 3.4, 14.5)
+ camera.global_position=clear_camera_position(ship.global_position+ship.global_basis*Vector3(0,3.4,14.5))
  camera.global_basis = ship.global_basis
+ camera.fov=68

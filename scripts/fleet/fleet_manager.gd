@@ -8,12 +8,14 @@ var pilot: PlayerPilot
 var current_command := "follow"
 
 func _unhandled_input(event: InputEvent) -> void:
- if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-  return
- for slot in range(mini(ships.size(), 10)):
+ handle_flight_input(event,Input.mouse_mode==Input.MOUSE_MODE_CAPTURED)
+
+func handle_flight_input(event: InputEvent,captured: bool) -> void:
+ if not captured:return
+ for slot in range(mini(ships.size(),3)):
   if event.is_action_pressed("ship_%d" % (slot + 1)):
    switch_to(slot)
- if ships.size()>10:
+ if ships.size()>3:
   if event.is_action_pressed("fleet_next"):cycle_control(1)
   elif event.is_action_pressed("fleet_previous"):cycle_control(-1)
  var commands := ["follow", "attack", "defend", "regroup", "retreat"]

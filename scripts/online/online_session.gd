@@ -97,14 +97,14 @@ func _peer_connected(id: int) -> void:
 func _connected() -> void:
  loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.43.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.44.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.43.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.44.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -393,7 +393,7 @@ func ship_event(action: String, argument: int = 0) -> void:
    "target": ship.targeting.cycle()
    "missile":
     if not ship.weapons.fire(true):
-     combat_notice.rpc_id(sender,"MISSILE RELOADING" if ship.weapons.missile_remaining>0 else "SELECT A TARGET WITH TAB" if not is_instance_valid(ship.targeting.target) else "KEEP TARGET AHEAD TO LOCK")
+     combat_notice.rpc_id(sender,ship.weapons.missile_refusal())
    "ability": ship.activate_ability()
    "command":
     var commands := ["follow", "attack", "defend", "regroup", "retreat"]
@@ -487,11 +487,13 @@ func _physics_process(delta: float) -> void:
      metrics[owner].kills += maxf(0, totals.x - ship_totals[index].x)
      metrics[owner].damage += maxf(0, totals.y - ship_totals[index].y)
     ship_totals[index] = totals
-    states.append({"position": ship.position, "rotation": ship.basis.get_rotation_quaternion(), "velocity": ship.velocity, "hull": ship.health.hull, "shield": ship.health.shield, "boost": ship.movement.boost_energy, "boosting": ship.movement.boost_requested, "alive": ship.alive, "laser": ship.weapons.laser_remaining, "missile": ship.weapons.missile_remaining, "ability": ship.ability_remaining, "recharge": ship.ability_cooldown, "target": arena.ships.find(ship.targeting.target), "lock": ship.targeting.lock_time, "flash": ship.muzzle_flash, "taken":Vector3(ship.health.shield_damage,ship.health.hull_damage,ship.health.environment_damage)})
+    states.append({"position": ship.position, "rotation": ship.basis.get_rotation_quaternion(), "velocity": ship.velocity, "hull": ship.health.hull, "shield": ship.health.shield, "boost": ship.movement.boost_energy, "boosting": ship.movement.boost_active, "boost_recovering":ship.movement.boost_recovering, "alive": ship.alive, "laser": ship.weapons.laser_remaining, "missile": ship.weapons.missile_remaining, "ability": ship.ability_remaining, "recharge": ship.ability_cooldown, "target": arena.ships.find(ship.targeting.target), "lock": ship.targeting.lock_time, "lock_reason":ship.targeting.lock_reason if owner!=0 else "", "flash": ship.muzzle_flash, "taken":Vector3(ship.health.shield_damage,ship.health.hull_damage,ship.health.environment_damage)})
    var bullets: Array = []
    for child in arena.get_children():
     if child is SpaceProjectile:
-     bullets.append({"position": child.position, "direction": child.direction, "team": child.team, "missile": child.spec.tracking, "companion": child.companion_shot, "color": child.projectile_color, "style": child.spec.impact_style,"target":arena.ships.find(child.target)})
+     var bullet:={"position":child.position,"direction":child.direction,"team":child.team,"missile":child.spec.tracking,"companion":child.companion_shot,"color":child.projectile_color,"style":child.spec.impact_style,"target":arena.ships.find(child.target)}
+     if child.spec.tracking:bullet.speed=child.spec.speed
+     bullets.append(bullet)
    for id in members:
     if _connected_peer(id):
      if arena is FreeRoamMatch and army_snapshot_clock >= 0.2:
@@ -570,6 +572,8 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   ship.velocity = state.velocity
   ship.movement.boost_energy = state.boost
   ship.movement.boost_requested = state.boosting
+  ship.movement.boost_active=state.boosting
+  ship.movement.boost_recovering=bool(state.get("boost_recovering",false))
   ship.health.dead = not state.alive
   ship.weapons.laser_remaining = state.laser
   ship.weapons.missile_remaining = state.missile
@@ -577,6 +581,7 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   ship.ability_cooldown = state.recharge
   ship.targeting.target = arena.ships[int(state.target)] if state.target >= 0 else null
   ship.targeting.lock_time = state.lock
+  ship.targeting.lock_reason=str(state.get("lock_reason",""))
   ship.muzzle_mesh.visible = state.flash > 0
   ship.shield_mesh.visible = state.ability > 0 and ship.stats.ability == "aegis"
   ship.outside_time = 1.0 if ship.position.length() > radius else 0.0
@@ -591,6 +596,7 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
   mesh.set_meta("incoming_target",int(bullet.get("target",-1)))
   mesh.set_meta("missile",bool(bullet.missile))
   mesh.set_meta("team",int(bullet.team))
+  mesh.set_meta("flight_velocity",(bullet.direction as Vector3)*float(bullet.get("speed",125.0)))
   var shape := SphereMesh.new()
   shape.radius = 0.28 if bullet.get("companion", false) else 0.32 if bullet.missile else 0.18
   shape.height = shape.radius * 2

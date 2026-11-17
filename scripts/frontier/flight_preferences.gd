@@ -9,6 +9,8 @@ static var originals: Dictionary={}
 static var quality:="high"
 static var large_text:=false
 static var reduced_flashes:=false
+static var reduced_camera_motion:=false
+static var show_lead_guide:=true
 static func install(reload_config: bool=true) -> void:
  if originals.is_empty():
   for action in ACTIONS:
@@ -18,6 +20,8 @@ static func install(reload_config: bool=true) -> void:
  if quality not in ["low","medium","high"]:quality="high"
  large_text=bool(config.get_value("accessibility","large_text",false))
  reduced_flashes=bool(config.get_value("accessibility","reduced_flashes",false))
+ reduced_camera_motion=bool(config.get_value("accessibility","reduced_camera_motion",false))
+ show_lead_guide=bool(config.get_value("display","show_lead_guide",true))
  for action in ACTIONS:
   if originals.has(action):
    InputMap.action_erase_events(action)
@@ -61,13 +65,13 @@ static func family(event: InputEvent) -> String:
 static func label_for(action: String) -> String:
  for type in ["key","mouse","pad"]:
   for event in InputMap.action_get_events(action):
-   if family(event)==type:return event.as_text().replace(" (Physical)","").replace(" - Physical","").replace("Left Mouse Button","LMB").replace("Right Mouse Button","RMB").replace("Middle Mouse Button","MMB")
+   if family(event)==type:return event.as_text().replace(" (Physical)","").replace(" - Physical","").replace("BracketLeft","[").replace("BracketRight","]").replace("Left Mouse Button","LMB").replace("Right Mouse Button","RMB").replace("Middle Mouse Button","MMB")
  return action.replace("_"," ").capitalize()
 static func reset() -> Error:
  if config.has_section("bindings"):config.erase_section("bindings")
  var error:=config.save(save_path);install(false);return error
 static func save_display() -> Error:
- config.set_value("display","quality",quality);config.set_value("accessibility","large_text",large_text);config.set_value("accessibility","reduced_flashes",reduced_flashes);return config.save(save_path)
+ config.set_value("display","quality",quality);config.set_value("accessibility","large_text",large_text);config.set_value("accessibility","reduced_flashes",reduced_flashes);config.set_value("accessibility","reduced_camera_motion",reduced_camera_motion);config.set_value("display","show_lead_guide",show_lead_guide);return config.save(save_path)
 static func apply_node(node: Node) -> void:
  if not is_instance_valid(node):return
  if node is Light3D:

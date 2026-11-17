@@ -19,6 +19,11 @@ var lock_clock := 0.0
 var locked_before := false
 var previous_target: CombatShip
 var audio_events: Array[String] = []
+var lead: Dictionary={}
+var guidance_clock:=0.0
+var incoming_position:=Vector3.ZERO
+var incoming_distance:=0.0
+var incoming_eta:=-1.0
 
 func _ready() -> void:
  for ship in battle.ships:watch_ship(ship)
@@ -44,6 +49,7 @@ func tick(delta: float) -> void:
   hit_remaining = 0
   locked_before = false
   previous_target = null
+  notice_remaining=0;incoming_count=0;incoming_clock=0;threat_clock=0;guidance_clock=0;lead.clear()
  if not is_instance_valid(controlled):return
  hit_remaining = maxf(0,hit_remaining-delta)
  notice_remaining = maxf(0,notice_remaining-delta)
@@ -54,9 +60,12 @@ func tick(delta: float) -> void:
   directions[index].remaining -= delta
   if directions[index].remaining <= 0:directions.remove_at(index)
  if battle.finished:return
- var target := controlled.targeting.target
+ var target:=controlled.targeting.target
+ if target!=previous_target:locked_before=false;guidance_clock=0
+ guidance_clock-=delta
+ if guidance_clock<=0:
+  guidance_clock=.1;lead=controlled.weapons.laser_solution(true) if FlightPreferences.show_lead_guide else {}
  var locked := controlled.targeting.locked()
- if target != previous_target:locked_before = false
  if locked and not locked_before and lock_clock <= 0:
   sound("lock")
   notify("TARGET LOCKED · MISSILE RELOADING" if controlled.weapons.missile_remaining>0 else "MISSILE LOCK READY · PRESS "+FlightPreferences.label_for("missile"),Color(.3,1,.85),1.2)
@@ -134,13 +143,28 @@ func indicator_direction(world_position: Vector3) -> Vector2:
 func count_incoming() -> int:
  var count := 0
  var ship := battle.pilot.ship
+ incoming_distance=0;incoming_eta=-1;incoming_position=Vector3.ZERO
  if not is_instance_valid(ship) or not ship.alive:return 0
+ var urgency:=INF
  for node in battle.get_children():
   if node.is_queued_for_deletion():continue
+  var relevant:=false
+  var velocity:=Vector3.ZERO
   if node is SpaceProjectile:
-   if node.spec.tracking and node.target == ship and node.team != ship.team and node.elapsed < node.spec.lifetime and node.global_position.distance_to(ship.global_position)<900:count+=1
+   relevant=node.spec.tracking and node.target==ship and node.team!=ship.team and node.elapsed<node.spec.lifetime
+   velocity=node.direction*node.spec.speed
   elif node.has_meta("network_projectile") and node.get_meta("incoming_target",-1) == battle.ships.find(ship):
-   if node.get_meta("missile",false) and int(node.get_meta("team",ship.team)) != ship.team and node.global_position.distance_to(ship.global_position)<900:count+=1
+   relevant=bool(node.get_meta("missile",false)) and int(node.get_meta("team",ship.team))!=ship.team
+   velocity=node.get_meta("flight_velocity",Vector3.ZERO)
+  if not relevant:continue
+  var distance: float=node.global_position.distance_to(ship.global_position)
+  if distance>=900:continue
+  count+=1
+  var closing: float=(velocity-ship.velocity).dot(node.global_position.direction_to(ship.global_position))
+  var eta: float=distance/closing if closing>1 else -1.0
+  var priority: float=eta if eta>=0 else 1000.0+distance
+  if priority<urgency:
+   urgency=priority;incoming_position=node.global_position;incoming_distance=distance;incoming_eta=eta
  return count
 
 static func damage_cause(report: Dictionary) -> String:
