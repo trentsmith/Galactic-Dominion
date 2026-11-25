@@ -1,5 +1,6 @@
 class_name ArmadaCombat
 extends RefCounted
+const FEATURED_FLEETS=[Vector2i(200,50),Vector2i(200,200),Vector2i(50,200)]
 static func count(value: Variant) -> int:
  if not value is int and not value is float:return 200
  if not is_finite(float(value)):return 200

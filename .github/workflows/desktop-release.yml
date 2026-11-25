@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-44-combat]
+    branches: [phase-45-armada]
   workflow_dispatch:
 permissions:
   contents: write
@@ -31,6 +31,12 @@ jobs:
           curl -fL --retry 3 -o /tmp/python-embed.zip https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip
       - name: Verify wilderness streaming
         run: godot --headless --path . --editor --import --quit && godot --headless --path . --script res://tests/wilderness_test.gd --fixed-fps 60
+      - name: Verify default Armada menu, fleet counts and replay
+        run: |
+          godot --headless --path . --script res://tests/armada_presets_test.gd --fixed-fps 60 > /tmp/armada-presets.log 2>&1
+          cat /tmp/armada-presets.log
+          grep 'ARMADA_PRESETS_TEST: 44 checks, 0 failures' /tmp/armada-presets.log
+          if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/armada-presets.log; then exit 1; fi
       - name: Export and package clients and servers
         run: python3 tools/build_release.py --godot /tmp/godot/Godot_v4.6.3-stable_linux.x86_64 --templates /tmp/templates --python-embed /tmp/python-embed.zip
       - name: Verify standalone Linux startup
@@ -45,6 +51,8 @@ jobs:
           cat /tmp/journal.log
           grep GALACTIC_FRONTIER_READY /tmp/journal.log
           if grep -E 'SCRIPT ERROR|ERROR:' /tmp/journal.log; then exit 1; fi
+      - name: Verify all three requested Armada formats in the packaged game
+        run: python3 tests/test_packaged_armada.py build/linux/GalacticDominion.x86_64
       - name: Verify standalone atlas and journey
         run: |
           for view in atlas journey; do
@@ -197,8 +205,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.44.0
+          tag=v0.45.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.44.0 — Dogfight Upgrade' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.45.0 — Armada Presets' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

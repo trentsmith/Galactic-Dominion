@@ -1,14 +1,30 @@
-# Galactic Dominion — Dogfight Upgrade
+# Galactic Dominion — Armada Presets
 
 A Godot 4.6.3 space-combat and exploration prototype with configurable 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions, a personal sanctuary and self-hosted online play. GDScript and procedural 3D assets; no paid packages required.
 
 ## Play
 
-Download [v0.44.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.44.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
+Download [v0.45.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.45.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
 
-For source development, clone the `phase-44-combat` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
+For source development, clone the `phase-45-armada` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
 
-## New in v0.44 — Dogfight Upgrade
+## New in v0.45 — Armada Presets
+
+Large fleet battles have prominent shortcuts on the main menu:
+
+| Preset | Your fleet | Enemy fleet | Total ships |
+| --- | --- | --- | --- |
+| **200 v 50** | You + 199 allied AI | 50 enemy AI | 250 |
+| **200 v 200** | You + 199 allied AI | 200 enemy AI | 400 |
+| **50 v 200** | You + 49 allied AI | 200 enemy AI | 250 |
+
+Click a preset, review **Your fleet / Enemy fleet** and difficulty, then click **LAUNCH**. **ARMADA / UP TO 200 v 200** opens custom setup with independent counts from 1–200. Deploy Again retains both numbers. Fleet Royale remains 3v3; Fleet War remains 10v10. These Armada battles are single-player with AI, including up to 400 ships.
+
+![Main menu with the three Armada presets](docs/images/armada-menu.webp)
+
+Settings, flight controls and Quit remain visible below the scrolling mode list. The v0.44 dogfight improvements, exploration, wildlife and saved collections are retained. [Armada guide](docs/ARMADA.md).
+
+## Dogfight improvements from v0.44
 
 - **Moving-target lead guide:** Tab favors enemies near your aim. An amber diamond shows where to lead your lasers; it turns mint inside the existing assistance cone. Player laser assistance shares the guide's actual interception calculation.
 - **Useful cover:** missile locks require a clear path within 600m. Range, cover, alignment and reload refusals explain what to change; a blocked launch does not start its cooldown.
@@ -96,4 +112,4 @@ Past endings have small free-roam consequences: Seal adds a reconstruction tende
 
 ## Validation
 
-903 local Godot checks across 28 suites passed, including 47 new combat handling checks and a real moving-target projectile hit. Native Linux bracket-key input and rendered combat HUD views were checked. Real two-client HTTP/ENet tests covered arena play and co-op; release CI additionally covers packaged Linux/server startup and the disconnect/lost-reply regression. See [combat validation](docs/COMBAT_HANDLING.md). Windows GUI, physical gamepad testing and human balance playtests remain pending.
+The 44-check Armada preset regression verifies the default menu, exact fleet counts, launch summaries, pending counter edits, custom counts, saved settings, replay, 3v3 and 10v10 navigation. Existing command-deck and Armada regressions also pass. Release CI verifies all three formats in the exported Linux client and runs the broader combat, exploration, creature and online regressions. Native Linux menu/setup captures check layout. Windows GUI, physical controllers and human balance/performance playtests remain pending.

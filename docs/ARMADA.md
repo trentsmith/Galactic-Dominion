@@ -1,6 +1,12 @@
-# Uncharted Armada — 200v200
+# Armada — 200v50, 200v200 and 50v200
 
-Choose ARMADA / CHOOSE YOUR FLEETS on the title screen. Enter 1–200 fighters per side. The allied count includes your ship; the others are AI. Presets, saved choices and replay support unequal matchups. `-- --armada` uses your saved counts. The default is 200v200. Online remains six pilot slots. Existing solo 3v3, 10v10 and story modes remain separate.
+The main menu prominently offers **200 v 50**, **200 v 200** and **50 v 200**, plus **ARMADA / UP TO 200 v 200** for custom fleets. Click a preset, check both counters and difficulty, then select **LAUNCH**. The highlighted setup preset matches the counters; choosing another preset replaces pending typed edits too. Browsing a preset does not change saved sizes until launch.
+
+The left count includes your ship and allied AI: 200 means you + 199 allies; 50 means you + 49 allies. The right count is enemy AI. 200v50 and 50v200 each create 250 ships; 200v200 creates 400. Custom counts remain independently editable from 1–200, and Deploy Again preserves both sides. These are single-player Armada battles. Online remains six human pilot slots; Fleet Royale is 3v3 and Fleet War is 10v10.
+
+![Armada setup with 200 allies versus 50 enemies](images/armada-setup.webp)
+
+`-- --armada` launches saved fleet counts, defaulting to 200v200 for a new profile. The startup log prints `GALACTIC_ARMADA_READY` with the actual friendly, enemy and total ship counts for diagnostics.
 
 ## Sector and sensors
 
@@ -12,7 +18,7 @@ Stars influence ships within 650m, producing inward pull and sideways drift. The
 
 ## Fleet and relics
 
-F1–F10 selects the first ten allies; [ and ] cycles through all survivors. Commands 1–5 apply to the fleet. No respawns; the last fleet standing wins. The zone contracts and collapses after eight minutes under the existing elimination rules.
+F1–F3 select the first three fitted allies; [ and ] cycle through all survivors. Commands 1–5 apply to the fleet. No respawns; the last fleet standing wins. The zone contracts and collapses after eight minutes under the existing elimination rules.
 
 Approach a relic within 32m if the ship has none. B fires; three charges, 12 seconds between shots, pickup respawn after 90 seconds. Equipment belongs to that live ship and never enters permanent inventory. Both sides can collect and use it.
 
@@ -28,3 +34,9 @@ Approach a relic within 32m if the ship has none. B fires; three charges, 12 sec
 Local final benchmark: 2,400 physics frames / 40 simulated seconds in 30.21 wall seconds, 3,243.6 confirmed damage, 190 allied and 182 opposing survivors. This is headless simulation on a shared development machine. It does not measure GPU FPS, prove 400-player networking or replace human playtests.
 
 Run `godot --headless --path . --script res://tests/armada_test.gd --fixed-fps 60` and `res://tests/armada_sector_test.gd` for live combat and sector checks. Test actual Windows graphics, long matches and balance before treating this experimental mode as production-ready.
+
+## v0.45 validation
+
+`tests/armada_presets_test.gd` runs with campaign guidance disabled, matching the default released game. Its 44 checks use the actual menu buttons to launch and replay 200v50, 200v200 and 50v200, verify exact living-ship totals and Armada systems, exercise stale SpinBox edits and arbitrary custom counts, and retain normal 3v3/10v10 navigation. Command-deck and existing Armada checks cover the legacy feature mode as well.
+
+After exporting Linux, run `python3 tests/test_packaged_armada.py build/linux/GalacticDominion.x86_64`. It boots each requested format with isolated settings in the exported client and verifies the actual roster marker without script errors. Release CI runs this check for all three presets. This establishes packaged launch behavior, not Windows frame rates or human battle balance.

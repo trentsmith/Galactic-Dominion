@@ -1,18 +1,19 @@
-Galactic Dominion v0.44.0 — Dogfight Upgrade
+Galactic Dominion v0.45.0 — Armada Presets
 
-A more readable and dependable version of the existing combat game. Free roam, wildlife expeditions, sanctuary, orbiting companions and self-hosted online play remain available; the scripted story stays disabled by default.
+The 200-ship combat options are now prominent on the title screen. The default free-roam menu shows direct shortcuts for all three requested Armada formats:
 
-- **Aim ahead of moving ships:** Tab favors enemies near your aim, and a lead diamond uses actual laser interception. Amber means turn toward it; mint indicates the existing assistance cone. Player lasers use the same solution, with no damage or cone bonus.
-- **Use cover:** missile locks require a clear path within 600m. Blocked, out-of-range, misaligned and reloading shots explain their refusal; a blocked launch does not spend its cooldown.
-- **Read incoming threats:** directional missile alerts show bearing, distance and an approximate closing estimate, prioritizing urgent threats. Old hull warnings clear when switching ships.
-- **Command every survivor:** [ / ] cycle all offline allies in 10v10 and Armada. Fleet rows show valid keys and vessel numbers; co-op allied rows stay separate and identify your ownership group.
-- **Steadier flight:** boost recovery prevents rapid empty-reserve pulses, HUD/FOV follow actual thrust, and the chase camera avoids scenery with frame-independent smoothing.
-- **Comfort options:** Settings adds reduced camera motion and a lead-guide toggle. Existing save protections, atlas routes, co-op reward retries and rare component odds remain.
+- **200 v 50:** you + 199 allied AI against 50 enemy AI; 250 ships total.
+- **200 v 200:** you + 199 allied AI against 200 enemy AI; 400 ships total.
+- **50 v 200:** you + 49 allied AI against 200 enemy AI; 250 ships total.
 
-**Windows:** download Galactic-Dominion-Windows.zip, extract the entire folder and run GalacticDominion.exe. **Linux:** extract Galactic-Dominion-Linux.zip and run GalacticDominion.x86_64. Players do not need Godot. M fires missiles; Tab selects targets; F1–F3 select your first ships; [ / ] cycle offline survivors. All actions can be rebound in Settings.
+Click a preset, review both fleet counters and enemy difficulty, then click **LAUNCH**. **ARMADA / UP TO 200 v 200** opens the same setup for any custom 1–200 count on either side. Presets visibly highlight their selected numbers and replace pending counter edits. Browsing leaves saved choices intact; launching saves them. **DEPLOY AGAIN** keeps both fleet sizes.
 
-Schema remains 11; existing collections and progression are retained. Update online clients and hosts together to v0.44.0. Large fleet modes use AI; online still supports six humans. Shared planet/wreck interiors and pending-payment recovery after killing a host remain unfinished.
+Settings, Flight controls and Quit stay visible in a fixed menu footer. Fleet Royale remains 3v3 and Fleet War remains 10v10. The v0.44 aim guide, cover-aware locks, missile warnings, boost/camera improvements and survivor cycling remain available. F1–F3 control the first three fitted ships; [ / ] cycle every surviving offline ally.
 
-Validation: 903 local Godot checks across 28 suites, including a real moving-target laser impact; native Linux HUD views and captured bracket-key input; real two-client HTTP/ENet arena and co-op runs. Release CI runs backend, difficulty, disconnect/retry and packaged Linux/server checks. Windows GUI, physical controllers, target-PC performance and human combat balance still need playtests.
+**Download Galactic-Dominion-Windows.zip**, extract the entire folder, then run **GalacticDominion.exe**. Linux clients, self-hosted servers and procedural model exports are also included. Players do not need Godot.
 
-[Combat guide and validation details](https://github.com/trentsmith/Galactic-Dominion/blob/phase-44-combat/docs/COMBAT_HANDLING.md).
+Save schema stays at 11 and retains existing collections. Update online hosts and clients together to v0.45.0. Armada's larger fleets are AI; online remains six human space pilots. The scripted campaign remains disabled by default, with exploration, wildlife and companions preserved.
+
+Validation includes 44 new default-menu/preset checks covering real launches and replay for every requested format; existing navigation and Armada regressions; native Linux menu/setup captures; and release CI checks that boot all three formats in the exported Linux game. Full Windows GUI, physical-controller and target-PC performance/balance playtests remain pending.
+
+[Armada instructions and validation](https://github.com/trentsmith/Galactic-Dominion/blob/phase-45-armada/docs/ARMADA.md).

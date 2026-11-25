@@ -124,10 +124,10 @@ func start_tutorial() -> void:
 func start_armada(seed_value: int=0,allies: int=0,enemies: int=0) -> void:
  start_battle(ArmadaCombat.count(allies if allies>0 else armada_allies),"",seed_value,ArmadaCombat.count(enemies if enemies>0 else armada_enemies),true)
 
-func show_armada_setup() -> void:
+func show_armada_setup(allies: int=0,enemies: int=0) -> void:
  if is_instance_valid(menu):menu.queue_free()
  menu=CanvasLayer.new();menu.layer=10;add_child(menu)
- var screen:=ArmadaSetup.new();screen.host=self;menu.add_child(screen)
+ var screen:=ArmadaSetup.new();screen.host=self;screen.initial_fleets=Vector2i(allies,enemies);menu.add_child(screen)
  Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
 
 func launch_armada(allies: int,enemies: int) -> void:
@@ -159,6 +159,7 @@ func start_battle(size_per_team: int = 3,mission: String = "",seed_value: int=0,
  add_child(battle)
  battle.pilot.sensitivity = sensitivity
  battle.pilot.inverted = inverted
+ if battle.is_armada():print("GALACTIC_ARMADA_READY allies=%d enemies=%d ships=%d"%[battle.team_size,battle.enemy_team_size,battle.ships.size()])
 
 func resume() -> void:
  if is_instance_valid(menu):

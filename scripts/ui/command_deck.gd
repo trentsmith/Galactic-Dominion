@@ -31,11 +31,13 @@ func _ready() -> void:
  var row := HBoxContainer.new()
  row.add_theme_constant_override("separation",38)
  margin.add_child(row)
+ var navigation:=VBoxContainer.new();navigation.custom_minimum_size.x=440;row.add_child(navigation)
  var scroll := ScrollContainer.new()
  scroll.name = "NavigationScroll"
  scroll.custom_minimum_size.x = 440
  scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
- row.add_child(scroll)
+ scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ navigation.add_child(scroll)
  var column := VBoxContainer.new()
  column.custom_minimum_size.x = 422
  column.add_theme_constant_override("separation",5)
@@ -47,6 +49,14 @@ func _ready() -> void:
  _label(column,"Online flight continues while this menu is open." if paused and online else "Your flight is paused. Take a moment among the stars." if paused else "Chart a course. Mine a discovery.\nFind your next upgrade among the stars." if not GameFeatures.campaign_enabled() else "Choose 1–200 fighters on each side.\nNew sectors. Stronger AI. Gravity hazards.",15,MUTED)
  var primary := _button(column,"ResumeButton" if paused else "ArmadaButton","RESUME FLIGHT   >" if paused else "ENTER THE FRONTIER   >" if not GameFeatures.campaign_enabled() else "ARMADA / CHOOSE YOUR FLEETS   >",host.resume if paused else host.start_free_roam if not GameFeatures.campaign_enabled() else host.show_armada_setup,52)
  _primary_style(primary)
+ if not paused:
+  if not GameFeatures.campaign_enabled():
+   _button(column,"ArmadaSetupButton","ARMADA / UP TO 200 v 200   >",host.show_armada_setup,44)
+  var armada_presets:=HBoxContainer.new();armada_presets.name="ArmadaPresets";armada_presets.add_theme_constant_override("separation",8);column.add_child(armada_presets)
+  for sizes in ArmadaCombat.FEATURED_FLEETS:
+   var preset:=_button(armada_presets,"ArmadaPreset%dv%d"%[sizes.x,sizes.y],"%d v %d"%[sizes.x,sizes.y],host.show_armada_setup.bind(sizes.x,sizes.y),36)
+   preset.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  _label(column,"ARMADA / YOUR FLEET vs ENEMY AI",11,MINT)
  if not paused and not host.profile.journey.resume.is_empty():
   _button(column,"ContinueFrontier","CONTINUE / "+FreeRoamWorld.NAMES[int(host.profile.journey.resume.region)].to_upper(),host.continue_frontier,36)
  if not paused:
@@ -60,7 +70,6 @@ func _ready() -> void:
   _button(battle_options,"StoryButton","STORY / JOURNAL" if GameFeatures.campaign_enabled() else "FRONTIER LOG",host.show_story,30)
   var modes := GridContainer.new();modes.columns=2;modes.add_theme_constant_override("h_separation",10);modes.add_theme_constant_override("v_separation",8);column.add_child(modes)
   _mode(modes,"TutorialButton","Replay flight school" if host.settings.get_value("tutorial","flight_completed",false) else "Start here: flight school","Learn to fly · safe practice",host.start_tutorial)
-  if not GameFeatures.campaign_enabled():_mode(modes,"ArmadaSetupButton","Armada fleet setup","1–200 ships on each side",host.show_armada_setup)
   _mode(modes,"BattleButton","Fleet Royale","Fast 3v3 space battles",host.start_battle)
   _mode(modes,"FleetWarButton","Fleet War","10v10 · last fleet standing",host.start_fleet_war)
   if GameFeatures.wildlife_enabled():_mode(modes,"PlanetsButton","Planet expeditions","Land · survey · capture wildlife",host.show_planets)
@@ -79,7 +88,7 @@ func _ready() -> void:
   if host.battle is TrainingFlight and not host.battle.completed:
    _button(column,"RetryLessonButton","RETRY THIS LESSON",func():host.battle.retry_lesson();host.resume(),40)
   _button(column,"ReturnButton","SKIP TRAINING / COMMAND DECK" if host.battle is TrainingFlight else "RETURN TO COMMAND DECK",host.return_to_menu,40)
- var footer := HBoxContainer.new();footer.add_theme_constant_override("separation",12);column.add_child(footer)
+ var footer := HBoxContainer.new();footer.add_theme_constant_override("separation",12);navigation.add_child(footer)
  _button(footer,"SettingsButton","Settings",func():host.show_settings(paused),30).flat=true
  _button(footer,"ControlsButton","Flight controls",_show_controls,30).flat=true
  _button(footer,"QuitButton","Quit",host.quit_game,30).flat=true
