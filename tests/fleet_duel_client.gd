@@ -12,6 +12,7 @@ var feedback_seen:=false
 var finishing:=false
 var leaving:=false
 var role:=""
+var laser_speed := WeaponSpec.new().speed
 func _initialize() -> void:call_deferred("run")
 func run() -> void:
  role=OS.get_environment("GD_TEST_USER")
@@ -58,6 +59,11 @@ func _process(delta: float) -> bool:
  if OS.get_environment("GD_TEST_DUEL_PACKAGED")=="1":
   for ship in arena.ships:
    if ship.health.shield_damage+ship.health.hull_damage>0:feedback_seen=true
+  for node in arena.get_children():
+   if node.has_meta("network_projectile") and not bool(node.get_meta("missile",false)) and not bool(node.get_meta("companion",false)):
+    var flight: Vector3 = node.get_meta("flight_velocity",Vector3.ZERO)
+    if not is_equal_approx(flight.length(),laser_speed):
+     push_error("DUEL_CLIENT_PROJECTILE_SPEED: visual laser differs from the authoritative weapon");quit(1);return false
  if arena.elapsed>1 and moved and not switch_sent:
   switch_sent=true
   main.network.ship_event.rpc_id(1,"switch",count-1)

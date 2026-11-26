@@ -550,7 +550,7 @@ func _physics_process(delta: float) -> void:
    for child in arena.get_children():
     if child is SpaceProjectile:
      var bullet:={"id":child.get_instance_id(),"position":child.position,"direction":child.direction,"team":child.team,"missile":child.spec.tracking,"companion":child.companion_shot,"color":child.projectile_color,"style":child.spec.impact_style,"target":arena.ships.find(child.target)}
-     if child.spec.tracking:bullet.speed=child.spec.speed
+     if child.spec.tracking or match_mode == "fleet_duel":bullet.speed=child.spec.speed
      bullets.append(bullet)
    for id in members:
     if _connected_peer(id):
