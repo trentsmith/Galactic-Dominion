@@ -58,7 +58,7 @@ func _process(delta: float) -> bool:
  if OS.get_environment("GD_TEST_DUEL_PACKAGED")=="1":
   for ship in arena.ships:
    if ship.health.shield_damage+ship.health.hull_damage>0:feedback_seen=true
- if arena.elapsed>1 and not switch_sent:
+ if arena.elapsed>1 and moved and not switch_sent:
   switch_sent=true
   main.network.ship_event.rpc_id(1,"switch",count-1)
   main.network.ship_event.rpc_id(1,"switch",count) # Must not take the opposing fleet.

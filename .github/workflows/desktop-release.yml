@@ -37,6 +37,14 @@ jobs:
           cat /tmp/armada-presets.log
           grep 'ARMADA_PRESETS_TEST: 44 checks, 0 failures' /tmp/armada-presets.log
           if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/armada-presets.log; then exit 1; fi
+      - name: Verify recruitment, all 100 duel ships and packet budgets
+        run: |
+          godot --headless --path . --script res://tests/fleet_recruitment_test.gd --fixed-fps 60 > /tmp/fleet-recruitment.log 2>&1
+          cat /tmp/fleet-recruitment.log
+          grep 'FLEET_RECRUITMENT_TEST: 20 checks, 0 failures' /tmp/fleet-recruitment.log
+          if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/fleet-recruitment.log; then exit 1; fi
+          python3 tests/test_fleet_duel_network.py
+          GD_TEST_CLIENTS=6 python3 tests/test_network_integration.py
       - name: Export and package clients and servers
         run: python3 tools/build_release.py --godot /tmp/godot/Godot_v4.6.3-stable_linux.x86_64 --templates /tmp/templates --python-embed /tmp/python-embed.zip
       - name: Verify standalone Linux startup
@@ -197,14 +205,6 @@ jobs:
           done
       - name: Verify packaged multiplayer server
         run: GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_network_integration.py
-      - name: Verify recruitment, all 100 duel ships and packet budgets
-        run: |
-          godot --headless --path . --script res://tests/fleet_recruitment_test.gd --fixed-fps 60 > /tmp/fleet-recruitment.log 2>&1
-          cat /tmp/fleet-recruitment.log
-          grep 'FLEET_RECRUITMENT_TEST: 20 checks, 0 failures' /tmp/fleet-recruitment.log
-          if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/fleet-recruitment.log; then exit 1; fi
-          python3 tests/test_fleet_duel_network.py
-          GD_TEST_CLIENTS=6 python3 tests/test_network_integration.py
       - name: Verify live 50v50 on the packaged host
         run: GD_TEST_DUEL_PACKAGED=1 GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_fleet_duel_network.py
       - uses: actions/upload-artifact@v4
