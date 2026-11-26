@@ -11,6 +11,7 @@ import secrets
 import sqlite3
 import time
 from contextlib import contextmanager
+from copy import deepcopy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -27,6 +28,33 @@ def active_collectible(item):
 DEFAULT_CLASSES = ['interceptor', 'skirmisher', 'guardian']
 CLASS_NAMES = dict(zip(DEFAULT_CLASSES + ['bomber', 'support'], ['Interceptor', 'Skirmisher', 'Guardian', 'Bomber', 'Support']))
 SLOTS = ['engine', 'shield', 'weapon', 'utility', 'crew', 'variant']
+FLEET_CAP = 200
+BATTLE_FLEET_CAP = 50
+RECRUITS = [
+    dict(id='dart', name='Crimson Dart', hull='interceptor', cost=100, variant='variant_nexus_crimson', role='Fast pursuit · temporary speed burst'),
+    dict(id='corsair', name='Dusk Corsair', hull='skirmisher', cost=120, variant='variant_nexus_eldritch', role='Balanced assault · weapon overcharge'),
+    dict(id='bulwark', name='Bloodforged Bulwark', hull='guardian', cost=150, variant='variant_nexus_crimson', role='Heavy defense · protects nearby wingmates'),
+    dict(id='siegebreaker', name='Siegebreaker', hull='bomber', cost=180, variant='variant_nexus_crimson', role='Heavy strike · missile barrage'),
+    dict(id='tender', name='Abyss Tender', hull='support', cost=160, variant='variant_nexus_eldritch', role='Fleet support · repairs nearby allies'),
+]
+
+def standard_fitting(crew=''):
+    return dict(engine='engine_standard', shield='shield_standard', weapon='weapon_standard', utility='utility_standard', crew=crew, variant='variant_standard')
+
+def migrate_fleet(p):
+    """Keep old accounts' exact three hulls/fittings; no local inventory uploads."""
+    if 'fleet_roster' not in p:
+        p['fleet_roster'] = [dict(id=f'issued-{i}', name=f'{CLASS_NAMES[hull]} {i+1}', hull=hull,
+                                  loadout=deepcopy(p['loadouts'][i]), source='Fleet issue', recruited_at=0)
+                             for i, hull in enumerate(p['ship_classes'])]
+        p['active_ships'] = [ship['id'] for ship in p['fleet_roster']]
+    p['version'] = 2
+    p.setdefault('battle_fleet', p['active_ships'][:])
+
+def active_views(p):
+    by_id = {s['id']: s for s in p['fleet_roster']}
+    p['ship_classes'] = [by_id[s]['hull'] for s in p['active_ships']]
+    p['loadouts'] = [deepcopy(by_id[s]['loadout']) for s in p['active_ships']]
 
 def rarity_for_ticket(ticket):
     return "mythic" if ticket == 0 else "legendary" if ticket < 5 else "rare" if ticket < 824 else "uncommon" if ticket < 4756 else "common"
@@ -58,6 +86,7 @@ class Store:
             CREATE TABLE IF NOT EXISTS roam_sessions(match_id TEXT PRIMARY KEY REFERENCES matches(id));
             CREATE TABLE IF NOT EXISTS roam_receipts(event_id TEXT PRIMARY KEY, match_id TEXT NOT NULL REFERENCES matches(id), user_id TEXT NOT NULL, ship TEXT NOT NULL, created REAL NOT NULL);
             CREATE TABLE IF NOT EXISTS frontier_receipts(match_id TEXT NOT NULL REFERENCES matches(id), event_id TEXT NOT NULL, kind TEXT NOT NULL, participants TEXT NOT NULL, created REAL NOT NULL, PRIMARY KEY(match_id,event_id));
+            CREATE TABLE IF NOT EXISTS recruitment_receipts(user_id TEXT NOT NULL REFERENCES users(id), request_id TEXT NOT NULL, offer TEXT NOT NULL, ship_id TEXT NOT NULL, PRIMARY KEY(user_id,request_id));
             ''')
             columns = {r['name'] for r in db.execute('PRAGMA table_info(users)')}
             if 'active_match' not in columns: db.execute("ALTER TABLE users ADD COLUMN active_match TEXT NOT NULL DEFAULT ''")
@@ -84,11 +113,19 @@ class Store:
         return row
     def _profile(self, row):
         p = json.loads(row['profile'])
+        migrate_fleet(p)
+        active_views(p)
         p.setdefault('discovery_records', {k:dict(v) for k,v in p['inventory'].items()})
         p.setdefault('frontier', {'completed': 0, 'reputation': 0})
         p.update(user_id=row['id'], commander_name=row['username'])
         return p
     def _save(self, db, uid, profile):
+        # Compatibility views remain writable by existing fitting/reward code.
+        # The selected vessel keeps its fittings when returned to the reserve.
+        if 'fleet_roster' in profile:
+            by_id = {s['id']: s for s in profile['fleet_roster']}
+            for i, sid in enumerate(profile['active_ships']):
+                by_id[sid]['loadout'] = deepcopy(profile['loadouts'][i])
         db.execute('UPDATE users SET profile=? WHERE id=?', (json.dumps(profile), uid))
     def _unlocked(self, row):
         if row['locked_until'] > time.time(): raise ServiceError('Inventory is locked during an online match', 409)
@@ -127,7 +164,11 @@ class Store:
             row = db.execute('SELECT * FROM users WHERE username=?', (username,)).fetchone()
             if not row: raise ServiceError('Commander not found', 404)
             p = self._profile(row)
-            return {k: p[k] for k in ['commander_name', 'inventory', 'ship_classes', 'loadouts', 'battles', 'wins', 'total_kills', 'total_damage', 'discovery_records']}
+            result = {k: p[k] for k in ['commander_name', 'inventory', 'ship_classes', 'loadouts', 'battles', 'wins', 'total_kills', 'total_damage', 'discovery_records']}
+            by_id = {s['id']: s for s in p['fleet_roster']}
+            result['active_fleet'] = [dict(name=by_id[s]['name'], hull=by_id[s]['hull']) for s in p['battle_fleet']]
+            result['fleet_size'] = len(p['fleet_roster'])
+            return result
     def ticket(self, uid):
         token = secrets.token_urlsafe(32)
         with self.transaction() as db:
@@ -145,21 +186,123 @@ class Store:
             user = self._user(db, row['user_id'])
             self._unlocked(user)
             return self._profile(user)
+    def recruitment_board(self, uid):
+        p = self.me(uid)
+        return {'offers': RECRUITS, 'capacity': FLEET_CAP, 'battle_capacity': BATTLE_FLEET_CAP, 'profile': p}
+    def _new_vessel(self, p, hull, name, source):
+        if len(p['fleet_roster']) >= FLEET_CAP: raise ServiceError(f'Fleet reserve is full ({FLEET_CAP} ships)', 409)
+        ship = dict(id=secrets.token_hex(16), hull=hull, name=name, loadout=standard_fitting(), source=source, recruited_at=int(time.time()))
+        p['fleet_roster'].append(ship)
+        return ship
+    def recruit(self, uid, offer, request_id, commission=False):
+        if not isinstance(offer, str) or not isinstance(request_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{16,100}', request_id):
+            raise ServiceError('Invalid recruitment request')
+        receipt_offer = ('commission:' if commission else 'contract:') + offer
+        with self.transaction() as db:
+            row = self._user(db, uid); p = self._profile(row)
+            receipt = db.execute('SELECT * FROM recruitment_receipts WHERE user_id=? AND request_id=?', (uid, request_id)).fetchone()
+            if receipt:
+                if receipt['offer'] != receipt_offer: raise ServiceError('Request ID was already used for a different recruit', 409)
+                return {'profile': p, 'ship_id': receipt['ship_id'], 'already_recruited': True}
+            self._unlocked(row)
+            if commission:
+                hull = offer.removeprefix('ship_')
+                if offer != 'ship_' + hull or hull not in CLASS_NAMES: raise ServiceError('Select an owned ship blueprint')
+                self._remove(p, offer)
+                ship = self._new_vessel(p, hull, CLASS_NAMES[hull] + ' Prize', 'Commissioned blueprint')
+            else:
+                contract = next((r for r in RECRUITS if r['id'] == offer), None)
+                if not contract: raise ServiceError('Unknown recruitment contract')
+                if p['salvage'] < contract['cost']: raise ServiceError(f"Need {contract['cost']} salvage to recruit {contract['name']}")
+                ship = self._new_vessel(p, contract['hull'], contract['name'], 'Recruitment contract')
+                p['salvage'] -= contract['cost']
+                if contract['variant'] not in p['inventory']: self._grant(p, contract['variant'], 'Recruitment livery license')
+                ship['loadout']['variant'] = contract['variant']
+            self._save(db, uid, p)
+            db.execute('INSERT INTO recruitment_receipts VALUES(?,?,?,?)', (uid, request_id, receipt_offer, ship['id']))
+            return {'profile': p, 'ship_id': ship['id'], 'already_recruited': False}
+    def deploy(self, uid, index, ship_id):
+        if type(index) is not int or not 0 <= index < 3 or not isinstance(ship_id, str): raise ServiceError('Invalid fleet slot')
+        with self.transaction() as db:
+            row = self._user(db, uid); self._unlocked(row); p = self._profile(row)
+            ship = next((s for s in p['fleet_roster'] if s['id'] == ship_id), None)
+            if not ship: raise ServiceError('That vessel is not in your reserve', 403)
+            if p['active_ships'][index] == ship_id: return p
+            if ship_id in p['active_ships']: raise ServiceError('That vessel is already deployed; choose a reserve ship')
+            old_id = p['active_ships'][index]
+            crew = ship['loadout']['crew']
+            if crew and any(s['id'] not in [old_id, ship_id] and s['id'] in p['battle_fleet'] and s['loadout']['crew'] == crew for s in p['fleet_roster']):
+                raise ServiceError('This vessel’s crew is assigned to another deployed ship; unassign that crew first')
+            if ship_id in p['battle_fleet']:
+                other = p['battle_fleet'].index(ship_id)
+                p['battle_fleet'][other] = old_id
+            p['battle_fleet'][index] = ship_id
+            p['active_ships'][index] = ship_id
+            active_views(p)
+            self._save(db, uid, p)
+            return p
+    def assign_vessel(self, uid, ship_id, deployed):
+        if not isinstance(ship_id, str) or type(deployed) is not bool: raise ServiceError('Invalid deployment request')
+        with self.transaction() as db:
+            row = self._user(db, uid); self._unlocked(row); p = self._profile(row)
+            ship = next((s for s in p['fleet_roster'] if s['id'] == ship_id), None)
+            if not ship: raise ServiceError('That vessel is not in your reserve', 403)
+            if deployed and ship_id not in p['battle_fleet']:
+                if len(p['battle_fleet']) >= BATTLE_FLEET_CAP: raise ServiceError('Battle fleet is full (50 ships); return a wingmate to reserve first', 409)
+                crew = ship['loadout']['crew']
+                if crew and any(s['id'] in p['battle_fleet'] and s['loadout']['crew'] == crew for s in p['fleet_roster']):
+                    raise ServiceError('This crew is already assigned to a deployed vessel')
+                p['battle_fleet'].append(ship_id)
+            if not deployed:
+                if ship_id in p['active_ships']: raise ServiceError('Replace this F1–F3 lead ship in Online Fleet before returning it to reserve')
+                if ship_id in p['battle_fleet']: p['battle_fleet'].remove(ship_id)
+            self._save(db, uid, p)
+            return p
+    def fit_vessel(self, uid, ship_id, slot, item):
+        if not isinstance(ship_id, str) or not isinstance(slot, str) or not isinstance(item, str): raise ServiceError('Invalid fitting')
+        with self.transaction() as db:
+            row = self._user(db, uid); self._unlocked(row); p = self._profile(row)
+            ship = next((s for s in p['fleet_roster'] if s['id'] == ship_id), None)
+            if not ship: raise ServiceError('That vessel is not in your reserve', 403)
+            definition = ITEMS.get(item)
+            if slot == 'crew' and item == '': pass
+            elif slot not in SLOTS or not definition or definition['slot'] != slot or item not in p['inventory']: raise ServiceError('Invalid or unowned fitting')
+            elif definition['ship_class'] and definition['ship_class'] != CLASS_NAMES[ship['hull']]: raise ServiceError('Wrong hull for this variant')
+            if slot == 'crew' and item and ship_id in p['battle_fleet'] and any(s['id'] != ship_id and s['id'] in p['battle_fleet'] and s['loadout']['crew'] == item for s in p['fleet_roster']):
+                raise ServiceError('Crew is assigned to another deployed ship')
+            ship['loadout'][slot] = item
+            active_views(p)
+            self._save(db, uid, p)
+            return p
     def equip(self, uid, index, slot, item, hull=None):
         if type(index) is not int or not 0 <= index < 3: raise ServiceError('Invalid fleet slot')
         with self.transaction() as db:
             row = self._user(db, uid); self._unlocked(row); p = self._profile(row)
             if hull is not None:
-                if hull not in CLASS_NAMES or (hull not in DEFAULT_CLASSES and 'ship_' + hull not in p['inventory']): raise ServiceError('Hull not discovered')
-                p['ship_classes'][index] = hull
-                variant = ITEMS[p['loadouts'][index]['variant']]
-                if variant['ship_class'] and variant['ship_class'] != CLASS_NAMES[hull]: p['loadouts'][index]['variant'] = 'variant_standard'
+                # Legacy class selector: select an owned vessel, or commission a
+                # won/traded blueprint once. Never create free duplicate ships.
+                if not isinstance(hull, str) or hull not in CLASS_NAMES: raise ServiceError('Hull not discovered')
+                selected = next((s for s in p['fleet_roster'] if s['hull'] == hull and s['id'] not in p['active_ships']), None)
+                if selected is None: selected = next((s for s in p['fleet_roster'] if s['hull'] == hull), None)
+                if selected is None:
+                    self._remove(p, 'ship_' + hull)
+                    selected = self._new_vessel(p, hull, CLASS_NAMES[hull] + ' Prize', 'Commissioned blueprint')
+                if selected['id'] in p['active_ships']:
+                    other = p['active_ships'].index(selected['id'])
+                    p['active_ships'][other] = p['active_ships'][index]
+                p['active_ships'][index] = selected['id']
+                p['battle_fleet'] = p['active_ships'][:] + [sid for sid in p['battle_fleet'][3:] if sid not in p['active_ships']]
+                by_id = {s['id']: s for s in p['fleet_roster']}
+                p['ship_classes'] = [by_id[s]['hull'] for s in p['active_ships']]
+                for i, fitting in enumerate(p['loadouts']):
+                    variant = ITEMS[fitting['variant']]
+                    if variant['ship_class'] and variant['ship_class'] != CLASS_NAMES[p['ship_classes'][i]]: fitting['variant'] = 'variant_standard'
             else:
                 definition = ITEMS.get(item)
                 if slot == 'crew' and item == '': pass
                 elif slot not in SLOTS or not definition or definition['slot'] != slot or item not in p['inventory']: raise ServiceError('Invalid or unowned fitting')
                 elif definition['ship_class'] and definition['ship_class'] != CLASS_NAMES[p['ship_classes'][index]]: raise ServiceError('Wrong hull for this variant')
-                if slot == 'crew' and item and any(i != index and fit['crew'] == item for i, fit in enumerate(p['loadouts'])): raise ServiceError('Crew is assigned to another ship')
+                if slot == 'crew' and item and any(s['id'] != p['active_ships'][index] and s['id'] in p['battle_fleet'] and s['loadout']['crew'] == item for s in p['fleet_roster']): raise ServiceError('Crew is assigned to another ship')
                 p['loadouts'][index][slot] = item
             self._save(db, uid, p)
             return p
@@ -179,7 +322,7 @@ class Store:
         entry = p['inventory'].get(item)
         if not entry: raise ServiceError('Item not owned')
         if entry['count'] == 1:
-            if any(item in fit.values() for fit in p['loadouts']) or any(hull not in DEFAULT_CLASSES and 'ship_' + hull == item for hull in p['ship_classes']): raise ServiceError('Unequip this item before listing')
+            if any(item in fit.values() for fit in p['loadouts']) or any(item in s['loadout'].values() for s in p.get('fleet_roster', [])): raise ServiceError('Unequip this item from active and reserve ships before listing')
             del p['inventory'][item]
         else: entry['count'] -= 1
     def listings(self, uid):
@@ -262,16 +405,18 @@ class Store:
                 db.execute("UPDATE offers SET status='refunded' WHERE id=?", (oid,))
             return {'resolved': oid}
     def start_match(self, mid, roster, mode="royale"):
-        if mode not in ["royale", "free_roam", "co_op"]: raise ServiceError("Unknown game mode")
+        if mode not in ["royale", "free_roam", "co_op", "fleet_duel"]: raise ServiceError("Unknown game mode")
         if not isinstance(mid, str) or not 1 <= len(mid) <= 100 or not isinstance(roster, list) or not 1 <= len(roster) <= 6: raise ServiceError('Invalid roster')
         users = [entry.get('user_id') for entry in roster]
         if len(set(users)) != len(users) or any(type(e.get('team')) is not int or e['team'] not in [0,1] for e in roster): raise ServiceError('Invalid teams')
+        if mode == 'fleet_duel' and (len(roster) != 2 or {e['team'] for e in roster} != {0,1}): raise ServiceError('Fleet Duel needs two commanders on opposing teams')
         with self.transaction() as db:
             for uid in users: self._unlocked(self._user(db, uid))
             try: db.execute('INSERT INTO matches VALUES(?,?,?,?)', (mid, json.dumps(roster), 'live', time.time()))
             except sqlite3.IntegrityError: raise ServiceError('Match already exists', 409)
-            if mode != 'royale': db.execute('INSERT INTO roam_sessions VALUES(?)', (mid,))
-            for uid in users: db.execute('UPDATE users SET locked_until=?,active_match=? WHERE id=?', (time.time() + (120 if mode != 'royale' else 600), mid, uid))
+            roaming = mode in ['free_roam', 'co_op']
+            if roaming: db.execute('INSERT INTO roam_sessions VALUES(?)', (mid,))
+            for uid in users: db.execute('UPDATE users SET locked_until=?,active_match=? WHERE id=?', (time.time() + (120 if roaming else 600), mid, uid))
             profiles = [self._profile(self._user(db, uid)) for uid in users]
         return {'started': mid, 'profiles': profiles}
     def finish_match(self, mid, winner, metrics):
@@ -293,7 +438,7 @@ class Store:
                     self._grant(p, prizes[uid], "Victory ship — permanent ownership")
                 for _ in range(2 if won else 1):
                     tier = rarity_for_ticket(secrets.randbelow(16384))
-                    item = secrets.choice([x for x in CATALOG if x['rarity'] == tier and active_collectible(x)])['id']
+                    item = secrets.choice([x for x in CATALOG if x['rarity'] == tier and not x.get('discovery_only', False) and active_collectible(x)])['id']
                     duplicate = item in p['inventory']; self._grant(p, item, 'Authoritative online battle')
                     if duplicate: p['salvage'] += 15
                 self._save(db, uid, p); db.execute("UPDATE users SET locked_until=0,active_match='' WHERE id=? AND active_match=?", (uid, mid))
@@ -341,7 +486,7 @@ class Store:
             p['total_damage'] += damage; p['salvage'] += 60
             for _ in range(2):
                 tier = rarity_for_ticket(secrets.randbelow(16384))
-                item = secrets.choice([x for x in CATALOG if x['rarity'] == tier and active_collectible(x)])['id']
+                item = secrets.choice([x for x in CATALOG if x['rarity'] == tier and not x.get('discovery_only', False) and active_collectible(x)])['id']
                 duplicate = item in p['inventory']; self._grant(p, item, 'Free-roam encounter discovery')
                 if duplicate: p['salvage'] += 15
             self._save(db, uid, p)
@@ -388,7 +533,7 @@ class Store:
         return {'closed': mid}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'GalacticDominion/0.45.0'
+    server_version = 'GalacticDominion/0.46.0'
     def log_message(self, *_): pass
     def do_GET(self): self.handle_api('GET')
     def do_POST(self): self.handle_api('POST')
@@ -399,7 +544,7 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(data, dict): raise ServiceError('Expected a JSON object')
             url = urlparse(self.path); path = url.path; store = self.server.store
-            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.45.0'}
+            if method == 'GET' and path == '/health': result = {'ok': True, 'version': '0.46.0'}
             elif method == 'GET' and path == '/profiles': result = store.public(parse_qs(url.query).get('name', [''])[0])
             elif method == 'GET' and path == '/catalog': result = CATALOG
             elif method == 'POST' and path in ['/register','/login']:
@@ -427,6 +572,12 @@ class Handler(BaseHTTPRequestHandler):
                 auth = self.headers.get('Authorization', '')
                 uid = store.authenticate(auth[7:] if auth.startswith('Bearer ') else '')
                 if method == 'GET' and path == '/me': result = store.me(uid)
+                elif method == 'GET' and path == '/fleet/recruits': result = store.recruitment_board(uid)
+                elif method == 'POST' and path == '/fleet/recruit': result = store.recruit(uid, data.get('offer'), data.get('request_id'))
+                elif method == 'POST' and path == '/fleet/commission': result = store.recruit(uid, data.get('item'), data.get('request_id'), commission=True)
+                elif method == 'POST' and path == '/fleet/deploy': result = store.deploy(uid, data.get('index'), data.get('ship_id'))
+                elif method == 'POST' and path == '/fleet/assign': result = store.assign_vessel(uid, data.get('ship_id'), data.get('deployed'))
+                elif method == 'POST' and path == '/fleet/fit': result = store.fit_vessel(uid, data.get('ship_id'), data.get('slot'), data.get('item'))
                 elif method == 'POST' and path == '/ticket': result = store.ticket(uid)
                 elif method == 'POST' and path == '/equip': result = store.equip(uid, data.get('index'), data.get('slot'), data.get('item'), data.get('hull'))
                 elif method == 'POST' and path == '/research': result = store.research(uid, data.get('item'))

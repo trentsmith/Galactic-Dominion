@@ -1,12 +1,12 @@
 # Galactic Dominion — Armada Presets
 
-A Godot 4.6.3 space-combat and exploration prototype with configurable 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions, a personal sanctuary and self-hosted online play. GDScript and procedural 3D assets; no paid packages required.
+A Godot 4.6.3 space-combat and exploration prototype with permanent online ship recruitment, customizable 50-ship PvP fleets, solo 1–200 fighter fleets, five ship classes, Nexus faction hulls, orbiting companions, wildlife expeditions and a personal sanctuary. GDScript and procedural 3D assets; no paid packages required.
 
 ## Play
 
-Download [v0.45.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.45.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
+Download [v0.46.0](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.46.0), extract the entire client ZIP, and run **GalacticDominion.exe** on Windows or **GalacticDominion.x86_64** on Linux. Players do not need Godot. Back up your commander profile before upgrading: schema 11 reads previous saves, but older builds cannot read new saves.
 
-For source development, clone the `phase-45-armada` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
+For source development, clone the `phase-46-recruitment` branch. Open **Godot 4.6.3 → Import → project.godot → Import & Edit**, then press **F5**. Open-world flight is now the main menu's primary action.
 
 ## New in v0.45 — Armada Presets
 
@@ -88,9 +88,11 @@ Planet animals retain restrained biological faces. Your bot companions keep thei
 
 ## Online and other modes
 
+**Recruit → Customize → Fleet Duel:** sign in through **Online**, hire permanent vessels with salvage in **Recruitment**, then customize and assign up to **50 owned ships** in **Battle Fleet**. Each ship keeps its own component, crew and appearance fittings; inspect its resulting combat stats in the menu. Keep 200 vessels in reserve/active combined. Two commanders on opposing teams ready up and the leader launches **FLEET DUEL**. Each pilots one ship and commands their AI wingmates. Unequal lineups are supported; both sides keep their ships after defeat. Victory hull blueprints can be commissioned into owned vessels or traded unused. Start with three issued ships and recruit more as you earn salvage. [Fleet recruitment guide](docs/FLEET_RECRUITMENT.md).
+
 **Online → Launch Co-op Frontier** creates one allied team for up to six human pilots, with AI in empty ship slots. The lobby leader starts shared rescue, repair or escort work from O. The combat host validates participation, and the account service grants each eligible pilot a fixed reward once per event. Players may join an already running space session. PvP Free Roam, Fleet Royale, public profiles and trading remain available. Update clients and server together. [Windows PC hosting](server/README.md).
 
-**Planet and wreck interiors are solo-only.** Online has six pilot slots, not 400 human players; Armada's extra fighters are AI. Host authority is trusted, not a hardened commercial anti-cheat service.
+**Planet and wreck interiors are solo-only.** Fleet Duel has two human commanders and up to 98 AI wingmates; existing Free Roam/Co-op/Royale have up to six human pilot slots. Armada uses allied/enemy AI. The self-hosted combat host is trusted and commercial anti-cheat hardening remains pending.
 
 **Armada:** choose 1–200 fighters per side, asymmetric fleets, randomized sectors, asteroids, stars, black holes and temporary mega weapons. **Fleet Royale/Fleet War:** 3v3 or 10v10 last fleet standing. **Flight School:** safe interactive tutorial. [Armada](docs/ARMADA.md), [AI tuning](docs/ARMADA_AI.md).
 
@@ -100,7 +102,7 @@ Hold **K for two seconds within 60m** of a gold space cache (6m on a planet). Th
 
 ## Controls and settings
 
-W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse aim; Q/E roll; Shift boost. LMB laser, **M missile**, R ability, Tab target. F1–F3 switch fleet ships; 1–5 give orders. Offline 10v10 and Armada use [ / ] to cycle every surviving ally. J chart, G scan/service, K recover parts, F job interaction, O Frontier board, H scenic HUD, Esc menu. Online flight continues while menus are open.
+W/S thrust/reverse; A/D strafe; Space/Ctrl vertical movement; mouse aim; Q/E roll; Shift boost. LMB laser, **M missile**, R ability, Tab target. F1–F3 switch lead ships; 1–5 give orders. Fleet Duel, offline 10v10 and Armada use [ / ] to cycle every surviving ally. J chart, G scan/service, K recover parts, F job interaction, O Frontier board, H scenic HUD, Esc menu. Online flight continues while menus are open.
 
 Settings has **Low/Medium/High** graphics, larger menu text, reduced explosion flashes, mouse sensitivity/inversion, volume, fullscreen and input rebinding. Gamepad defaults: left stick moves, right stick aims, triggers fire, bumpers move vertically, A boosts, Y targets, X activates abilities, D-pad up scans/interacts, Back opens the Frontier board, B captures on planets. Other actions can be assigned under **Controls / Rebind Inputs**. Axis defaults remain fixed; key, mouse and gamepad button bindings can be changed. Hardware controller feel still needs human playtesting.
 
@@ -112,4 +114,4 @@ Past endings have small free-roam consequences: Seal adds a reconstruction tende
 
 ## Validation
 
-The 44-check Armada preset regression verifies the default menu, exact fleet counts, launch summaries, pending counter edits, custom counts, saved settings, replay, 3v3 and 10v10 navigation. Existing command-deck and Armada regressions also pass. Release CI verifies all three formats in the exported Linux client and runs the broader combat, exploration, creature and online regressions. Native Linux menu/setup captures check layout. Windows GUI, physical controllers and human balance/performance playtests remain pending.
+Recruitment validation covers transactional server ownership, migration, fifty-ship limits, per-vessel fittings, all 100 duel spawns, compact packet budgets and fleet-wide combat credit. Actual two-client ENet tests cover 50v50, asymmetric 7v50, disconnect forfeits and reward retries; a normal live 50v50 and retained six-client/co-op paths are also exercised. The Armada preset regression verifies all three requested 200-ship formats. Release CI exports both platforms and checks the Linux game/server alongside the broader combat, exploration and creature regressions. Native Linux menu captures check layout. Windows GUI, Internet hosting, physical controllers and sustained human balance/performance playtests remain pending. [Fleet test commands and limits](docs/FLEET_RECRUITMENT.md#validation).

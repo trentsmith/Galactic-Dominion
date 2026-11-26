@@ -7,6 +7,7 @@ var arena: BattleMatch
 var server_mode := false
 var members: Dictionary = {}
 var slot_owners: Array[int] = [0, 0, 0, 0, 0, 0]
+var fleet_commanders: Array[int] = [0, 0]
 var inputs: Dictionary = {}
 var metrics: Dictionary = {}
 var ship_totals: Array[Vector2] = []
@@ -38,6 +39,10 @@ var deferred_roam_leaves: Array[Dictionary]=[]
 var pending_roam_ends: Array[String]=[]
 var settlement_busy:=false
 var settlement_retry:=0.0
+var battle_result_pending: Dictionary = {}
+var battle_result_busy := false
+var battle_result_retry := 0.0
+var fleet_projectiles: Dictionary = {}
 
 func _ready() -> void:
  api = get_parent().online_api
@@ -97,14 +102,14 @@ func _peer_connected(id: int) -> void:
 func _connected() -> void:
  loading_connection=true;_set_peer_timeout(1,true)
  peer_id = multiplayer.get_unique_id()
- authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.45.0")))
+ authenticate.rpc_id(1, str(get_meta("ticket", "")), str(ProjectSettings.get_setting("application/config/version", "0.46.0")))
 
 @rpc("any_peer", "call_remote", "reliable")
 func authenticate(ticket: String, version: String = "") -> void:
  if not server_mode:
   return
  var sender := multiplayer.get_remote_sender_id()
- if version != str(ProjectSettings.get_setting("application/config/version", "0.45.0")):
+ if version != str(ProjectSettings.get_setting("application/config/version", "0.46.0")):
   reject.rpc_id(sender, "Different game build. Download the same version as the server.")
   multiplayer.multiplayer_peer.disconnect_peer(sender)
   return
@@ -155,7 +160,7 @@ func reject(message: String) -> void:
 func _broadcast_lobby() -> void:
  var entries: Array = []
  for id in members:
-  entries.append({"peer": id, "name": members[id].profile.commander_name, "team": int(members[id].index) / 3, "slot": int(members[id].index) % 3, "ready": members[id].ready})
+  entries.append({"peer": id, "name": members[id].profile.commander_name, "team": int(members[id].index) / 3, "slot": int(members[id].index) % 3, "ready": members[id].ready, "fleet": members[id].profile.ship_classes})
  var leader: int = members.keys()[0] if not members.is_empty() else 0
  for id in members:
   if not _connected_peer(id):
@@ -181,24 +186,41 @@ func request_start(mode: String = "royale") -> void:
  var sender := multiplayer.get_remote_sender_id()
  if not server_mode or starting or members.is_empty() or sender != members.keys()[0] or (is_instance_valid(arena) and not arena.finished):
   return
- if contract_busy or not contract_payload.is_empty() or settlement_busy or not deferred_roam_leaves.is_empty() or not pending_roam_ends.is_empty():
+ if contract_busy or not contract_payload.is_empty() or settlement_busy or not deferred_roam_leaves.is_empty() or not pending_roam_ends.is_empty() or battle_result_busy or not battle_result_pending.is_empty():
   reject.rpc_id(sender,"Previous session rewards are still saving. Try launching again in a moment.");return
  for member in members.values():
   if not member.ready:
    reject.rpc_id(sender, "All connected pilots must be ready.")
    return
- if mode not in ["royale", "free_roam", "co_op"]: return
+ if mode not in ["royale", "free_roam", "co_op", "fleet_duel"]: return
+ if mode == "fleet_duel":
+  var teams: Array[int] = []
+  for member in members.values(): teams.append(int(member.index) / 3)
+  if members.size() != 2 or not (0 in teams and 1 in teams):
+   reject.rpc_id(sender, "Fleet Duel needs exactly two ready commanders, one on TEAM 1 and one on TEAM 2.")
+   return
  match_mode = mode
+ fleet_projectiles.clear()
  starting = true
  roster.clear()
  match_id = Crypto.new().generate_random_bytes(16).hex_encode()
  for member in members.values():
   roster.append({"user_id": member.profile.user_id, "team": 0 if match_mode=="co_op" else int(member.index) / 3})
+ var launching_peers := members.keys()
  var reply := await api.request("/server/start", {"match_id": match_id, "roster": roster, "mode": match_mode}, HTTPClient.METHOD_POST, server_key)
  if reply.has("error"):
   starting = false
   for id in members:
    reject.rpc_id(id, str(reply.error))
+  return
+ if match_mode == "fleet_duel" and members.keys() != launching_peers:
+  # A commander may disconnect while the account service is locking fleets.
+  # Settle that match without spawning a ghost opponent or keeping locks held.
+  var remaining_team := -1
+  for member in members.values(): remaining_team = int(member.index) / 3
+  battle_result_pending = {"payload": {"match_id": match_id, "winner": remaining_team, "metrics": {}}, "reason": "Opponent disconnected during launch", "statistics": []}
+  _save_battle_result()
+  starting = false
   return
  if is_instance_valid(arena):
   remove_child(arena)
@@ -206,44 +228,58 @@ func request_start(mode: String = "royale") -> void:
  inputs.clear()
  metrics.clear()
  ship_totals.clear()
+ fleet_commanders.assign([0, 0])
+ for id in members:
+  for fresh in reply.data.get("profiles", []):
+   if fresh.user_id == members[id].profile.user_id: members[id].profile = fresh
+  var data: Dictionary = members[id].profile
+  metrics[id] = {"kills": 0.0, "damage": 0.0, "user_id": data.user_id}
+  if match_mode == "fleet_duel": fleet_commanders[int(members[id].index) / 3] = id
  var stats_list: Array[ShipStats] = []
  var names: Array[String] = []
  var crew_names: Array[String] = []
- slot_owners = [0, 0, 0, 0, 0, 0]
- for index in range(6):
-  var stats: ShipStats = BattleMatch.CLASSES[index % 3]
-  var ship_name := "AI %d" % (index + 1)
-  var crew_name := "AI flight computer"
-  for id in members:
-   if members[id].index == index:
-    var data: Dictionary = members[id].profile
-    # start_match refreshes and locks inventory before any stats are built.
-    for fresh in reply.data.get("profiles", []):
-     if fresh.user_id == data.user_id:
-      data = fresh
-    var profile := PlayerProfile.new()
-    profile.inventory = data.inventory
-    profile.ship_classes.clear()
-    for hull in data.ship_classes:
-     profile.ship_classes.append(str(hull))
-    profile.loadouts.clear()
-    for fitting in data.loadouts:
-     profile.loadouts.append(fitting)
-    stats = profile.configured_stats(index % 3)
-    ship_name = str(data.commander_name)
-    var crew := CollectionCatalog.find(str(data.loadouts[index % 3].crew))
-    crew_name = crew.display_name if crew != null else "Unassigned"
-    slot_owners[index] = id
-    metrics[id] = {"kills": 0.0, "damage": 0.0, "user_id": data.user_id}
-  stats_list.append(stats)
-  names.append(ship_name)
-  crew_names.append(crew_name)
-  ship_totals.append(Vector2.ZERO)
+ var fleet_sizes := Vector2i(3, 3)
+ slot_owners.clear()
+ if match_mode == "fleet_duel":
+  for team in range(2):
+   var id: int = fleet_commanders[team]
+   var data: Dictionary = members[id].profile
+   var vessels := FleetManifest.battle_vessels(data)
+   fleet_sizes[team] = vessels.size()
+   for slot in range(vessels.size()):
+    var vessel: Dictionary = vessels[slot]
+    stats_list.append(FleetManifest.vessel_stats(data, vessel))
+    names.append(str(vessel.name))
+    var crew := CollectionCatalog.find(str(vessel.loadout.crew))
+    crew_names.append(crew.display_name if crew != null else "AI flight computer")
+    slot_owners.append(id if slot == 0 else 0)
+    ship_totals.append(Vector2.ZERO)
+ else:
+  for index in range(6):
+   var stats: ShipStats = BattleMatch.CLASSES[index % 3]
+   var ship_name := "AI %d" % (index + 1)
+   var crew_name := "AI flight computer"
+   var owner := 0
+   for id in members:
+    if members[id].index == index:
+     var data: Dictionary = members[id].profile
+     stats = FleetManifest.configured_stats(data, index % 3)
+     ship_name = str(data.commander_name)
+     crew_name = FleetManifest.crew_name(data, index % 3)
+     owner = id
+   stats_list.append(stats)
+   names.append(ship_name)
+   crew_names.append(crew_name)
+   slot_owners.append(owner)
+   ship_totals.append(Vector2.ZERO)
  for id in members:_set_peer_timeout(int(id),true)
  arena = FreeRoamMatch.new() if match_mode in ["free_roam","co_op"] else BattleMatch.new()
  if arena is FreeRoamMatch:arena.cooperative=match_mode=="co_op"
  arena.name = "Arena"
  arena.network_role = "server"
+ arena.fleet_duel = match_mode == "fleet_duel"
+ arena.team_size = fleet_sizes.x
+ arena.enemy_team_size = fleet_sizes.y
  arena.preconfigured_stats = stats_list
  arena.max_duration = max_seconds
  add_child(arena)
@@ -254,7 +290,7 @@ func request_start(mode: String = "royale") -> void:
   arena.encounter_won.connect(_roam_encounter_won)
   arena.frontier.shared_completed.connect(_frontier_completed)
   arena.ship_replaced.connect(func(index):arena.ships[index].health.damaged.connect(_queue_feedback.bind(index)))
- for index in range(6):
+ for index in range(stats_list.size()):
   arena.ships[index].callsign = names[index]
   arena.ships[index].crew_name = crew_names[index]
   arena.ships[index].player_controlled = slot_owners[index] != 0
@@ -279,13 +315,13 @@ func request_start(mode: String = "royale") -> void:
   serialized.append(entry)
  for id in members:
   if _connected_peer(id):
-   begin_match.rpc_id(id, serialized, names, slot_owners, crew_names, match_mode)
+   begin_match.rpc_id(id, serialized, names, slot_owners, crew_names, match_mode, fleet_sizes)
  starting = false
 
 @rpc("authority", "call_remote", "reliable")
-func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Array, mode: String = "royale") -> void:
+func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Array, mode: String = "royale", fleet_sizes: Vector2i = Vector2i(3, 3)) -> void:
  loading_connection=true;_set_peer_timeout(1,true)
- if server_mode or serialized.size() != 6:
+ if server_mode or serialized.size() != fleet_sizes.x + fleet_sizes.y or mini(fleet_sizes.x, fleet_sizes.y) < 3 or maxi(fleet_sizes.x, fleet_sizes.y) > 50:
   return
  var host := get_parent()
  if is_instance_valid(host.menu):
@@ -298,6 +334,10 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
  if arena is FreeRoamMatch:arena.cooperative=match_mode=="co_op"
  arena.name = "Arena"
  arena.network_role = "client"
+ arena.fleet_duel = mode == "fleet_duel"
+ arena.team_size = fleet_sizes.x
+ arena.enemy_team_size = fleet_sizes.y
+ desired_states.clear()
  for entry in serialized:
   var stats := ShipStats.new()
   for key in entry:
@@ -312,19 +352,21 @@ func begin_match(serialized: Array, names: Array, owners: Array, crew_names: Arr
  slot_owners.clear()
  for owner in owners:
   slot_owners.append(int(owner))
- for index in range(6):
+ for index in range(serialized.size()):
   arena.ships[index].callsign = str(names[index])
   arena.ships[index].crew_name = str(crew_names[index])
  _choose_client_ship()
  arena.fleet.current_command = "attack"
  aim = Vector2.ZERO
  Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
- status_changed.emit("Online free-roam running" if match_mode in ["free_roam","co_op"] else "Online match running")
+ status_changed.emit("Fleet Duel · F1–F3 lead ships · [ / ] cycle fleet · 1–5 command wingmates" if mode == "fleet_duel" else "Online free-roam running" if match_mode in ["free_roam","co_op"] else "Online match running")
  match_loaded.rpc_id(1)
 
 func _choose_client_ship() -> void:
- for index in range(6):
+ for index in range(mini(arena.ships.size(), slot_owners.size())):
   if slot_owners[index] == peer_id:
+   if is_instance_valid(arena.pilot.ship): arena.pilot.ship.demote_visual()
+   arena.ships[index].promote_visual()
    arena.pilot.take_control(arena.ships[index])
    arena.fleet.ships.clear()
    var team := arena.ships[index].team
@@ -335,6 +377,11 @@ func _choose_client_ship() -> void:
 
 func _controlled_index(id: int) -> int:
  return slot_owners.find(id)
+
+func fleet_span(index: int) -> Vector2i:
+ if match_mode == "fleet_duel" and is_instance_valid(arena):
+  return Vector2i(0, arena.team_size) if index < arena.team_size else Vector2i(arena.team_size, arena.ships.size())
+ return Vector2i((index / 3) * 3, (index / 3) * 3 + 3)
 
 @rpc("any_peer", "call_remote", "unreliable_ordered", 1)
 func send_input(thrust: Vector3, steering: Vector2, roll: float, boost: bool, laser: bool) -> void:
@@ -354,8 +401,17 @@ func ship_event(action: String, argument: int = 0) -> void:
  if index < 0:
   return
  var ship := arena.ships[index]
- if action == "switch":
-  var requested := (index / 3) * 3 + clampi(argument, 0, 2)
+ if action in ["switch", "cycle"]:
+  var span := fleet_span(index)
+  var requested := span.x + argument
+  if action == "cycle":
+   requested = index
+   for offset in range(1, span.y - span.x + 1):
+    var candidate := span.x + posmod(index - span.x + offset * (1 if argument >= 0 else -1), span.y - span.x)
+    if arena.ships[candidate].alive and slot_owners[candidate] in [0, sender]:
+     requested = candidate
+     break
+  if requested < span.x or requested >= span.y: return
   if slot_owners[requested] != 0 and slot_owners[requested] != sender or not arena.ships[requested].alive:
    return
   slot_owners[index] = 0
@@ -413,6 +469,9 @@ func _unhandled_input(event: InputEvent) -> void:
  for index in range(3):
   if event.is_action_pressed("ship_%d" % (index + 1)):
    ship_event.rpc_id(1, "switch", index)
+ if match_mode == "fleet_duel":
+  if event.is_action_pressed("fleet_next"): ship_event.rpc_id(1, "cycle", 1)
+  elif event.is_action_pressed("fleet_previous"): ship_event.rpc_id(1, "cycle", -1)
  for index in range(5):
   if event.is_action_pressed("command_%d" % (index + 1)):
    arena.fleet.current_command = ["follow", "attack", "defend", "regroup", "retreat"][index]
@@ -423,6 +482,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
  if server_mode:
+  battle_result_retry = maxf(0, battle_result_retry - delta)
+  if not battle_result_pending.is_empty() and not battle_result_busy and battle_result_retry <= 0: _save_battle_result()
   contract_retry=maxf(0,contract_retry-delta);settlement_retry=maxf(0,settlement_retry-delta)
   if not contract_payload.is_empty() and not contract_busy and contract_retry<=0:_save_frontier_contract()
   if contract_payload.is_empty() and not contract_busy and not settlement_busy and settlement_retry<=0 and (not deferred_roam_leaves.is_empty() or not pending_roam_ends.is_empty()):_flush_roam_departures()
@@ -450,7 +511,8 @@ func _physics_process(delta: float) -> void:
     for troop in arena.army.units.values():
      if troop.owner == id and troop.order == "follow": troop.leader = index
    if not ship.alive:
-    for candidate in range((index / 3) * 3, (index / 3) * 3 + 3):
+    var span := fleet_span(index)
+    for candidate in range(span.x, span.y):
      if arena.ships[candidate].alive and slot_owners[candidate] == 0:
       slot_owners[index] = 0
       slot_owners[candidate] = id
@@ -478,20 +540,16 @@ func _physics_process(delta: float) -> void:
   snapshot_clock += delta
   if snapshot_clock >= 1.0 / 15.0:
    snapshot_clock = 0
+   _collect_metrics()
    var states: Array = []
    for index in range(arena.ships.size()):
     var ship := arena.ships[index]
     var owner := slot_owners[index]
-    var totals := Vector2(ship.kills, ship.damage_dealt)
-    if metrics.has(owner):
-     metrics[owner].kills += maxf(0, totals.x - ship_totals[index].x)
-     metrics[owner].damage += maxf(0, totals.y - ship_totals[index].y)
-    ship_totals[index] = totals
     states.append({"position": ship.position, "rotation": ship.basis.get_rotation_quaternion(), "velocity": ship.velocity, "hull": ship.health.hull, "shield": ship.health.shield, "boost": ship.movement.boost_energy, "boosting": ship.movement.boost_active, "boost_recovering":ship.movement.boost_recovering, "alive": ship.alive, "laser": ship.weapons.laser_remaining, "missile": ship.weapons.missile_remaining, "ability": ship.ability_remaining, "recharge": ship.ability_cooldown, "target": arena.ships.find(ship.targeting.target), "lock": ship.targeting.lock_time, "lock_reason":ship.targeting.lock_reason if owner!=0 else "", "flash": ship.muzzle_flash, "taken":Vector3(ship.health.shield_damage,ship.health.hull_damage,ship.health.environment_damage)})
    var bullets: Array = []
    for child in arena.get_children():
     if child is SpaceProjectile:
-     var bullet:={"position":child.position,"direction":child.direction,"team":child.team,"missile":child.spec.tracking,"companion":child.companion_shot,"color":child.projectile_color,"style":child.spec.impact_style,"target":arena.ships.find(child.target)}
+     var bullet:={"id":child.get_instance_id(),"position":child.position,"direction":child.direction,"team":child.team,"missile":child.spec.tracking,"companion":child.companion_shot,"color":child.projectile_color,"style":child.spec.impact_style,"target":arena.ships.find(child.target)}
      if child.spec.tracking:bullet.speed=child.spec.speed
      bullets.append(bullet)
    for id in members:
@@ -501,16 +559,30 @@ func _physics_process(delta: float) -> void:
       receive_frontier.rpc_id(id,arena.frontier.snapshot())
       var controlled:=_controlled_index(id)
       if controlled>=0:receive_pings.rpc_id(id,arena.pings.snapshot(arena.ships[controlled].team))
-     receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
-     if not pending_feedback.is_empty():receive_feedback.rpc_id(id,pending_feedback)
+     if match_mode == "fleet_duel":
+      _send_fleet_snapshot(id, states, bullets)
+      var controlled := _controlled_index(id)
+      var relevant := pending_feedback.filter(func(event): return int(event.victim) == controlled or int(event.attacker) == controlled)
+      for offset in range(0, relevant.size(), 2): receive_feedback.rpc_id(id, relevant.slice(offset, offset + 2))
+     else:
+      receive_snapshot.rpc_id(id, states, slot_owners, arena.elapsed, arena.zone.radius, bullets)
+      if not pending_feedback.is_empty():receive_feedback.rpc_id(id,pending_feedback)
    pending_feedback.clear()
    if army_snapshot_clock >= 0.2: army_snapshot_clock = 0.0
  else:
   if not is_instance_valid(arena) or arena.finished:
    return
+  if match_mode == "fleet_duel":
+   for id in fleet_projectiles.keys():
+    var mesh: MeshInstance3D = fleet_projectiles[id]
+    if not is_instance_valid(mesh) or Time.get_ticks_msec() - int(mesh.get_meta("seen_at", 0)) > 300:
+     if is_instance_valid(mesh): mesh.queue_free()
+     fleet_projectiles.erase(id)
+    else: mesh.position += (mesh.get_meta("flight_velocity") as Vector3) * delta
   for index in range(mini(arena.ships.size(), desired_states.size())):
    var ship := arena.ships[index]
    var state: Dictionary = desired_states[index]
+   if state.is_empty(): continue
    ship.position = state.position if ship.position.distance_to(state.position) > 1000 else ship.position.lerp(state.position, minf(1, delta * 18))
    ship.basis = ship.basis.slerp(Basis(state.rotation), minf(1, delta * 18)).orthonormalized()
   arena.pilot.update_camera(delta)
@@ -531,6 +603,70 @@ func _physics_process(delta: float) -> void:
    else:
     send_input.rpc_id(1, thrust, steering, Input.get_axis("roll_left", "roll_right") if captured else 0.0, captured and Input.is_action_pressed("boost"), captured and Input.is_action_pressed("laser"))
 
+func _send_fleet_snapshot(id: int, states: Array, bullets: Array) -> void:
+ var controls := PackedInt32Array()
+ for commander in fleet_commanders:
+  controls.append(commander)
+  controls.append(_controlled_index(commander))
+ var controlled := _controlled_index(id)
+ var reason := arena.ships[controlled].targeting.lock_reason if controlled >= 0 else ""
+ for start in range(0, states.size(), FleetSnapshotCodec.CHUNK_SHIPS):
+  receive_fleet_snapshot.rpc_id(id, start, FleetSnapshotCodec.encode_states(states, start, FleetSnapshotCodec.CHUNK_SHIPS), controls, arena.elapsed, arena.zone.radius, reason)
+ if controlled < 0: return
+ var at := arena.ships[controlled].position
+ # Keep every nearby/incoming missile, then the nearest visible laser rounds.
+ var nearby := bullets.filter(func(b): return b.position.distance_squared_to(at) < 1440000 or int(b.target) == controlled)
+ nearby.sort_custom(func(a, b):
+  if bool(a.missile) != bool(b.missile): return bool(a.missile)
+  return a.position.distance_squared_to(at) < b.position.distance_squared_to(at))
+ nearby = nearby.slice(0, 192)
+ for start in range(0, nearby.size(), FleetSnapshotCodec.CHUNK_BULLETS):
+  var chunk := nearby.slice(start, start + FleetSnapshotCodec.CHUNK_BULLETS)
+  var ids := PackedInt64Array()
+  for bullet in chunk: ids.append(int(bullet.id))
+  receive_fleet_projectiles.rpc_id(id, ids, FleetSnapshotCodec.encode_bullets(chunk))
+
+@rpc("authority", "call_remote", "unreliable_ordered", 1)
+func receive_fleet_snapshot(start: int, packed: PackedFloat32Array, controls: PackedInt32Array, elapsed: float, radius: float, lock_reason: String) -> void:
+ if not is_instance_valid(arena) or not arena.fleet_duel or arena.finished: return
+ var states := FleetSnapshotCodec.decode_states(packed)
+ if start < 0 or start + states.size() > arena.ships.size() or controls.size() != 4: return
+ if loading_connection:
+  _set_peer_timeout(1,false); loading_connection = false
+ if desired_states.size() != arena.ships.size():
+  desired_states.resize(arena.ships.size())
+  for i in range(desired_states.size()): desired_states[i] = {}
+ var old_index := _controlled_index(peer_id)
+ slot_owners.fill(0)
+ for offset in [0, 2]:
+  var index := controls[offset+1]
+  if index >= 0 and index < slot_owners.size(): slot_owners[index] = controls[offset]
+ if _controlled_index(peer_id) != old_index: _choose_client_ship()
+ arena.elapsed = elapsed
+ arena.zone.radius = radius
+ for ring in arena.zone.rings: ring.scale = Vector3.ONE * radius
+ for offset in range(states.size()):
+  var index := start + offset
+  var state: Dictionary = states[offset]
+  state["lock_reason"] = lock_reason if slot_owners[index] == peer_id else ""
+  desired_states[index] = state
+  _apply_ship_state(index, state, radius)
+
+@rpc("authority", "call_remote", "unreliable_ordered", 1)
+func receive_fleet_projectiles(ids: PackedInt64Array, packed: PackedFloat32Array) -> void:
+ if not is_instance_valid(arena) or not arena.fleet_duel or arena.finished: return
+ var bullets := FleetSnapshotCodec.decode_bullets(packed)
+ if ids.size() != bullets.size(): return
+ for index in range(ids.size()):
+  var bullet: Dictionary = bullets[index]
+  var mesh: MeshInstance3D = fleet_projectiles.get(ids[index])
+  if not is_instance_valid(mesh):
+   mesh = _projectile_mesh(bullet)
+   fleet_projectiles[ids[index]] = mesh
+  mesh.position = bullet.position
+  mesh.set_meta("flight_velocity", (bullet.direction as Vector3) * float(bullet.speed))
+  mesh.set_meta("seen_at", Time.get_ticks_msec())
+
 @rpc("authority", "call_remote", "reliable", 2)
 func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: float, bullets: Array) -> void:
  if loading_connection:
@@ -549,95 +685,130 @@ func receive_snapshot(states: Array, owners: Array, elapsed: float, radius: floa
  for ring in arena.zone.rings:
   ring.scale = Vector3.ONE * radius
  for index in range(arena.ships.size()):
-  var ship := arena.ships[index]
-  var state: Dictionary = states[index]
-  if ship.alive and not state.alive:
-   SpaceEffects.burst(arena, ship.position, Color(1, 0.5, 0.2), 12)
-  ship.alive = state.alive
-  ship.visible = state.alive
-  if state.alive and (state.shield < ship.health.shield or state.hull < ship.health.hull):
-   SpaceEffects.burst(arena, ship.position, Color(0.15, 0.7, 1) if state.shield < ship.health.shield else Color(1, 0.45, 0.1), 4 if state.shield < ship.health.shield else 1.8)
-  if ship == arena.pilot.ship:
-   if state.missile > ship.weapons.missile_remaining + .1:
-    SpaceAudio.play("missile")
-   elif state.flash > 0 and not ship.muzzle_mesh.visible:
-    SpaceAudio.play("laser")
-  var taken: Vector3 = state.get("taken",Vector3.ZERO)
-  ship.health.shield_damage = taken.x
-  ship.health.hull_damage = taken.y
-  ship.health.environment_damage = taken.z
-  ship.health.damage_received = taken.x+taken.y
-  ship.health.hull = state.hull
-  ship.health.shield = state.shield
-  ship.velocity = state.velocity
-  ship.movement.boost_energy = state.boost
-  ship.movement.boost_requested = state.boosting
-  ship.movement.boost_active=state.boosting
-  ship.movement.boost_recovering=bool(state.get("boost_recovering",false))
-  ship.health.dead = not state.alive
-  ship.weapons.laser_remaining = state.laser
-  ship.weapons.missile_remaining = state.missile
-  ship.ability_remaining = state.ability
-  ship.ability_cooldown = state.recharge
-  ship.targeting.target = arena.ships[int(state.target)] if state.target >= 0 else null
-  ship.targeting.lock_time = state.lock
-  ship.targeting.lock_reason=str(state.get("lock_reason",""))
-  ship.muzzle_mesh.visible = state.flash > 0
-  ship.shield_mesh.visible = state.ability > 0 and ship.stats.ability == "aegis"
-  ship.outside_time = 1.0 if ship.position.length() > radius else 0.0
+  _apply_ship_state(index, states[index], radius)
  # Render server-owned projectiles; clients never apply damage.
  for child in arena.get_children():
   if child.has_meta("network_projectile"):
    child.queue_free()
- for bullet in bullets:
-  var mesh := MeshInstance3D.new()
-  mesh.set_meta("network_projectile", true)
-  mesh.set_meta("companion", bullet.get("companion", false))
-  mesh.set_meta("incoming_target",int(bullet.get("target",-1)))
-  mesh.set_meta("missile",bool(bullet.missile))
-  mesh.set_meta("team",int(bullet.team))
-  mesh.set_meta("flight_velocity",(bullet.direction as Vector3)*float(bullet.get("speed",125.0)))
-  var shape := SphereMesh.new()
-  shape.radius = 0.28 if bullet.get("companion", false) else 0.32 if bullet.missile else 0.18
-  shape.height = shape.radius * 2
-  mesh.mesh = shape
-  var material := StandardMaterial3D.new()
-  material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-  material.albedo_color = bullet.color if bullet.get("color", Color.TRANSPARENT).a > 0 else Color(1, 0.7, 0.2) if bullet.missile else Color(0.2, 0.8, 1) if bullet.team == 0 else Color(1, 0.3, 0.2)
-  mesh.material_override = material
-  arena.add_child(mesh)
-  mesh.position = bullet.position
-  FleetCompanionArt.attack(mesh,str(bullet.get("style","")))
+ for bullet in bullets: _projectile_mesh(bullet)
+
+func _apply_ship_state(index: int, state: Dictionary, radius: float) -> void:
+ var ship := arena.ships[index]
+ if ship.alive and not state.alive:
+  SpaceEffects.burst(arena, ship.position, Color(1, 0.5, 0.2), 12)
+ ship.alive = state.alive
+ ship.visible = state.alive
+ if state.alive and (state.shield < ship.health.shield or state.hull < ship.health.hull):
+  SpaceEffects.burst(arena, ship.position, Color(0.15, 0.7, 1) if state.shield < ship.health.shield else Color(1, 0.45, 0.1), 4 if state.shield < ship.health.shield else 1.8)
+ if ship == arena.pilot.ship:
+  if state.missile > ship.weapons.missile_remaining + .1:
+   SpaceAudio.play("missile")
+  elif state.flash > 0 and not ship.muzzle_mesh.visible:
+   SpaceAudio.play("laser")
+ var taken: Vector3 = state.get("taken",Vector3.ZERO)
+ ship.health.shield_damage = taken.x
+ ship.health.hull_damage = taken.y
+ ship.health.environment_damage = taken.z
+ ship.health.damage_received = taken.x+taken.y
+ ship.health.hull = state.hull
+ ship.health.shield = state.shield
+ ship.velocity = state.velocity
+ ship.movement.boost_energy = state.boost
+ ship.movement.boost_requested = state.boosting
+ ship.movement.boost_active=state.boosting
+ ship.movement.boost_recovering=bool(state.get("boost_recovering",false))
+ ship.health.dead = not state.alive
+ ship.weapons.laser_remaining = state.laser
+ ship.weapons.missile_remaining = state.missile
+ ship.ability_remaining = state.ability
+ ship.ability_cooldown = state.recharge
+ ship.targeting.target = arena.ships[int(state.target)] if state.target >= 0 else null
+ ship.targeting.lock_time = state.lock
+ ship.targeting.lock_reason=str(state.get("lock_reason",""))
+ ship.muzzle_mesh.visible = state.flash > 0
+ ship.shield_mesh.visible = state.ability > 0 and ship.stats.ability == "aegis"
+ ship.outside_time = 1.0 if ship.position.length() > radius else 0.0
+
+func _projectile_mesh(bullet: Dictionary) -> MeshInstance3D:
+ var mesh := MeshInstance3D.new()
+ mesh.set_meta("network_projectile", true)
+ mesh.set_meta("companion", bullet.get("companion", false))
+ mesh.set_meta("incoming_target",int(bullet.get("target",-1)))
+ mesh.set_meta("missile",bool(bullet.missile))
+ mesh.set_meta("team",int(bullet.team))
+ mesh.set_meta("flight_velocity",(bullet.direction as Vector3)*float(bullet.get("speed",125.0)))
+ var shape := SphereMesh.new()
+ shape.radius = 0.28 if bullet.get("companion", false) else 0.32 if bullet.missile else 0.18
+ shape.height = shape.radius * 2
+ mesh.mesh = shape
+ var material := StandardMaterial3D.new()
+ material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ material.albedo_color = bullet.color if bullet.get("color", Color.TRANSPARENT).a > 0 else Color(1, 0.7, 0.2) if bullet.missile else Color(0.2, 0.8, 1) if bullet.team == 0 else Color(1, 0.3, 0.2)
+ mesh.material_override = material
+ arena.add_child(mesh)
+ mesh.position = bullet.position
+ FleetCompanionArt.attack(mesh,str(bullet.get("style","")))
+ return mesh
+
+
+func _collect_metrics() -> void:
+ if not is_instance_valid(arena): return
+ for index in range(mini(arena.ships.size(), ship_totals.size())):
+  var ship := arena.ships[index]
+  var owner: int = fleet_commanders[arena.ships[index].team] if match_mode == "fleet_duel" else slot_owners[index]
+  var totals := Vector2(ship.kills, ship.damage_dealt)
+  if metrics.has(owner):
+   metrics[owner].kills += maxf(0, totals.x - ship_totals[index].x)
+   metrics[owner].damage += maxf(0, totals.y - ship_totals[index].y)
+  ship_totals[index] = totals
 
 func _server_finished(winner: int, reason: String) -> void:
  if match_mode in ["free_roam","co_op"]:
   if not match_id in pending_roam_ends:pending_roam_ends.append(match_id)
   _flush_roam_departures()
   return
+ _collect_metrics() # Includes the final blow between snapshot ticks.
  var results := {}
  for entry in roster:
   results[entry.user_id] = {"kills": 0, "damage": 0.0}
   for id in metrics:
    if metrics[id].user_id == entry.user_id:
     results[entry.user_id] = metrics[id]
- var reply := await api.request("/server/finish", {"match_id": match_id, "winner": winner, "metrics": results}, HTTPClient.METHOD_POST, server_key)
- var message := reason + (" · Online rewards saved" if reply.has("data") else " · Reward save failed: " + str(reply.get("error", "unknown")))
  var statistics: Array = []
  for ship in arena.ships:
   statistics.append({"kills": ship.kills, "damage": ship.damage_dealt, "shots": ship.shots, "hits": ship.hits,"taken":Vector3(ship.health.shield_damage,ship.health.hull_damage,ship.health.environment_damage),"history":ship.health.damage_history,"alive":ship.alive,"hull":ship.health.hull,"shield":ship.health.shield})
+ battle_result_pending = {"payload": {"match_id": match_id, "winner": winner, "metrics": results}, "reason": reason, "statistics": statistics}
+ _save_battle_result()
+
+func _save_battle_result() -> void:
+ if battle_result_busy or battle_result_pending.is_empty(): return
+ battle_result_busy = true
+ var entry := battle_result_pending.duplicate(true)
+ var reply := await api.request("/server/finish", entry.payload, HTTPClient.METHOD_POST, server_key)
+ battle_result_busy = false
+ if reply.has("error"):
+  battle_result_retry = 2.0
+  _deliver_battle_result(entry, str(entry.reason) + " · Rewards pending; host is retrying", {})
+  return
+ battle_result_pending.clear()
+ _deliver_battle_result(entry, str(entry.reason) + " · Online rewards saved", reply.data)
+ for member in members.values(): member.ready = false
+ _broadcast_lobby()
+
+func _deliver_battle_result(entry: Dictionary, message: String, saved: Dictionary) -> void:
  for id in members:
   if _connected_peer(id):
    var personal_message := message
-   var prizes: Dictionary = reply.get("data", {}).get("victory_ships", {})
+   var prizes: Dictionary = saved.get("victory_ships", {})
    var prize := CollectionCatalog.find(str(prizes.get(members[id].profile.user_id, "")))
    if prize != null:
     personal_message += "\nPERMANENT VICTORY SHIP: " + prize.display_name + " — available in Online Fleet / Marketplace"
-   receive_result.rpc_id(id, winner, personal_message, statistics)
+   receive_result.rpc_id(id, int(entry.payload.winner), personal_message, entry.statistics)
 
 @rpc("authority", "call_remote", "reliable")
 func receive_result(winner: int, reason: String, statistics: Array) -> void:
  if is_instance_valid(arena):
-  for index in range(mini(6, statistics.size())):
+  for index in range(mini(arena.ships.size(), statistics.size())):
    arena.ships[index].kills = int(statistics[index].kills)
    arena.ships[index].damage_dealt = float(statistics[index].damage)
    arena.ships[index].shots = int(statistics[index].shots)
@@ -652,7 +823,10 @@ func receive_result(winner: int, reason: String, statistics: Array) -> void:
    arena.ships[index].health.shield = float(statistics[index].get("shield",arena.ships[index].health.shield))
    arena.ships[index].health.dead = not arena.ships[index].alive
    arena.ships[index].visible = arena.ships[index].alive
-  arena.finish(winner, reason)
+  if arena.finished:
+   arena.end_reason = reason
+   arena.hud.show_results()
+  else: arena.finish(winner, reason)
  await api.refresh()
 
 func _peer_disconnected(id: int) -> void:
@@ -674,9 +848,11 @@ func _peer_disconnected(id: int) -> void:
   if is_instance_valid(arena):
    arena.ships[index].player_controlled = false
    arena.ships[index].movement.boost_requested = false
+ if match_mode == "fleet_duel" and id in fleet_commanders and is_instance_valid(arena) and not arena.finished:
+  arena.finish(1 - fleet_commanders.find(id), "Opponent disconnected · fleet duel forfeited")
  if members.is_empty() and is_instance_valid(arena) and not arena.finished:
   arena.finish(-1, "All pilots disconnected")
- if not is_instance_valid(arena):
+ if not is_instance_valid(arena) or arena.finished:
   _broadcast_lobby()
 
 func _server_lost() -> void:
@@ -692,6 +868,7 @@ func disconnect_session() -> void:
  joining = false
  arena = null
  desired_states.clear()
+ fleet_projectiles.clear()
  client_lobby.clear()
  var old_peer := multiplayer.multiplayer_peer as ENetMultiplayerPeer
  if old_peer != null and old_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
@@ -708,7 +885,7 @@ func return_to_menu() -> void:
  disconnect_session()
  get_parent().return_to_menu()
 
-func start_battle() -> void:
+func start_battle(_team_size: int = 3) -> void:
  disconnect_session()
  get_parent().return_to_menu()
  get_parent().show_online()

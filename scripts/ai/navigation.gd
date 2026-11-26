@@ -19,7 +19,7 @@ static func steer(ship: CombatShip, destination: Vector3, delta: float) -> void:
    var collision := ship.get_world_3d().direct_space_state.intersect_ray(query)
    if not collision.is_empty():avoidance += collision.normal * 2.0 + ship.global_basis.y
   if indexed:
-   avoidance+=match_node.sector_map.avoidance(ship.position)
+   if match_node.sector_map!=null:avoidance+=match_node.sector_map.avoidance(ship.position)
    ship.brain.nav_timer=.18+float(ship.fleet_slot%4)*.02
    ship.brain.nav_avoidance=avoidance
  direction = (direction + avoidance).normalized()

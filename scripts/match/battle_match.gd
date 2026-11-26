@@ -31,6 +31,7 @@ var winner := -1
 var end_reason := ""
 var hud: BattleHUD
 var network_role := "offline"
+var fleet_duel := false
 var preconfigured_stats: Array[ShipStats] = []
 var max_duration := 480.0
 var profile: PlayerProfile
@@ -44,18 +45,22 @@ func _init() -> void:
 func _ready() -> void:
  difficulty = SoloDifficulty.valid(difficulty)
  battle_id = "%d-%d" % [Time.get_ticks_usec(), get_instance_id()]
- # Network protocol remains six slots; Fleet War is an offline mode.
+ # Legacy online modes retain six pilot hulls. Commander duels carry up to
+ # fifty server-owned vessels per side, with two humans and AI wingmates.
  armada_mode=network_role=="offline" and (armada_mode or team_size==200)
  if armada_mode:
   team_size=ArmadaCombat.count(team_size)
   enemy_team_size=ArmadaCombat.count(enemy_team_size if enemy_team_size>0 else team_size)
+ elif fleet_duel and network_role != "offline":
+  team_size = clampi(team_size, 3, 50)
+  enemy_team_size = clampi(enemy_team_size, 3, 50)
  else:
   team_size=10 if team_size==10 and network_role=="offline" else 3
   enemy_team_size=team_size
- elimination_only = armada_mode or team_size>=10
+ elimination_only = not fleet_duel and (armada_mode or team_size>=10)
  var arena := SpaceArena.new()
  arena.open_space = training or is_armada()
- arena.battle_scale = 1.7 if team_size == 10 else 1.0
+ arena.battle_scale = 2.0 if fleet_duel else 1.7 if team_size == 10 else 1.0
  arena.star_radius=12000 if is_armada() else 1700
  if is_armada():
   if map_seed==0:
@@ -70,11 +75,13 @@ func _ready() -> void:
   zone.start_radius = 1050.0
   zone.final_radius = 150.0
  if is_armada():zone.start_radius=ArmadaSector.RADIUS;zone.final_radius=350
+ if fleet_duel: zone.start_radius = 1800; zone.final_radius = 180
  if local_story():zone.start_radius=900;zone.final_radius=420;elimination_only=false
  add_child(zone)
  if is_armada():
   spatial=BattleSpatialIndex.new()
   sector_map=ArmadaSector.new();sector_map.battle=self;sector_map.seed_value=map_seed;add_child(sector_map)
+ elif fleet_duel: spatial = BattleSpatialIndex.new()
  camera = Camera3D.new()
  camera.far = 16000.0 if is_armada() else 4000.0
  camera.current = true
@@ -88,7 +95,7 @@ func _ready() -> void:
  for team_index in range(2):
   for slot in range(team_size if team_index==0 else enemy_team_size):
    var ship := CombatShip.new()
-   ship.lightweight=is_armada() and not (team_index==0 and slot<3)
+   ship.lightweight=(is_armada() and not (team_index==0 and slot<3)) or (fleet_duel and slot>=3)
    ship.set_meta("armada_lod",ship.lightweight)
    ship.stats = profile.configured_stats(slot) if team_index == 0 and profile != null and slot < 3 else reinforcement_stats(slot)
    if team_index == 0 and profile != null and slot < 3:
@@ -99,7 +106,7 @@ func _ready() -> void:
    if team_index == 1 and network_role == "offline":
     ship.stats = ArmadaCombat.enemy_stats(ship.stats,difficulty) if is_armada() else SoloDifficulty.enemy_stats(ship.stats,"standard" if training else difficulty)
     ship.crew_name = "AI pilot"
-   if not GameFeatures.creatures_enabled() and team_index==1:
+   if not GameFeatures.creatures_enabled() and team_index==1 and network_role=="offline":
     NexusFaction.configure(ship.stats,story_mission,slot)
    ship.team = team_index
    ship.fleet_slot = slot
@@ -109,6 +116,8 @@ func _ready() -> void:
    ship.position = Vector3((slot - 1) * 40.0, slot * 12.0, 230.0 if team_index == 0 else -230.0)
    if team_size == 10:
     ship.position = Vector3((slot % 5 - 2) * 65.0, (slot / 5) * 65.0 - 32.5, (410.0 + (slot / 5) * 75.0) * (1 if team_index == 0 else -1))
+   if fleet_duel:
+    ship.position = Vector3((slot % 10 - 4.5) * 32.0, (slot / 10 - 2) * 35.0, (400.0 + (slot / 10) * 35.0) * (1 if team_index == 0 else -1))
    if is_armada():ship.position=sector_map.spawn_position(team_index,slot)
    if team_index == 1:ship.rotation.y=PI
    add_child(ship)
@@ -171,7 +180,7 @@ func _physics_process(delta: float) -> void:
  if spatial!=null:
   broadphase_clock-=delta
   if broadphase_clock<=0:spatial.rebuild(ships);broadphase_clock=.1
-  sector_map.tick(delta)
+  if sector_map != null: sector_map.tick(delta)
   aura_clock-=delta
   if aura_clock<=0:update_auras();aura_clock=.1
  else:update_auras()
@@ -258,6 +267,7 @@ func reinforcement_stats(slot: int) -> ShipStats:
 func is_armada() -> bool:
  return armada_mode
 func mode_name() -> String:
+ if fleet_duel: return "FLEET DUEL %dv%d" % [team_size, enemy_team_size]
  return "%dv%d"%[team_size,enemy_team_size if enemy_team_size>0 else team_size]
 
 func local_story() -> bool:

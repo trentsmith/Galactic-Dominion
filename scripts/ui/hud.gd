@@ -24,6 +24,7 @@ func _ready() -> void:
 
 func show_results() -> void:
  overlay.hide()
+ if is_instance_valid(results): results.queue_free()
  results = CenterContainer.new()
  results.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  add_child(results)
@@ -62,7 +63,7 @@ func show_results() -> void:
  var detail := Label.new()
  detail.text = "%s
 Battle duration: %d:%02d" % [battle.end_reason, int(battle.elapsed) / 60, int(battle.elapsed) % 60]
- detail.text+="\nFleet sizes: "+battle.mode_name() if battle.is_armada() else ""
+ detail.text+="\nFleet sizes: "+battle.mode_name() if battle.is_armada() or battle.fleet_duel else ""
  detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  detail.custom_minimum_size.x = 600
  if battle.network_role=="offline" and not battle.training and not battle is FreeRoamMatch and not battle is ExplorationMatch:detail.text += "\nDifficulty: "+SoloDifficulty.title(battle.difficulty)

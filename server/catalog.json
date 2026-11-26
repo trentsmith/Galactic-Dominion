@@ -595,5 +595,31 @@
     "kind": "component",
     "rarity": "rare",
     "slot": "weapon"
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "variant_nexus_crimson",
+    "display_name": "Bloodforged War Hull",
+    "kind": "variant",
+    "rarity": "rare",
+    "slot": "variant",
+    "discovery_only": true
+  },
+  {
+    "starter": false,
+    "research_cost": 0,
+    "species": "",
+    "ship_class": "",
+    "modifiers": {},
+    "id": "variant_nexus_eldritch",
+    "display_name": "Dreaming Abyss Living Hull",
+    "kind": "variant",
+    "rarity": "rare",
+    "slot": "variant",
+    "discovery_only": true
   }
 ]

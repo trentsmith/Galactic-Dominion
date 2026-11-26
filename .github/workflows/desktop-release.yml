@@ -1,7 +1,7 @@
 name: Build playable desktop release
 on:
   push:
-    branches: [phase-45-armada]
+    branches: [phase-46-recruitment]
   workflow_dispatch:
 permissions:
   contents: write
@@ -197,6 +197,16 @@ jobs:
           done
       - name: Verify packaged multiplayer server
         run: GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_network_integration.py
+      - name: Verify recruitment, all 100 duel ships and packet budgets
+        run: |
+          godot --headless --path . --script res://tests/fleet_recruitment_test.gd --fixed-fps 60 > /tmp/fleet-recruitment.log 2>&1
+          cat /tmp/fleet-recruitment.log
+          grep 'FLEET_RECRUITMENT_TEST: 20 checks, 0 failures' /tmp/fleet-recruitment.log
+          if grep -E 'SCRIPT ERROR|ERROR:|FAIL:' /tmp/fleet-recruitment.log; then exit 1; fi
+          python3 tests/test_fleet_duel_network.py
+          GD_TEST_CLIENTS=6 python3 tests/test_network_integration.py
+      - name: Verify live 50v50 on the packaged host
+        run: GD_TEST_DUEL_PACKAGED=1 GD_TEST_COMBAT_BINARY="$PWD/build/server-linux/GalacticDominion.x86_64" python3 tests/test_fleet_duel_network.py
       - uses: actions/upload-artifact@v4
         with:
           name: galactic-dominion-desktop
@@ -205,8 +215,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=v0.45.0
+          tag=v0.46.0
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.45.0 — Armada Presets' --notes-file docs/RELEASE.md
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --title 'Galactic Dominion v0.46.0 — Recruit Your Fleet' --notes-file docs/RELEASE.md
           fi
           gh release upload "$tag" releases/* --clobber

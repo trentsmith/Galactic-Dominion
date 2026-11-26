@@ -24,6 +24,15 @@ var fleet_index: OptionButton
 var fitting_slot: OptionButton
 var fitting_item: OptionButton
 var hull_choice: OptionButton
+var fleet_summary: Label
+var recruit_list: ItemList
+var recruit_details: Label
+var recruitment_offers: Array = []
+var battle_roster: ItemList
+var battle_count: Label
+var vessel_details: Label
+var vessel_slot: OptionButton
+var vessel_item: OptionButton
 var fit_options: Array = []
 var busy := false
 var connection := ServerConnection.new()
@@ -46,7 +55,7 @@ func _ready() -> void:
  margin.add_child(column)
  var header := HBoxContainer.new()
  column.add_child(header)
- var title := label("GALACTIC NETWORK  /  LOBBY · PROFILES · TRADE", 24)
+ var title := label("GALACTIC NETWORK  /  RECRUIT · COMMAND · DUEL", 24)
  title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  header.add_child(title)
  button(header, "MAIN MENU", func():
@@ -58,10 +67,14 @@ func _ready() -> void:
  var tabs := TabContainer.new()
  tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
  column.add_child(tabs)
+ var connect_scroll := ScrollContainer.new()
+ connect_scroll.name = "Connect & Lobby"
+ connect_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+ tabs.add_child(connect_scroll)
  var connect_tab := VBoxContainer.new()
- connect_tab.name = "Connect & Lobby"
+ connect_tab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  connect_tab.add_theme_constant_override("separation", 14)
- tabs.add_child(connect_tab)
+ connect_scroll.add_child(connect_tab)
  api_address = field(connect_tab, "Account server URL", connection.api_url)
  combat_address = field(connect_tab, "Combat server address", connection.combat_host)
  combat_port = number(connect_tab, "Combat UDP port", connection.combat_port, 65535)
@@ -97,19 +110,48 @@ func _ready() -> void:
   if not session.client_lobby.is_empty(): session.request_start.rpc_id(1, "free_roam"))
  button(roam_buttons,"LAUNCH CO-OP FRONTIER",func():
   if not session.client_lobby.is_empty():session.request_start.rpc_id(1,"co_op"))
+ var duel_row := HBoxContainer.new()
+ connect_tab.add_child(duel_row)
+ button(duel_row, "FLEET DUEL · YOUR FLEET vs THEIR FLEET", func():
+  if session.client_lobby.is_empty():
+   status.text = "Sign in and join the arena first. Fleet Duel needs two commanders on opposing teams."
+  else: session.request_start.rpc_id(1, "fleet_duel"))
  button(ready_buttons, "LEAVE LOBBY", func():
   session.disconnect_session()
   lobby_info.text = "Disconnected.")
- lobby_info = label("Up to six pilots; each team has three ships. AI fills every empty slot.
-Choose Fleet Royale or a continuous free-roam session with AI patrols.
-One session per server instance. All connected pilots must be ready.", 16)
+ lobby_info = label("FLEET DUEL: two commanders, up to 50 owned ships each. Choose opposite teams, ready up, then the leader launches.
+Recruit and customize in Battle Fleet before joining. F1–F3 lead ships, [ / ] cycle all survivors, 1–5 give orders.
+Fleet Royale / Free Roam / Co-op still support up to six pilots. One session per host.", 14)
+ lobby_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  connect_tab.add_child(lobby_info)
+ var recruit_tab := VBoxContainer.new()
+ recruit_tab.name = "Recruitment"
+ recruit_tab.add_theme_constant_override("separation", 12)
+ tabs.add_child(recruit_tab)
+ var recruit_intro := label("RECRUIT A FLEET\nSpend online salvage to hire permanent ships. Own up to 200 vessels; choose up to 50 for Fleet Duel.\nEvery class has different stats and an ability. Keep your ships after battle, even if destroyed.", 16)
+ recruit_intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ recruit_tab.add_child(recruit_intro)
+ button(recruit_tab, "REFRESH RECRUITMENT BOARD", _refresh_recruits)
+ recruit_list = ItemList.new()
+ recruit_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ recruit_list.item_selected.connect(_recruit_selected)
+ recruit_tab.add_child(recruit_list)
+ recruit_details = label("Sign in to see available ships and server prices.", 16)
+ recruit_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ recruit_tab.add_child(recruit_details)
+ var recruit_buttons := HBoxContainer.new()
+ recruit_tab.add_child(recruit_buttons)
+ button(recruit_buttons, "RECRUIT SELECTED SHIP", _recruit)
+ button(recruit_buttons, "RETRY PENDING RECRUITMENT", _retry_recruit)
  var fleet_tab := VBoxContainer.new()
  fleet_tab.name = "Online Fleet"
  fleet_tab.add_theme_constant_override("separation", 12)
  tabs.add_child(fleet_tab)
  account_info = label("Sign in to view your server-owned fleet.", 17)
+ account_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  fleet_tab.add_child(account_info)
+ fleet_summary = label("Three active vessels · additional recruits wait in reserve", 14)
+ fleet_tab.add_child(fleet_summary)
  button(fleet_tab, "REFRESH ONLINE INVENTORY", _refresh_account)
  var selectors := HBoxContainer.new()
  fleet_tab.add_child(selectors)
@@ -120,18 +162,24 @@ One session per server instance. All connected pilots must be ready.", 16)
  selectors.add_child(fleet_index)
  hull_choice = OptionButton.new()
  selectors.add_child(hull_choice)
- button(selectors, "SET HULL", _equip_hull)
+ button(selectors, "DEPLOY OWNED SHIP", _equip_hull)
+ var fitting_row := HBoxContainer.new()
+ fleet_tab.add_child(fitting_row)
  fitting_slot = OptionButton.new()
  for slot in PlayerProfile.SLOTS:
   fitting_slot.add_item(slot.capitalize())
  fitting_slot.item_selected.connect(func(_index): _update_fits())
- selectors.add_child(fitting_slot)
+ fitting_row.add_child(fitting_slot)
  fitting_item = OptionButton.new()
- selectors.add_child(fitting_item)
- button(selectors, "FIT ITEM", _equip)
+ fitting_row.add_child(fitting_item)
+ button(fitting_row, "FIT ITEM", _equip)
  inventory = ItemList.new()
  inventory.size_flags_vertical = Control.SIZE_EXPAND_FILL
  fleet_tab.add_child(inventory)
+ button(fleet_tab, "COMMISSION SELECTED SHIP BLUEPRINT INTO RESERVE (CONSUMES ONE)", _commission)
+ var reserve_note := label("Deploying returns the previous ship to reserve with its fittings. Contracts and commissioned vessels stay yours; unused blueprint copies remain tradable.", 13)
+ reserve_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ fleet_tab.add_child(reserve_note)
  var research_row := HBoxContainer.new()
  fleet_tab.add_child(research_row)
  var research_item := OptionButton.new()
@@ -143,6 +191,7 @@ One session per server instance. All connected pilots must be ready.", 16)
  research_row.add_child(research_item)
  button(research_row, "RESEARCH", func():
   _mutation("/research", {"item": research_item.get_item_metadata(research_item.selected)}))
+ _build_battle_fleet_tab(tabs)
  var market_tab := VBoxContainer.new()
  market_tab.name = "Marketplace"
  market_tab.add_theme_constant_override("separation", 10)
@@ -186,6 +235,102 @@ One session per server instance. All connected pilots must be ready.", 16)
  session.lobby_changed.connect(_lobby_changed)
  session.status_changed.connect(_status)
  _update_account()
+
+func _build_battle_fleet_tab(tabs: TabContainer) -> void:
+ var tab := VBoxContainer.new()
+ tab.name = "Battle Fleet"
+ tab.add_theme_constant_override("separation", 12)
+ tabs.add_child(tab)
+ battle_count = label("YOUR BATTLE FLEET  /  0 OF 50 SHIPS", 20)
+ tab.add_child(battle_count)
+ var hint := label("Start with three issued ships, then recruit more. Select any owned vessel to customize its stats and add it to your lineup. F1–F3 are your lead ships; [ / ] lets you pilot every surviving wingmate.", 14)
+ hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ tab.add_child(hint)
+ var row := HBoxContainer.new()
+ row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ row.add_theme_constant_override("separation", 18)
+ tab.add_child(row)
+ battle_roster = ItemList.new()
+ battle_roster.custom_minimum_size.x = 460
+ battle_roster.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ battle_roster.item_selected.connect(func(_index): _update_vessel())
+ row.add_child(battle_roster)
+ var details := VBoxContainer.new()
+ details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ details.add_theme_constant_override("separation", 14)
+ row.add_child(details)
+ vessel_details = label("Sign in to inspect ship statistics.", 16)
+ vessel_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ vessel_details.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ details.add_child(vessel_details)
+ vessel_slot = OptionButton.new()
+ for slot in PlayerProfile.SLOTS: vessel_slot.add_item(slot.capitalize())
+ vessel_slot.item_selected.connect(func(_index): _update_vessel())
+ details.add_child(vessel_slot)
+ vessel_item = OptionButton.new()
+ details.add_child(vessel_item)
+ button(details, "FIT SELECTED ITEM TO THIS SHIP", _fit_vessel)
+ var actions := HBoxContainer.new()
+ tab.add_child(actions)
+ button(actions, "ADD TO BATTLE FLEET", func(): _assign_vessel(true))
+ button(actions, "RETURN TO RESERVE", func(): _assign_vessel(false))
+ button(actions, "REFRESH FLEET", _refresh_account)
+
+func _selected_vessel() -> Dictionary:
+ if not is_instance_valid(battle_roster): return {}
+ var selected := battle_roster.get_selected_items()
+ if selected.is_empty(): return {}
+ var sid := str(battle_roster.get_item_metadata(selected[0]))
+ for ship in api.account.get("fleet_roster", []):
+  if str(ship.id) == sid: return ship
+ return {}
+
+func _update_battle_fleet() -> void:
+ var selected_id := str(_selected_vessel().get("id", ""))
+ battle_roster.clear()
+ if api.account.is_empty(): return
+ var lineup: Array = api.account.get("battle_fleet", [])
+ battle_count.text = "YOUR BATTLE FLEET  /  %d OF 50 SHIPS  ·  %d IN RESERVE" % [lineup.size(), api.account.fleet_roster.size() - lineup.size()]
+ var selected := 0
+ for ship in api.account.fleet_roster:
+  var order := lineup.find(ship.id)
+  var row := battle_roster.item_count
+  battle_roster.add_item("%s  %s · %s" % ["F%d" % (order + 1) if order in range(3) else "%02d" % (order + 1) if order >= 0 else "—", ship.name, str(ship.hull).capitalize()])
+  battle_roster.set_item_metadata(row, ship.id)
+  battle_roster.set_item_custom_fg_color(row, Color(.4,.9,1) if order >= 0 else Color(.65,.73,.85))
+  if str(ship.id) == selected_id: selected = row
+ if battle_roster.item_count > 0: battle_roster.select(selected)
+ _update_vessel()
+
+func _update_vessel() -> void:
+ var ship := _selected_vessel()
+ vessel_item.clear()
+ if ship.is_empty(): return
+ var stats := FleetManifest.vessel_stats(api.account, ship)
+ var order: int = api.account.battle_fleet.find(ship.id)
+ vessel_details.text = "%s\n%s · %s\n\nHULL  %d     SHIELDS  %d\nSPEED  %d m/s     TURN  %.1f\nLASER  %d damage / %.2fs\nMISSILE  %d damage / %.1fs\nABILITY  %s / %.0fs recharge\n\n%s" % [ship.name, stats.class_name_text, "BATTLE SLOT %d" % (order+1) if order>=0 else "RESERVE", stats.hull, stats.shield, stats.speed, stats.turn_speed, stats.laser_damage, stats.laser_cooldown, stats.missile_damage, stats.missile_cooldown, stats.ability.to_upper(), stats.ability_recharge, stats.variant_name]
+ var slot: String = PlayerProfile.SLOTS[vessel_slot.selected]
+ if slot == "crew":
+  vessel_item.add_item("AI flight computer (no crew)")
+  vessel_item.set_item_metadata(0, "")
+ for definition in CollectionCatalog.for_slot(slot, stats.class_name_text):
+  if not api.account.inventory.has(definition.id): continue
+  var index := vessel_item.item_count
+  vessel_item.add_item(definition.display_name)
+  vessel_item.set_item_metadata(index, definition.id)
+  if ship.loadout.get(slot, "") == definition.id: vessel_item.select(index)
+
+func _assign_vessel(deployed: bool) -> void:
+ var ship := _selected_vessel()
+ if ship.is_empty():
+  status.text = "Select an owned vessel first."
+  return
+ _mutation("/fleet/assign", {"ship_id": ship.id, "deployed": deployed})
+
+func _fit_vessel() -> void:
+ var ship := _selected_vessel()
+ if ship.is_empty() or vessel_item.selected < 0: return
+ _mutation("/fleet/fit", {"ship_id": ship.id, "slot": PlayerProfile.SLOTS[vessel_slot.selected], "item": vessel_item.get_item_metadata(vessel_item.selected)})
 
 func label(value: String, font_size: int = 16) -> Label:
  var node := Label.new()
@@ -245,6 +390,7 @@ func _sign_in(register: bool) -> void:
  password.text = ""
  status.text = str(reply.error) if reply.has("error") else "Signed in. Your server-owned inventory is ready."
  _update_account()
+ if reply.has("data"): await _refresh_recruits()
 
 func _join() -> void:
  if busy:
@@ -274,9 +420,12 @@ func _refresh_account() -> void:
 
 func _update_account() -> void:
  inventory.clear()
+ hull_choice.clear()
  if api.account.is_empty():
+  fleet_summary.text = "Sign in to assemble your online fleet."
   return
- account_info.text = "%s  /  %d SALVAGE  /  %d DISCOVERIES  /  %d WINS IN %d MATCHES" % [api.account.commander_name, api.account.salvage, api.account.inventory.size(), api.account.wins, api.account.battles]
+ account_info.text = "%s  /  %d SALVAGE  /  %d OWNED SHIPS · %d IN BATTLE FLEET  /  %d WINS" % [api.account.commander_name, api.account.salvage, api.account.get("fleet_roster", []).size(), api.account.get("battle_fleet", []).size(), api.account.wins]
+ fleet_summary.text = FleetManifest.summary(api.account)
  for id in api.account.inventory:
   var definition := CollectionCatalog.find(str(id))
   if definition == null or not GameFeatures.collectible_active(definition):
@@ -285,19 +434,20 @@ func _update_account() -> void:
   inventory.add_item("%s × %d  /  %s" % [definition.display_name, api.account.inventory[id].count, definition.rarity.to_upper()])
   inventory.set_item_metadata(index, id)
  _update_fits()
+ _update_battle_fleet()
 
 func _update_fits() -> void:
  if api.account.is_empty():
   return
  var index := fleet_index.selected
  hull_choice.clear()
- for hull in CollectionCatalog.SHIP_TYPES:
-  if hull not in ["interceptor", "skirmisher", "guardian"] and not api.account.inventory.has("ship_" + hull):
-   continue
+ for ship in api.account.get("fleet_roster", []):
   var item_index := hull_choice.item_count
-  hull_choice.add_item(CollectionCatalog.SHIP_TYPES[hull].class_name_text)
-  hull_choice.set_item_metadata(item_index, hull)
-  if hull == api.account.ship_classes[index]:
+  var active_slot: int = api.account.active_ships.find(ship.id)
+  hull_choice.add_item("%s · %s%s" % [ship.name, str(ship.hull).capitalize(), " / F%d" % (active_slot + 1) if active_slot >= 0 else " / Reserve"])
+  hull_choice.set_item_metadata(item_index, ship.id)
+  hull_choice.set_item_disabled(item_index, active_slot >= 0 and active_slot != index)
+  if active_slot == index:
    hull_choice.select(item_index)
  fitting_item.clear()
  var slot: String = PlayerProfile.SLOTS[fitting_slot.selected]
@@ -335,7 +485,85 @@ func _equip() -> void:
 
 func _equip_hull() -> void:
  if hull_choice.selected >= 0:
-  _mutation("/equip", {"index": fleet_index.selected, "hull": hull_choice.get_item_metadata(hull_choice.selected)})
+  _mutation("/fleet/deploy", {"index": fleet_index.selected, "ship_id": hull_choice.get_item_metadata(hull_choice.selected)})
+
+func _refresh_recruits() -> void:
+ if busy or api.token.is_empty():
+  status.text = "Sign in first or wait for the current request."
+  return
+ busy = true
+ var reply := await api.request("/fleet/recruits", {}, HTTPClient.METHOD_GET)
+ if not is_inside_tree(): return
+ busy = false
+ if reply.has("error"):
+  status.text = str(reply.error)
+  return
+ api.account = reply.data.profile
+ recruitment_offers = reply.data.offers
+ recruit_list.clear()
+ for offer in recruitment_offers:
+  recruit_list.add_item("%s  ·  %s  ·  %d SALVAGE" % [offer.name, str(offer.hull).capitalize(), offer.cost])
+ if not recruitment_offers.is_empty():
+  recruit_list.select(0)
+  _recruit_selected(0)
+ _update_account()
+ status.text = "Recruitment board ready · %d / %d ships owned · %d salvage" % [api.account.fleet_roster.size(), reply.data.capacity, api.account.salvage]
+
+func _recruit_selected(index: int) -> void:
+ if index < 0 or index >= recruitment_offers.size(): return
+ var offer: Dictionary = recruitment_offers[index]
+ recruit_details.text = "%s\n%s\n%d salvage · Permanent ownership · Standard fittings · Deploy from Online Fleet" % [offer.name, offer.role, offer.cost]
+
+func _recruit() -> void:
+ var selected := recruit_list.get_selected_items()
+ if selected.is_empty():
+  status.text = "Sign in, refresh the board and select a recruitment contract."
+  return
+ _request_recruit("/fleet/recruit", {"offer": recruitment_offers[selected[0]].id})
+
+func _commission() -> void:
+ var selected := inventory.get_selected_items()
+ if selected.is_empty():
+  status.text = "Select a won or traded ship blueprint in your online inventory first."
+  return
+ var item := str(inventory.get_item_metadata(selected[0]))
+ if not item.begins_with("ship_"):
+  status.text = "Only ship blueprints can be commissioned. Select a ship, not a fitting or crew member."
+  return
+ _request_recruit("/fleet/commission", {"item": item})
+
+func _request_recruit(path: String, payload: Dictionary) -> void:
+ if busy or api.account.is_empty():
+  status.text = "Sign in first or wait for the current request."
+  return
+ var uid := str(api.account.user_id)
+ if api.pending_recruitments.has(uid):
+  status.text = "A recruitment is awaiting confirmation. Use RETRY PENDING RECRUITMENT to resolve it before hiring another ship."
+  return
+ payload["request_id"] = Crypto.new().generate_random_bytes(16).hex_encode()
+ api.pending_recruitments[uid] = {"path": path, "payload": payload}
+ _retry_recruit()
+
+func _retry_recruit() -> void:
+ if busy or api.account.is_empty(): return
+ var uid := str(api.account.user_id)
+ if not api.pending_recruitments.has(uid):
+  status.text = "No recruitment is awaiting confirmation."
+  return
+ busy = true
+ status.text = "Confirming recruitment with the account server…"
+ var pending: Dictionary = api.pending_recruitments[uid]
+ var reply := await api.request(pending.path, pending.payload)
+ if not is_inside_tree(): return
+ busy = false
+ if reply.has("error"):
+  if not reply.get("retryable", false): api.pending_recruitments.erase(uid)
+  status.text = str(reply.error) + (" Use RETRY PENDING RECRUITMENT; the same request will not charge twice." if reply.get("retryable", false) else "")
+  return
+ api.pending_recruitments.erase(uid)
+ api.account = reply.data.profile
+ _update_account()
+ status.text = "Recruitment confirmed · ship saved. Open Battle Fleet to customize it and add it to your 50-ship lineup."
 
 func _refresh_market() -> void:
  if api.token.is_empty():
@@ -411,6 +639,8 @@ func _public_profile() -> void:
   return
  var data: Dictionary = reply.data
  var lines: PackedStringArray = [str(data.commander_name).to_upper(), "%d victories / %d battles  ·  %d kills  ·  %d damage" % [data.wins, data.battles, data.total_kills, data.total_damage], "FLEET  /  " + ", ".join(data.ship_classes), "DISCOVERY RECORDS"]
+ if data.has("active_fleet"):
+  lines.insert(3, "%d owned ships · Active: %s" % [data.get("fleet_size", 3), ", ".join(data.active_fleet.map(func(ship): return str(ship.name)))])
  for id in data.get("discovery_records", data.inventory):
   var definition := CollectionCatalog.find(str(id))
   if definition != null and GameFeatures.collectible_active(definition):

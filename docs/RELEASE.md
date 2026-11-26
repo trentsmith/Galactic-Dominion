@@ -1,19 +1,18 @@
-Galactic Dominion v0.45.0 — Armada Presets
+Galactic Dominion v0.46.0 — Recruit Your Fleet
 
-The 200-ship combat options are now prominent on the title screen. The default free-roam menu shows direct shortcuts for all three requested Armada formats:
+Recruit permanent spaceships, customize every vessel, and fight another commander's fleet in **up to 50v50 online battles**.
 
-- **200 v 50:** you + 199 allied AI against 50 enemy AI; 250 ships total.
-- **200 v 200:** you + 199 allied AI against 200 enemy AI; 400 ships total.
-- **50 v 200:** you + 49 allied AI against 200 enemy AI; 250 ships total.
+- **Recruitment board:** five class contracts bought with online salvage. Each ship has a persistent identity, its own fittings and a Nexus faction appearance. Start with three issued ships and 200 salvage; grow toward fifty deployed ships and 200 owned ships total.
+- **Battle Fleet:** inspect actual fitted hull, shields, speed, handling, laser/missile damage, cooldowns and abilities for every vessel. Choose engines, weapons, shields, utility, crew and liveries; assign or reserve ships between matches.
+- **Fleet Duel:** exactly two commanders, one on each team, bring their selected 3–50-ship lineups. AI pilots wingmates. Unequal fleets work too. Use F1–F3 for lead ships, [ / ] for all surviving allies and 1–5 for fleet orders. The eight-minute timer and shrinking zone remain active.
+- **Permanent ownership:** destroyed or defeated ships return for the next battle with their fittings. Victory blueprints can be commissioned into owned vessels or traded unused. Contracted/commissioned vessel records remain account-bound.
+- **Authoritative progression:** the account service validates prices, ownership, lineup capacity and match locks. Retried recruitment cannot charge twice. Whole-fleet kills/damage count for the commander; disconnecting forfeits a duel. The running host retries temporary result-save failures before allowing another match.
+- **Larger online protocol:** compact eight-ship snapshots, pooled projectile visuals, spatial AI queries and simplified wingmate hulls support the expanded fleets. Taking control restores detailed ship art.
 
-Click a preset, review both fleet counters and enemy difficulty, then click **LAUNCH**. **ARMADA / UP TO 200 v 200** opens the same setup for any custom 1–200 count on either side. Presets visibly highlight their selected numbers and replace pending counter edits. Browsing leaves saved choices intact; launching saves them. **DEPLOY AGAIN** keeps both fleet sizes.
+**How to play:** run the matching self-hosted server package; open **Online → Recruitment**, then **Battle Fleet**. Both commanders connect to the same host, choose opposite teams and ready up; the leader launches **FLEET DUEL**. [Full guide](https://github.com/trentsmith/Galactic-Dominion/blob/phase-46-recruitment/docs/FLEET_RECRUITMENT.md).
 
-Settings, Flight controls and Quit stay visible in a fixed menu footer. Fleet Royale remains 3v3 and Fleet War remains 10v10. The v0.44 aim guide, cover-aware locks, missile warnings, boost/camera improvements and survivor cycling remain available. F1–F3 control the first three fitted ships; [ / ] cycle every surviving offline ally.
+Download **Galactic-Dominion-Windows.zip**, extract the entire folder, and run **GalacticDominion.exe**. Linux clients, Windows/Linux server packages and procedural 3D model exports are also included. Players do not need Godot. [PC hosting](https://github.com/trentsmith/Galactic-Dominion/blob/phase-46-recruitment/server/README.md).
 
-**Download Galactic-Dominion-Windows.zip**, extract the entire folder, then run **GalacticDominion.exe**. Linux clients, self-hosted servers and procedural model exports are also included. Players do not need Godot.
+Update hosts and all clients to **v0.46.0**. Online profile version 2 migrates existing accounts without losing their three ships, fittings or inventory; back up `server-data` before upgrading. Local save schema remains 11, separate from online progression. Existing six-pilot Free Roam/Co-op/Royale, wildlife/companions, solo 10v10 and **200v50 / 200v200 / 50v200** Armada presets remain available.
 
-Save schema stays at 11 and retains existing collections. Update online hosts and clients together to v0.45.0. Armada's larger fleets are AI; online remains six human space pilots. The scripted campaign remains disabled by default, with exploration, wildlife and companions preserved.
-
-Validation includes 44 new default-menu/preset checks covering real launches and replay for every requested format; existing navigation and Armada regressions; native Linux menu/setup captures; and release CI checks that boot all three formats in the exported Linux game. Full Windows GUI, physical-controller and target-PC performance/balance playtests remain pending.
-
-[Armada instructions and validation](https://github.com/trentsmith/Galactic-Dominion/blob/phase-45-armada/docs/ARMADA.md).
+Validation includes server ownership/transaction regressions, Godot fleet/packet checks, actual two-client 50v50 and 7v50 fixtures with forfeits/reward retries, normal live 50v50 AI combat, retained six-client/co-op paths and broader gameplay regressions. Release CI builds Windows/Linux and exercises the exported Linux client/server. Native Linux captures check recruitment and fleet menus. Windows GUI, Internet hosting, controllers and sustained human balance/performance playtests remain pending.

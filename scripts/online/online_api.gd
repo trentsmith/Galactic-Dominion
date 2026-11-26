@@ -3,6 +3,7 @@ extends Node
 var base_url := "http://127.0.0.1:8080"
 var token := ""
 var account: Dictionary = {}
+var pending_recruitments: Dictionary = {}
 
 func request(path: String, data: Dictionary = {}, method: int = HTTPClient.METHOD_POST, server_key: String = "") -> Dictionary:
  var http := HTTPRequest.new()
@@ -17,16 +18,18 @@ func request(path: String, data: Dictionary = {}, method: int = HTTPClient.METHO
  var error := http.request(base_url.trim_suffix("/") + path, headers, method, JSON.stringify(data) if method != HTTPClient.METHOD_GET else "")
  if error != OK:
   http.queue_free()
-  return {"error": "Could not start connection to the account server"}
+  return {"error": "Could not start connection to the account server", "retryable": true}
  var reply: Array = await http.request_completed
  http.queue_free()
  if reply[0] != HTTPRequest.RESULT_SUCCESS:
-  return {"error": "Account server unavailable. Check its address and that it is running."}
+  return {"error": "Account server unavailable. Check its address and that it is running.", "retryable": true}
  var parser := JSON.new()
  if parser.parse(reply[3].get_string_from_utf8()) != OK:
-  return {"error": "Account server sent an invalid reply"}
+  return {"error": "Account server sent an invalid reply", "retryable": true}
  if int(reply[1]) < 200 or int(reply[1]) >= 300:
-  return parser.data if parser.data is Dictionary else {"error": "Account server rejected the request"}
+  var failure: Dictionary = parser.data if parser.data is Dictionary else {"error": "Account server rejected the request"}
+  failure["retryable"] = int(reply[1]) >= 500 or int(reply[1]) == 429
+  return failure
  return {"data": parser.data}
 
 func sign_in(username: String, password: String, register: bool = false) -> Dictionary:

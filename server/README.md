@@ -4,7 +4,7 @@ Requires **Python 3.10+** and the standard **Godot 4.x** executable (tested with
 
 ## One-click Windows host package
 
-Download **Galactic-Dominion-Server-Windows.zip** from [the v0.45.0 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.45.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
+Download **Galactic-Dominion-Server-Windows.zip** from [the v0.46.0 release](https://github.com/trentsmith/Galactic-Dominion/releases/tag/v0.46.0), extract it, and double-click **Start-Server-Windows.bat**. Godot and Python do not need separate installation: the package includes the exported game engine and a portable official Python runtime. Do not run files from inside the ZIP preview. Keep the window open; Ctrl+C stops both servers.
 
 The server window prints the PC's LAN addresses. Friends on your same network run the player download, open Online, put that IP in Combat Server Address and click **Use This Address For A Local-Network Host**. The shortcut sets the account URL to `http://HOST:8080`. Clients on the hosting PC can use `127.0.0.1`. Connection preferences remember the address and username.
 
@@ -34,7 +34,7 @@ Equip an owned alien in **Online Fleet → Crew** before joining. Its companion 
 
 The host also runs recurring Crimson/Pelagian/Eldritch invasions, hostile ion storms and ship-held outposts (the archived creature army is not deployed in space). J shows a seven-region star chart, raid briefing and army orders. G within 100m surveys a landmark for the session, without inventory rewards. Online landing onto solo surfaces is disabled.
 
-Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.45.0 game build is required on the server and every client.
+Sessions close when their last human leaves. Accounts and collections persist, but world positions and patrol waves are not restored after restarting the server. The same v0.46.0 game build is required on the server and every client.
 
 ## Explicit launch command
 
@@ -68,16 +68,18 @@ Keep both services running, for example under your OS's service manager. Run a s
 
 Online inventory is authoritative and **separate from local exploration/single-player inventory**. Clients cannot upload local saves or award themselves online loot. New online accounts receive the standard fleet, 200 online salvage and a small welcome cache of tradable equipment.
 
-- Configure discovered hulls, components, crew and variants in **Online Fleet**.
+- Recruit permanent vessels in **Recruitment**, and customize/assign up to 50 in **Battle Fleet**. **Online Fleet** selects the three F1–F3 lead ships and retains inventory/research access. [Complete fleet guide](../docs/FLEET_RECRUITMENT.md).
+- Exactly two ready commanders on opposite teams can launch **FLEET DUEL** with their own 3–50-ship lineups. Each commands AI wingmates and can cycle every surviving ship with [ / ]. Leaving forfeits a live duel. Defeat keeps the owned fleet and its fittings.
+- Victory hull blueprints stay tradable until commissioned. Commissioning consumes one blueprint and creates a permanent vessel; contracted/commissioned vessel records cannot be traded directly. Contracts cost salvage and include a Nexus faction livery license.
 - Complete online matches for server-settled salvage and discovery rolls. Inventory is locked during a match so equipped items cannot be sold while their match is running.
-- Select an inventory item on Online Fleet, then go to Marketplace to list it. Fleet-issued items cannot be listed. Unequip the last copy of an item before listing it.
+- Select an inventory item on Online Fleet, then go to Marketplace to list it. Fleet-issued items cannot be listed. Unequip the last copy of an item from active and reserve vessels before listing it.
 - Listed items leave inventory into escrow. Buying atomically transfers the item and salvage. Cancellation returns the item.
 - Offers reserve the buyer's salvage. Acceptance settles the trade; rejection, cancellation or a sale to someone else refunds other offers.
 - Public Profiles shows online fleets, lifetime combat totals and discovery records. Trading away an item does not erase its discovery record. Anyone can read a public profile at `/profiles?name=COMMANDER_NAME` on the account service; the game's profile browser formats this data.
 
 Passwords are salted PBKDF2 hashes, session tokens are stored as hashes and expire after 24 hours, and game tickets are single-use with a 60-second lifetime. The combat service alone can settle matches. SQLite transactions reject duplicate purchases and duplicate reward settlement.
 
-Data lives in `server-data/galaxy.sqlite3`; the generated key is in `server-data/combat-server.key`. Stop the server before copying the whole data folder for a backup. An interrupted match may not pay rewards; inventory locks expire after ten minutes if its server does not settle it. Accounts have no email verification or password-reset UI yet.
+Data lives in `server-data/galaxy.sqlite3`; the generated key is in `server-data/combat-server.key`. Stop the server before copying the whole data folder for a backup. Online profiles migrate to version 2, preserving existing ships, fittings and inventory; local saves stay separate. The running host retries temporary battle-settlement failures and waits before starting another match. Stopping the host before settlement may lose pending rewards; inventory locks expire after ten minutes if its server does not settle it. Accounts have no email verification or password-reset UI yet.
 
 ## Tests actually run
 
@@ -90,7 +92,7 @@ python tests/test_network_integration.py
 
 For the full six-client run, set `GD_TEST_CLIENTS=6` before running the integration test (PowerShell: `$env:GD_TEST_CLIENTS="6"`). These tests create isolated temporary accounts and databases and need local TCP/UDP sockets plus `godot` on PATH. They do not contact GitHub or a public service.
 
-The six-client test verifies authentication, readiness, a full 3v3 arena, server-owned movement, rejection of occupied-ship takeover, results and persistent rewards. The two-client test verifies AI filling empty slots and switching into an available ship. HTTP checks exercise registration, public profiles, trading offers, escrow and online fittings. Fourteen service tests cover transactions, simultaneous purchases, authentication, single-use tickets and idempotent rewards.
+The six-client test verifies authentication, readiness, a full 3v3 arena, server-owned movement, rejection of occupied-ship takeover, results and persistent rewards. The two-client test verifies AI filling empty slots and switching into an available ship. HTTP checks exercise registration, public profiles, trading offers, escrow and online fittings. Service tests cover transactions, simultaneous purchases, authentication, single-use tickets, recruitment, fifty-ship lineups and idempotent rewards.
 
 This is a self-hosted multiplayer prototype with interpolated server snapshots. Internet latency, rendering performance on six real PCs, large populations, moderation and a production economy have not been validated. There is no client prediction or lag compensation yet.
 
@@ -98,7 +100,7 @@ This is a self-hosted multiplayer prototype with interpolated server snapshots. 
 
 Ready all connected pilots, then the lobby leader chooses **LAUNCH CO-OP FRONTIER**. All six pilot hulls are allied; AI fills empty slots, and another pilot may join the active space session. Press **O** during flight: the leader requests a shared rescue, repair or escort job. Hold **F** within 90m for rescue/repair, or stay within 150m of the escort and clear nearby jammers. The host validates participation; eligible accounts receive 50/60/70 salvage and +8 council standing exactly once per completed event. Refresh Online Fleet to see the saved balance.
 
-NPC encounters, faction war and ordinary kill rewards remain active. Co-op does not enable friendly-fire damage between pilot hulls. Shared planet/wreck interiors are not implemented; local facilities and companion protocols do not transfer to the online economy. Up to six human pilots are supported, with AI NPCs in the wider world. The star chart uses **J**, missiles **M**. All players and the host must use v0.45.0.
+NPC encounters, faction war and ordinary kill rewards remain active. Co-op does not enable friendly-fire damage between pilot hulls. Shared planet/wreck interiors are not implemented; local facilities and companion protocols do not transfer to the online economy. Up to six human pilots are supported, with AI NPCs in the wider world. The star chart uses **J**, missiles **M**. All players and the host must use v0.46.0.
 
 
 ## Shared navigation pings in v0.42
@@ -113,4 +115,15 @@ Pending payments remain in host memory. Stop the host gracefully after rewards s
 
 ## Dogfight update in v0.44
 
-Hosts now validate missile cover/range at launch and use precise moving-target interception for player laser assistance. Snapshots carry the controlled pilot's lock refusal, actual boost/recovery state and incoming missile speeds for client guidance. UI prediction and warning estimates do not apply damage. Online retains its existing six human slots, three-ship ownership groups and base weapon/difficulty statistics. Update hosts and every client together to v0.45.0. See [combat handling](../docs/COMBAT_HANDLING.md).
+Hosts validate missile cover/range at launch and use moving-target interception for player laser assistance. Snapshots carry the controlled pilot's lock refusal, boost/recovery and incoming missile speeds. Fleet Duel uses compact eight-ship packets and pooled projectile presentation for up to 100 ships; the legacy six-pilot modes keep their original protocol path and ownership groups. UI prediction never applies damage. Update hosts and every client together to v0.46.0. See [combat handling](../docs/COMBAT_HANDLING.md) and [fleet recruitment](../docs/FLEET_RECRUITMENT.md).
+
+## Fleet Duel checks
+
+```sh
+python3 -m unittest discover -s tests -p 'test_*service.py'
+godot --headless --path . --script res://tests/fleet_recruitment_test.gd --fixed-fps 60
+python3 tests/test_fleet_duel_network.py
+GD_TEST_DUEL_PACKAGED=1 GD_TEST_COMBAT_BINARY=/path/to/GalacticDominion.x86_64 python3 tests/test_fleet_duel_network.py
+```
+
+The source fixture freezes AI and injects health-system eliminations for deterministic final-wingmate credit. It runs real authenticated clients, full 50v50 and asymmetric 7v50 lineups, switching, opponent ownership, forfeits and an interrupted result save. The packaged path runs normal live AI combat. Recruitment uses server-priced, atomic, idempotent receipts; retrying the same request cannot charge twice. `/fleet/recruits`, `/fleet/recruit`, `/fleet/commission`, `/fleet/deploy`, `/fleet/assign` and `/fleet/fit` require account authentication and enforce ownership/match locks. Duel settlement accepts only the combat-service key. The account service derives ownership from its database, never client-uploaded local inventories.
